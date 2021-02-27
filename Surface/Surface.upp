@@ -1,0 +1,12 @@
+description "Basic 3D primitives and its handling\377B255,170,0";
+
+uses
+	Geom,
+	Eigen;
+
+file
+	Surface.cpp,
+	Surface.h,
+	stl.cpp;
+
+ spellcheck_comments "EN-GB"

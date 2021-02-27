@@ -1,0 +1,14 @@
+description "Scatter series without GUI\377";
+
+uses
+	Core,
+	ScatterDraw,
+	plugin\png,
+	PdfDraw;
+
+file
+	ScatterDraw_Demo.cpp;
+
+mainconfig
+	"" = "";
+

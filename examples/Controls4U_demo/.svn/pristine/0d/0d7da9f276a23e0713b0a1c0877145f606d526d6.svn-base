@@ -1,0 +1,25 @@
+description "Controls4U Ctrls demo\377";
+
+uses
+	CtrlLib,
+	Controls4U,
+	plugin\gif,
+	plugin\jpg;
+
+file
+	main.cpp,
+	main_win.cpp,
+	Controls4U_Demo.h,
+	Controls4U_Demo_win.h,
+	Controls4U_Demo.lay,
+	Controls4U_Demo_win.lay,
+	Controls4U_Demo.iml,
+	Credits.txt,
+	JBControls readonly separator,
+	JBControls.cpp,
+	JBControlsDemo.h,
+	JBControlsDemo.lay;
+
+mainconfig
+	"" = "GUI";
+

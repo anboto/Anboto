@@ -1,0 +1,37 @@
+description "Science, technology, engineering, and mathematics libraries\377B255,170,0";
+
+noblitz;
+
+uses
+	Core,
+	plugin/sundials,
+	ScatterDraw,
+	Eigen;
+
+file
+	Rational.cpp,
+	Rational.h,
+	IntInf.h,
+	Polynomial.h,
+	Sundials.cpp,
+	Sundials.h,
+	LocalFitting.h,
+	Butterworth.h,
+	CrossCorrelation.h,
+	Integral.h,
+	Financial.cpp,
+	Financial.h,
+	TSP.h,
+	Permutations.cpp,
+	Permutations.h,
+	SeaWaves.cpp,
+	SeaWaves.h,
+	Mooring.cpp,
+	Mooring.h,
+	Utility.cpp,
+	Utility.h,
+	srcimp.tpp,
+	src.tpp,
+	srcdoc.tpp,
+	Copying;
+

@@ -1,0 +1,18 @@
+description "STEM4U library demo and test\377";
+
+noblitz;
+
+uses
+	Core,
+	STEM4U,
+	plugin/png,
+	Functions4U;
+
+file
+	DemoTest.cpp,
+	TestMooring.cpp,
+	TestFilters.cpp;
+
+mainconfig
+	"" = "";
+

@@ -1,0 +1,12 @@
+description "STEM4U library demo and test\377";
+
+uses
+	Core,
+	STEM4U;
+
+file
+	DemoTest.cpp;
+
+mainconfig
+	"" = "";
+

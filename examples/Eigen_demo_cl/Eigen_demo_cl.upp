@@ -1,0 +1,18 @@
+description "Eigen package demo\377";
+
+uses
+	Core,
+	Eigen;
+
+options(MSC) /bigobj;
+
+options(MSC) -D_SCL_SECURE_NO_WARNINGS;
+
+file
+	eigen_demo.cpp,
+	non-linear.cpp,
+	fft.cpp;
+
+mainconfig
+	"" = "";
+

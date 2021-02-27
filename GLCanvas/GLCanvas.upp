@@ -1,0 +1,18 @@
+description "A basic canvas for OpenGL primitives\377B255,170,0";
+
+uses
+	Surface,
+	plugin/jpg,
+	PdfDraw,
+	GLCtrl;
+
+file
+	GLCanvas.cpp,
+	GLCanvas.h,
+	GLCanvas.iml,
+	trackball.cpp,
+	trackball.h,
+	trkball.c,
+	trkball.h;
+
+ spellcheck_comments "EN-GB"

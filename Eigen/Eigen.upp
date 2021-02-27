@@ -1,0 +1,15 @@
+description "Template library for linear algebra\377B255,170,0";
+
+uses
+	Core,
+	plugin/eigen;
+
+options(MSC) /bigobj;
+
+file
+	Eigen.cpp,
+	Eigen.h,
+	ToStringPlugin.h,
+	src.tpp,
+	srcdoc.tpp;
+
