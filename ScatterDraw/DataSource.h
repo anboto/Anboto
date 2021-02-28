@@ -451,7 +451,7 @@ protected:
 	
 class CArray : public DataSource {
 private:
-	const double *yData, *xData, *zData;
+	const double *xData, *yData, *zData;
 	int64 numData;
 	double x0, deltaX;
 	
