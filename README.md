@@ -6,22 +6,25 @@
 
 # Anboto
 **A set of C++ libraries to streamline project development based on the U++ framework.**
+Anboto is proudly developed with the U++ framework using the C++ language. U++ makes C++ so simple and efficient that it appeals even to scripting language programmers.
+
+Anboto adds multiple additional features to U++ so that your projects can be developed faster.
 
 ## Libraries included
 ### General use
-* Controls4U
 * Functions4U
-* OfficeAutomation
-* ScatterCtrl
+* Controls4U
 * ScatterDraw
+* ScatterCtrl
 * SysInfo
+* OfficeAutomation
  
 ### Engineering and scientific
 * Eigen
-* GLCanvas
-* Matio
 * STEM4U
 * Surface
+* GLCanvas
+* Matio
 
 ### Libraries
 These external libraries are included as they have been adapted for immediate use with Anboto. They are updated periodically and their licenses are compatible with Anboto's.
