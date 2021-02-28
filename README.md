@@ -9,7 +9,7 @@
 
 [![License: Apache v2](https://img.shields.io/badge/License-Apachev2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 <img src="https://github.com/izabala123/BEMRosetta/blob/master/other/md%20resources/platforms-windows_linux-blue.svg" alt="Platforms">
-<img src="https://img.shields.io/github/last-commit/izabala123/anboto.svg" alt="Last commit">
+<img src="https://img.shields.io/github/last-commit/anboto/Anboto.svg" alt="Last commit">
 
 Anboto is proudly developed with the U++ framework using the C++ language. U++ makes C++ so simple and efficient that it appeals even to scripting language programmers. 
 
