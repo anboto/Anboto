@@ -39,6 +39,7 @@ These external libraries are included as they have been adapted for immediate us
 * plugin/sundials
 
 ## Install
+* Clone or copy Anboto to your computer. It will normally be placed in the same folder as U++.
 * Go to U++ folder (normally 'upp') and open uppsrc.var with a text editor like Notepad. You will get something like:
 <pre>
 UPP = "%U++ParentFolder$/upp/uppsrc";
