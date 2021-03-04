@@ -37,3 +37,15 @@ These external libraries are included as they have been adapted for immediate us
 * plugin/assimp
 * plugin/matio
 * plugin/sundials
+
+## Install
+* Go to U++ folder (normally 'upp') and open uppsrc.var with a text editor like Notepad. You will get something like:
+<pre>
+UPP = "%U++ParentFolder$/upp/uppsrc";
+OUTPUT = "%U++ParentFolder$/upp/out";
+
+* Replace content of "UPP = ..." line with:
+<pre>UPP = "%AnbotoParentFolder$/Anboto;%U++ParentFolder$/upp/uppsrc;%U++ParentFolder$/upp/bazaar";
+* Save the file as 'Anboto.var'
+
+From now on you will have 'Anboto' ready to be selected in the 'Select main package' dialog.
