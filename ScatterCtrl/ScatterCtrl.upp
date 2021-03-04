@@ -1,4 +1,4 @@
-description "Scatter control to plot in GUI applications based on ScatterDraw\377";
+description "Scatter control to plot in GUI applications based on ScatterDraw\377B44,169,203";
 
 uses
 	CtrlLib,

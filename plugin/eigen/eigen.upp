@@ -1,4 +1,4 @@
-description "Template library for linear algebra\377";
+description "Template library for linear algebra\37744,169,203";
 
 uses
 	Core;

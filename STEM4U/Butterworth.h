@@ -328,7 +328,7 @@ void filter_(const Range &b, const Range &a, const Range &X, Range &Y, Range &Zi
     if (std::all_of(a.data(), a.data()+a.size(), [](Scalar coef){return coef == 0;}))
         throw Exc("At least one of the feedback filter coefficients has to be non-zero.");
     if (a[0] == 0)
-        throw Exc("First feedback coefficient has to be non-zero.");
+		throw Exc("First feedback coefficient has to be non-zero.");
 
 	std::vector<Scalar> A(a.size()), B(b.size());
 	std::copy(Begin(a), End(a), A.begin());

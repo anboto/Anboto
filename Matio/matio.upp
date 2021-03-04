@@ -1,4 +1,4 @@
-description "MATLAB MAT file I/O library\377B255,170,0";
+description "MATLAB MAT file I/O library\377B44,169,203";
 
 options(BUILDER_OPTION) NOWARNINGS;
 

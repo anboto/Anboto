@@ -1,4 +1,4 @@
-description "Scatter base class to plot in console applications \377B255,170,0";
+description "Scatter base class to plot in console applications \377B44,169,203";
 
 uses
 	Painter,
