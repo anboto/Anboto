@@ -46,7 +46,6 @@ String AppendFileNameX(T t, Args... args) {
 }
 	
 inline String Trim(const String& s)   {return TrimBoth(s);}
-//inline WString Trim(const WString& s) {return TrimLeft(TrimRight(s));}
 
 String FitFileName(String fileName, int len);
 
@@ -54,8 +53,6 @@ Vector<String> Tokenize(const String &str, const String &token, int pos = 0);
 void Tokenize(const String &str, const String &token, Vector<String> &ret, int pos = 0);
 String Tokenize2(const String &str, const String &token, int &pos);
 String Tokenize2(const String &str, const String &token);
-//String Tokenize(const String &str, const String &token, int &pos);
-//String Tokenize(const String &str, const String &token);
 	
 /////////
 bool DirectoryExistsX(const char *path, EXT_FILE_FLAGS flags = NO_FLAG); 
@@ -566,7 +563,6 @@ private:
 
 typedef Dl Dll;
 
-//bool RunFromMemory(const String &progBuffer, const String &name);
 
 
 String BsGetLastError();

@@ -31,13 +31,10 @@ Histogram &Histogram::Create2D(const Vector<Vector<double> > &_ranges, const Vec
 	Clear();
 	
 	int numAxis = 2;
-	int numVals = 1;
-	for (int ix = 0; ix < numAxis; ++ix)
-		numVals *= _ranges[ix].GetCount();
 	valuesIdx.SetNumAxis(numAxis);
 	for (int ix = 0; ix < numAxis; ++ix)
 		valuesIdx.SetAxisDim(ix, _ranges[ix].GetCount());
-	values.resize(numVals);
+	values.resize(valuesIdx.size());
 	values.setZero();
 	ranges.SetCount(numAxis);
 	for (int ix = 0; ix < numAxis; ++ix) {
@@ -55,13 +52,10 @@ Histogram &Histogram::Create(Upp::Array<HistogramDataAxis> &dataAxis, bool isY) 
 	Clear();
 	
 	int numAxis = dataAxis.GetCount();
-	int numVals = 1;
-	for (int ix = 0; ix < numAxis; ++ix)
-		numVals *= dataAxis[ix].numVals;
 	valuesIdx.SetNumAxis(numAxis);
 	for (int ix = 0; ix < numAxis; ++ix)
 		valuesIdx.SetAxisDim(ix, dataAxis[ix].numVals);
-	values.resize(numVals);
+	values.resize(valuesIdx.size());
 	values.setZero();
 	ranges.SetCount(numAxis);
 	Vector<double> delta;

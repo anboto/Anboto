@@ -62,6 +62,13 @@ late]_<[@(0.0.255) typename]_[*@4 T], [@(0.0.255) typename...]_[*@4 Args]>_[@(0.
 of indexes ][*@3 t (t0, t1, ...).]&]
 [s4;%% &]
 [s1; &]
+[s2;:Upp`:`:MultiDimMatrixIndex`:`:operator`(`)`(Args`.`.`.args`)const: [@(0.0.255) tem
+plate]_<[@(0.0.255) typename...]_[*@4 Args]>_[@(0.0.255) int]_[* operator()]([*@4 Args][@(0.0.255) .
+..]_args)_[@(0.0.255) const]&]
+[s3;%% Operator to get the index in the storage given index of the 
+columns.&]
+[s4;%% &]
+[s1; &]
 [s2;:Upp`:`:MultiDimMatrixIndex`:`:GetIndex`(int`,int`)const: [@(0.0.255) int]_[* GetInde
 x]([@(0.0.255) int]_[*@3 x], [@(0.0.255) int]_[*@3 y])_[@(0.0.255) const]&]
 [s3;%% Gets the index in the storage of a bidimensional matrix of 
@@ -77,4 +84,14 @@ index [%-*@3 x] and [%-*@3 y].&]
 [s2;:Upp`:`:MultiDimMatrixIndex`:`:GetNumAxis`(`)const: [@(0.0.255) int]_[* GetNumAxis]()
 _[@(0.0.255) const]&]
 [s3;%% Gets the number of dimensions.&]
+[s4;%% &]
+[s1; &]
+[s2;:Upp`:`:MultiDimMatrixIndex`:`:GetNumData`(`)const: [@(0.0.255) int]_[* GetNumData]()
+_[@(0.0.255) const]&]
+[s3;%% Returns the size of the storage.&]
+[s4; &]
+[s1; &]
+[s2;:Upp`:`:MultiDimMatrixIndex`:`:size`(`)const: [@(0.0.255) int]_[* size]()_[@(0.0.255) c
+onst]&]
+[s3;%% Returns the size of the storage.&]
 [s4; ]]

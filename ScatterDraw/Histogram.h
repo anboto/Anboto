@@ -65,6 +65,7 @@ public:
 			ret *= dim;
 		return ret;
 	}
+	int size() const			{return GetNumData();}
 	void Xmlize(XmlIO xml) {
 		xml
 			("axisDim", axisDim)	
