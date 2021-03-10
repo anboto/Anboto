@@ -6,7 +6,8 @@
 #include <STEM4U/Polynomial.h>
 #include <STEM4U/Sundials.h>
 #include <STEM4U/Integral.h>
-#include <STEM4U/TSP.h>
+#include <STEM4U/TravellingSalesman.h>
+#include <STEM4U/ShortestPath.h>
 #include <STEM4U/SeaWaves.h>
 #include <STEM4U/Utility.h>
 #include <STEM4U/CrossCorrelation.h>
@@ -116,8 +117,8 @@ T Loop() {
 	return val;
 }
 
-void TestTSP() {
-	UppLog() << "\nTravelling salesman";
+void TestTravellingSalesman() {
+	UppLog() << "\n\nTravelling salesman";
 
 	const Vector<Point_<int>> points = {{0, 0},{4, 4},{4, 0},{2, 4},{0, 4},{4, 2},{0, 2},{2, 0}};
 
@@ -134,7 +135,6 @@ void TestTSP() {
 	UppLog() << "\nOrder is: " << sorderp;
 	UppLog() << "\n";
 	VERIFY(sorderp == "0 -> 7 -> 2 -> 5 -> 1 -> 3 -> 4 -> 6 -> 0");
-
 		
 	// Example from https://developers.google.com/optimization/routing/tsp#printer
 	const Vector<Vector<int>> cities = {
@@ -166,6 +166,82 @@ void TestTSP() {
 	}
 	UppLog() << "\nOrder is: " << sorder;
 	VERIFY(sorder == "0 -> 7 -> 2 -> 3 -> 4 -> 12 -> 6 -> 8 -> 1 -> 11 -> 10 -> 5 -> 9 -> 0");
+}
+
+void TestShortestPath() {
+	UppLog() << "\n\nShortest path";
+	
+	using Seg = SegSP<int>;
+	
+	Vector<Vector<Seg>> adjList;
+	
+	adjList.Add() << Seg(1, 2) << Seg(2, 3);
+    adjList.Add() << Seg(0, 2) << Seg(5, 1);
+    adjList.Add() << Seg(0, 3) << Seg(5, 2);
+    adjList.Add() << Seg(1, 4) << Seg(4, 1) << Seg(6, 2);
+    adjList.Add() << Seg(3, 1) << Seg(5, 2) << Seg(6, 1);
+    adjList.Add() << Seg(1, 1) << Seg(2, 2) << Seg(4, 2) << Seg(6, 2);
+    adjList.Add() << Seg(3, 2) << Seg(4, 1) << Seg(5, 2);
+
+	int start = 0, end = 6;
+	
+	UppLog() << "\n\nDijkstra method";
+	{
+		Vector<Seg> dist = Dijkstra(adjList, start);
+		
+		UppLog() << Format("\nShortest distance from node %d", start);
+    	for(int i = 0; i < dist.size(); i++) 
+    		UppLog() << Format("\nto node %d: %d", i, dist[i].weight);
+		VERIFY(dist[end].weight == 5);
+	    int currnode = end;
+	    String sorder;
+	    sorder << end;
+	    while(currnode != start) {
+	        currnode = dist[currnode].node;
+	        sorder << " <- " << currnode;
+	    }
+		UppLog() << Format("\nThe path from %d to %d is: %s", start, end, sorder);
+		VERIFY(sorder == "6 <- 5 <- 1 <- 0"); 
+	}
+	UppLog() << "\n\nBellman-Ford method";
+	{
+		Vector<Seg> dist = Bellman_Ford(adjList, start);
+		
+		UppLog() << Format("\nShortest distance from node %d", start);
+    	for(int i = 0; i < dist.size(); i++) 
+    		UppLog() << Format("\nto node %d: %d", i, dist[i].weight);
+		VERIFY(dist[end].weight == 5);
+	    int currnode = end;
+	    String sorder;
+	    sorder << end;
+	    while(currnode != start) {
+	        currnode = dist[currnode].node;
+	        sorder << " <- " << currnode;
+	    }
+		UppLog() << Format("\nThe path from %d to %d is: %s", start, end, sorder);
+		VERIFY(sorder == "6 <- 5 <- 1 <- 0"); 
+	}
+	UppLog() << "\n\nFloyd-Warshall method";
+	{
+		const int inf = std::numeric_limits<int>::max();
+		Vector<Vector<int>> adjMatrix = {
+			{0,  2,  3,  inf,inf,inf,inf},
+			{2,  0,  inf,4,  inf,1,  inf},
+			{3,  inf,0,  inf,inf,2,  inf},
+			{inf,4,  inf,0,  1,  inf,2}, 
+			{inf,inf,inf,1,  0,  2,  1},
+			{inf,1  ,2,  inf,2,  0,  2},
+			{inf,inf,inf,2,  1,  2,  0}
+		};
+		
+		Vector<Vector<int>> dist = FloydWarshall(adjMatrix);
+
+    	UppLog() << "\nShortest distance for all nodes";
+    	for(int i = 0; i < dist.size(); i++)
+        	for(int j = 0; j < dist.size(); j++)
+            	UppLog() << "\nNode " << i << " to node " << j << ": " << dist[i][j];
+    
+	}
 }
 
 void TestRational() {
@@ -385,7 +461,8 @@ CONSOLE_APP_MAIN
 	TestMooring(test);
 	TestLocalFitting(test);
 	TestButterworth(test);
-	TestTSP();
+	TestTravellingSalesman();
+	TestShortestPath();
 	TestRational();
 	TestDAESolver();
 	TestIntInf();

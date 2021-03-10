@@ -1,5 +1,5 @@
-#ifndef _STEM4U_TSP_h_
-#define _STEM4U_TSP_h_
+#ifndef _TravellingSalesman_TSP_h_
+#define _TravellingSalesman_TSP_h_
 
 namespace Upp {
 	

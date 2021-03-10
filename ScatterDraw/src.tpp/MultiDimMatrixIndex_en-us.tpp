@@ -86,11 +86,6 @@ _[@(0.0.255) const]&]
 [s3;%% Gets the number of dimensions.&]
 [s4;%% &]
 [s1; &]
-[s2;:Upp`:`:MultiDimMatrixIndex`:`:GetNumData`(`)const: [@(0.0.255) int]_[* GetNumData]()
-_[@(0.0.255) const]&]
-[s3;%% Returns the size of the storage.&]
-[s4; &]
-[s1; &]
 [s2;:Upp`:`:MultiDimMatrixIndex`:`:size`(`)const: [@(0.0.255) int]_[* size]()_[@(0.0.255) c
 onst]&]
 [s3;%% Returns the size of the storage.&]

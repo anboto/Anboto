@@ -6,7 +6,8 @@ uses
 	Core,
 	plugin/sundials,
 	ScatterDraw,
-	Eigen;
+	Eigen,
+	Geom;
 
 file
 	Rational.cpp,
@@ -21,7 +22,9 @@ file
 	Integral.h,
 	Financial.cpp,
 	Financial.h,
-	TSP.h,
+	ShortestPath.cpp,
+	ShortestPath.h,
+	TravellingSalesman.h,
 	Permutations.cpp,
 	Permutations.h,
 	SeaWaves.cpp,
