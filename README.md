@@ -58,3 +58,7 @@ UPP    = "AnbotoParentFolder/Anboto;U++ParentFolder/upp/uppsrc;U++ParentFolder/u
 * Save the file as 'Anboto.var'
 
 From now on you will have 'Anboto' ready to be selected in the 'Select main package' dialog of TheIDE, and called from umk, the command line U++ make tool.
+
+## Changes log
+
+2021/03/10 STEM4U: New shortest path support: [Dijkstra](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm), [Bellman-Ford](https://en.wikipedia.org/wiki/Bellman%E2%80%93Ford_algorithm) and [Floyd-Warshall](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm)
