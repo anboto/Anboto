@@ -43,7 +43,7 @@ These external libraries are included as they have been adapted for immediate us
   * U++ParentFolder/upp
   * U++ParentFolder/upp/uppsrc
   * U++ParentFolder/upp/examples
-  *...
+  * ...
   * U++ParentFolder/Anboto
 * Go to U++ folder (normally 'upp') and open uppsrc.var with a text editor like Notepad. You will get something like:
 <pre>
@@ -56,4 +56,4 @@ UPP    = "AnbotoParentFolder/Anboto;U++ParentFolder/upp/uppsrc;U++ParentFolder/u
 </pre>
 * Save the file as 'Anboto.var'
 
-From now on you will have 'Anboto' ready to be selected in the 'Select main package' dialog of TheIDE, and called in the command line U++ make umk.
+From now on you will have 'Anboto' ready to be selected in the 'Select main package' dialog of TheIDE, and called from umk, the command line U++ make tool.
