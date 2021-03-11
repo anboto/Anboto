@@ -47,8 +47,8 @@ These external libraries are included as they have been adapted for immediate us
   * ...
   * U++ParentFolder/Anboto
 * Go to U++ folder (normally 'upp') and open uppsrc.var with a text editor like Notepad.
-  * In Windows, it will be in upp folder
-  * In Linux, it will be in upp/.config/u++/theide 
+  * In Windows, it will be in 'upp' folder
+  * In Linux, it will be in 'upp/.config/u++/theide' folder 
 * uppsrc.var will contain something like:
 <pre>
 UPP    = "U++ParentFolder/upp/uppsrc";
