@@ -43,6 +43,7 @@ These external libraries are included as they have been adapted for immediate us
   * U++ParentFolder/upp
   * U++ParentFolder/upp/uppsrc
   * U++ParentFolder/upp/examples
+  * U++ParentFolder/upp/bazaar
   * ...
   * U++ParentFolder/Anboto
 * Go to U++ folder (normally 'upp') and open uppsrc.var with a text editor like Notepad. You will get something like:
