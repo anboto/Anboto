@@ -39,16 +39,21 @@ These external libraries are included as they have been adapted for immediate us
 * plugin/sundials
 
 ## Install
-* Clone or copy Anboto to your computer. It will normally be placed in the same folder as U++.
+* Clone or copy Anboto to your computer. The best placeto copy Anboto is the same folder as U++. A normal structure could be:
+  * U++ParentFolder/upp
+  * U++ParentFolder/upp/uppsrc
+  * U++ParentFolder/upp/examples
+  *...
+  * U++ParentFolder/Anboto
 * Go to U++ folder (normally 'upp') and open uppsrc.var with a text editor like Notepad. You will get something like:
 <pre>
-UPP = "%U++ParentFolder$/upp/uppsrc";
-OUTPUT = "%U++ParentFolder$/upp/out";
+UPP    = "U++ParentFolder/upp/uppsrc";
+OUTPUT = "U++ParentFolder/upp/out";
 </pre>
-* Replace content of "UPP = ..." line with:
+* Replace the content of "UPP = ..." line with:
 <pre>
-UPP = "%AnbotoParentFolder$/Anboto;%U++ParentFolder$/upp/uppsrc;%U++ParentFolder$/upp/bazaar";
+UPP    = "AnbotoParentFolder/Anboto;U++ParentFolder/upp/uppsrc;U++ParentFolder/upp/bazaar";
 </pre>
 * Save the file as 'Anboto.var'
 
-From now on you will have 'Anboto' ready to be selected in the 'Select main package' dialog.
+From now on you will have 'Anboto' ready to be selected in the 'Select main package' dialog of TheIDE, and called in the command line U++ make umk.
