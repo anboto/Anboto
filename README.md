@@ -60,4 +60,5 @@ From now on you will have 'Anboto' ready to be selected in the 'Select main pack
 
 ## Changes log
 
+2021/03/12 ScatterCtrl: Dark desktop themes support
 2021/03/10 STEM4U: New shortest path support: [Dijkstra](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm), [Bellman-Ford](https://en.wikipedia.org/wiki/Bellman%E2%80%93Ford_algorithm) and [Floyd-Warshall](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm)
