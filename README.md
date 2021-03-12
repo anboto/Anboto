@@ -52,7 +52,7 @@ OUTPUT = "U++ParentFolder/upp/out";
 </pre>
 * Replace the content of "UPP = ..." line with:
 <pre>
-UPP    = "AnbotoParentFolder/Anboto;U++ParentFolder/upp/uppsrc;U++ParentFolder/upp/bazaar";
+UPP    = "U++ParentFolder/Anboto;U++ParentFolder/upp/uppsrc;U++ParentFolder/upp/bazaar";
 </pre>
 * Save the file as 'Anboto.var'
 
