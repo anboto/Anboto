@@ -41,10 +41,6 @@ These external libraries are included as they have been adapted for immediate us
 ## Install
 * Clone or copy Anboto to your computer. The best place to copy Anboto is the same folder as U++. A normal structure could be:
   * U++ParentFolder/upp
-  * U++ParentFolder/upp/uppsrc
-  * U++ParentFolder/upp/examples
-  * U++ParentFolder/upp/bazaar
-  * ...
   * U++ParentFolder/Anboto
 * Go to U++ folder (normally 'upp') and open uppsrc.var with a text editor like Notepad.
   * In Windows, it will be in 'upp' folder
