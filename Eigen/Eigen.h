@@ -16,7 +16,7 @@
 #define eigen_assert(x) ASSERT(x)
 
 #undef Success  
-#include "Eigen/Dense"
+#include <plugin/eigen/Eigen/Dense>
 #include <plugin/eigen/unsupported/Eigen/NonLinearOptimization>
 #undef Complex
 #include <plugin/eigen/unsupported/Eigen/FFT>

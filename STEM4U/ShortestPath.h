@@ -1,6 +1,7 @@
 #ifndef _STEM4U_ShortestPath_h_
 #define _STEM4U_ShortestPath_h_
 
+#include <ScatterDraw/MultiDimMatrixIndex.h>
 
 namespace Upp {
 
@@ -97,7 +98,7 @@ Vector<SegSP<T>> Dijkstra(const Vector<Vector<SegSP<T>>> &adjList, int start) {
 }
 
 template <typename T>
-Vector<SegSP<T>> Bellman_Ford(const Vector<Vector<SegSP<T>>> &adjList, int start) {
+Vector<SegSP<T>> BellmanFord(const Vector<Vector<SegSP<T>>> &adjList, int start) {
     Vector<SegSP<T>> dist(adjList.size());
     
     int n = int(adjList.size());

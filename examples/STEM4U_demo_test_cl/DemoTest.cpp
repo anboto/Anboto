@@ -205,7 +205,7 @@ void TestShortestPath() {
 	}
 	UppLog() << "\n\nBellman-Ford method";
 	{
-		Vector<Seg> dist = Bellman_Ford(adjList, start);
+		Vector<Seg> dist = BellmanFord(adjList, start);
 		
 		UppLog() << Format("\nShortest distance from node %d", start);
     	for(int i = 0; i < dist.size(); i++) 

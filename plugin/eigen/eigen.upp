@@ -6,7 +6,7 @@ uses
 options(MSC) /bigobj;
 
 include
-	../Eigen;
+	.;
 
 file
 	Eigen\Cholesky,

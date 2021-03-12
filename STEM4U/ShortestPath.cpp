@@ -1,6 +1,5 @@
 #include <Core/Core.h>
 #include <Geom/Geom.h>
-#include <ScatterDraw/MultiDimMatrixIndex.h>
 #include "ShortestPath.h"
 
 namespace Upp {

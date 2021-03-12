@@ -495,9 +495,9 @@ Color ScatterDraw::GetNewColor(int index, int version) {
 					 Color(86,117,119), Color(188,91,165), Color(124,120,216), Color(195,208,119), Color(79,46,75)};
 	if (index < 20) {
 		if (version == 0) 
-			return old[index];
+			return AdjustIfDark(old[index]);
 		else
-			return nwc[index];
+			return AdjustIfDark(nwc[index]);
 	} else
 		return Color(Random(), Random(), Random());
 }
