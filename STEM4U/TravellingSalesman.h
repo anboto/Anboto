@@ -75,34 +75,8 @@ T TSP_NearestNeighbor(const Vector<T> &distances, int sz, Vector<int> &order) {
 	return total;
 }
 
-void OrderToConnections(const Vector<int> &order, Vector<int> &left, Vector<int> &right) {
-	left = clone(order);
-	left.Remove(left.size()-1);
-	right = clone(order);
-	right.Remove(0);
-}
-
-void ConnectionsToOrder(const Vector<int> &left, const Vector<int> &right, Vector<int> &order) {
-	int next = 0;
-	Vector<bool> removed(left.size(), false);
-	for (int id = 0; id <= order.size(); id++) {
-		for (int i = 0; i < left.size(); ++i) {
-			if (!removed[i]) {
-				if (left[i] == next) { 
-					order[id] = next;
-					next = right[i];
-					removed[i] = true;
-					break;
-				} else if (right[i] == next) {
-					order[id] = next;
-					next = left[i];
-					removed[i] = true;
-					break;
-				}
-			}
-		}
-	}
-}
+void OrderToConnections(const Vector<int> &order, Vector<int> &left, Vector<int> &right);
+void ConnectionsToOrder(const Vector<int> &left, const Vector<int> &right, Vector<int> &order);
 	
 template<typename T>
 T TSP_2_Opt(const Vector<T> &distances, int sz, Vector<int> &order) {

@@ -778,7 +778,7 @@ void Surface::GetLimits() {
 
 void Surface::JointTriangularPanels(int ip0, int ip1, int inode0, int inode1) {
 	Panel &pan = panels[ip0];
-	int iip0, iip1;
+	int iip0 = -1, iip1 = -1;
 	for (int i = 0; i < 4; ++i) {
 		if (pan.id[i] == inode0 || pan.id[i] == inode1)
 			;
@@ -787,6 +787,8 @@ void Surface::JointTriangularPanels(int ip0, int ip1, int inode0, int inode1) {
 			break;
 		}
 	}
+	if (iip0 < 0)
+		return;		// Error?
 	Panel &pan1 = panels[ip1];
 	for (int i = 0; i < 4; ++i) {
 		if (pan1.id[i] == inode0 || pan1.id[i] == inode1)
@@ -796,6 +798,8 @@ void Surface::JointTriangularPanels(int ip0, int ip1, int inode0, int inode1) {
 			break;
 		}
 	}
+	if (iip1 < 0)
+		return;		// Error?
 	pan.id[0] = iip0;
 	pan.id[1] = inode0;
 	pan.id[2] = iip1;

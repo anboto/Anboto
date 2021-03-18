@@ -4,9 +4,8 @@
 
 namespace Upp {
 
-void MapShortestPath::InitMap(const Vector<Vector<Pointf>> &perimetersAllowed,
-						   	  const Vector<Vector<Pointf>> &perimetersForbidden, 
-						   	  int rows, int cols) {
+void MapShortestPath::Init(const Vector<Vector<Pointf>> &perimetersAllowed,
+						   const Vector<Vector<Pointf>> &perimetersForbidden, int rows, int cols) {
     this->rows = rows;
     this->cols = cols;
     
@@ -51,11 +50,11 @@ void MapShortestPath::InitMap(const Vector<Vector<Pointf>> &perimetersAllowed,
     double diag = sqrt(deltaw*deltaw + deltah*deltah);
     for (int r = 0; r < rows; ++r) {
     	for (int c = 0; c < cols; ++c) {
-    		int id = indx(r, c);
-			Vector<SegSP<double>> &lst = adjList[id];		
+    		int id = indx(r, c);	
 			double wx   = map[id] ? deltaw : DBL_MAX;	    		
 			double wy   = map[id] ? deltah : DBL_MAX;	    		
 			double wang = map[id] ? diag   : DBL_MAX;
+			Vector<SegSP<double>> &lst = adjList[id];	
 			if (r > 0) {
 				int id2 = indx(r-1, c);
 				lst << SegSP<double>(id2, map[id2] ? wy : DBL_MAX);
@@ -90,11 +89,6 @@ void MapShortestPath::InitMap(const Vector<Vector<Pointf>> &perimetersAllowed,
 			}
     	}
 	}
-}
-
-void MapShortestPath::SetInitPoint(const Pointf &end) {
-	idFrom = ClosestId(end);
-	dist = Dijkstra(adjList, idFrom);
 }
 
 int MapShortestPath::ClosestId(const Pointf &point) const {

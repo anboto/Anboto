@@ -86,7 +86,7 @@ Vector<SegSP<T>> Dijkstra(const Vector<Vector<SegSP<T>>> &adjList, int start) {
       
         for(auto &seg : adjList[u]) {
             int v = seg.node;
-            T sum = SumWeight<T>(dist[u].weight, seg.weight);
+            T sum = dist[u].weight + seg.weight;
             if(dist[v].weight > sum) {
                 dist[v].weight = sum;
                 dist[v].node = u;
@@ -131,7 +131,7 @@ Vector<Vector<T>> FloydWarshall(Vector<Vector<T>> &adjMatrix) {
         for(int u = 0; u < n; u++) {
             Vector<T> &dist_u = dist[u];
             for(int v = 0; v < n; v++) {
-                T sum = SumWeight<T>(dist_u[w], dist_w[v]);
+                T sum = dist_u[w] + dist_w[v];
                 if(dist_u[v] > sum)
                     dist_u[v] = sum;
             }
@@ -142,13 +142,21 @@ Vector<Vector<T>> FloydWarshall(Vector<Vector<T>> &adjMatrix) {
 
 class MapShortestPath {
 public:
-	void InitMap(const Vector<Vector<Pointf>> &perimetersAllowed,
-				 const Vector<Vector<Pointf>> &perimetersForbidden, int rows = 100, int cols = 100);
-	void InitMap(const Vector<Vector<Pointf>> &perimetersAllowed, int rows = 100, int cols = 100) {
-		Vector<Vector<Pointf>> perimetersForbidden;
-		InitMap(perimetersAllowed, perimetersForbidden, rows, cols);
+	MapShortestPath(const Vector<Vector<Pointf>> &perimetersAllowed,
+				    const Vector<Vector<Pointf>> &perimetersForbidden, int rows = 100, int cols = 100) {
+		Init(perimetersAllowed, perimetersForbidden, rows, cols);
 	}
-	void SetInitPoint(const Pointf &end);
+	MapShortestPath(const Vector<Vector<Pointf>> &perimetersAllowed, int rows = 100, int cols = 100) {
+		Init(perimetersAllowed, rows, cols);
+	}
+	void Init(const Vector<Vector<Pointf>> &perimetersAllowed,
+			  const Vector<Vector<Pointf>> &perimetersForbidden, int rows = 100, int cols = 100);
+	void Init(const Vector<Vector<Pointf>> &perimetersAllowed, int rows = 100, int cols = 100) {
+		Vector<Vector<Pointf>> perimetersForbidden;
+		Init(perimetersAllowed, perimetersForbidden, rows, cols);
+	}
+	void SetInitPoint(int idFrom) 			{dist = Dijkstra(adjList, idFrom);}
+	void SetInitPoint(const Pointf &end) 	{SetInitPoint(ClosestId(end));}
 	
 	double Weight(int end) const {return dist[end].weight;}		
 	int ClosestId(const Pointf &point) const;

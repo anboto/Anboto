@@ -448,7 +448,8 @@ void TestXCorr() {
 void TestLocalFitting(bool test);
 void TestMooring(bool test);
 void TestButterworth(bool test);
-
+void TestCombinations();
+	
 CONSOLE_APP_MAIN 
 {
 	StdLogSetup(LOG_COUT|LOG_FILE);
@@ -457,6 +458,8 @@ CONSOLE_APP_MAIN
 	
 	bool test = CommandLine().size() > 0 && CommandLine()[0] == "-test";
 	
+	TestCombinations();
+/*	
 	TestXCorr();
 	TestMooring(test);
 	TestLocalFitting(test);
@@ -469,7 +472,7 @@ CONSOLE_APP_MAIN
     TestPolynomial();
     TestIntegral();
     TestSeaWaves();
-    
+  */  
     UppLog() << "\n\nAll tests passed\n";
     
 	#ifdef flagDEBUG

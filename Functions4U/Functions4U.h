@@ -240,7 +240,7 @@ template<class T>
 inline T ToDeg(T angle)	{return angle*180./M_PI;}
 template<class T>
 inline T atan2_360(T y, T x) {
-	T ret = ToDeg(atan2<T>(y, x));
+	T ret = ToDeg(atan2(y, x));
 	return ret > 90 ? 450 - ret : 90 - ret; 
 }
 
@@ -626,7 +626,7 @@ struct TempAssign {
 		*variable = oldvalue;
 	}
 	
-	T *variable, oldvalue;
+	T oldvalue, *variable;
 };
 
 /*						Replaced with std::atomic

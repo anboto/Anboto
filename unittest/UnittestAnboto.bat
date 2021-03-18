@@ -1,59 +1,37 @@
 
-md test
+md .test
+del .test\*.* /q
 
-umk Anboto examples/Functions4U_demo_cl CLANGx64 -r   test\Functions4U_DemoCLANGx64.exe
+umk Anboto examples/Functions4U_demo_cl %1 -r   .\.test\Functions4U_Demo.exe
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-test\Functions4U_DemoCLANGx64.exe	
-@IF %ERRORLEVEL% NEQ 0  EXIT /B 1
-umk Anboto examples/Functions4U_demo_cl MSBT19x64 -r   test\Functions4U_DemoMSBT19x64.exe	
-@IF %ERRORLEVEL% NEQ 0  EXIT /B 1
-test\Functions4U_DemoMSBT19x64.exe	
+.\.test\Functions4U_Demo.exe	
 @IF %ERRORLEVEL% NEQ 0  EXIT /B 1
 
-umk Anboto examples/SysInfo_demo_cl CLANGx64 -r   test\SysInfo_demo_consoleCLANGx64.exe
+umk Anboto examples/SysInfo_demo_cl %1 -r   .\.test\SysInfo_demo_console.exe
 @IF %ERRORLEVEL% NEQ 0  EXIT /B 1
-test\SysInfo_demo_consoleCLANGx64.exe	
+.\.test\SysInfo_demo_console.exe	
+@IF %ERRORLEVEL% NEQ 0  EXIT /B 1
+
+umk Anboto examples/STEM4U_demo_test_cl %1 -r   .\.test\STEM4U_Demo.exe
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-umk Anboto examples/SysInfo_demo_cl MSBT19x64 -r   test\SysInfo_demo_consoleMSBT19x64.exe	
-@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-test\SysInfo_demo_consoleMSBT19x64.exe	
+.\.test\STEM4U_Demo.exe -test	
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
-umk Anboto examples/STEM4U_demo_test_cl CLANGx64 -r   test\STEM4U_DemoCLANGx64.exe
+umk Anboto examples/Eigen_demo_cl %1 -r   .\.test\Eigen_Demo.exe
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-test\STEM4U_DemoCLANGx64.exe -test	
-@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-umk Anboto examples/STEM4U_demo_test_cl MSBT19x64 -r   test\STEM4U_DemoMSBT19x64.exe	
-@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-test\STEM4U_DemoMSBT19x64.exe -test
+.\.test\Eigen_Demo.exe	
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
-umk Anboto examples/Eigen_demo_cl CLANGx64 -r   test\Eigen_DemoCLANGx64.exe
+umk Anboto examples/ScatterDraw_demo_cl %1 -r   .\.test\ScatterDraw_Demo.exe
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-test\Eigen_DemoCLANGx64.exe	
-@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-umk Anboto examples/Eigen_demo_cl MSBT19x64 -r   test\Eigen_DemoMSBT19x64.exe	
-@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-test\Eigen_DemoMSBT19x64.exe	
+.\.test\ScatterDraw_Demo.exe	
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
-umk Anboto examples/ScatterDraw_demo_cl CLANGx64 -r   test\ScatterDraw_DemoCLANGx64.exe
-@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-test\ScatterDraw_DemoCLANGx64.exe	
-@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-umk Anboto examples/ScatterDraw_demo_cl MSBT19x64 -r   test\ScatterDraw_DemoMSBT19x64.exe
-@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-test\ScatterDraw_DemoMSBT19x64.exe	
+umk Anboto examples/OfficeAutomation_demo_cl %1 -r   .\.test\OfficeAutomation_demo_console.exe
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
-umk Anboto examples/OfficeAutomation_demo_cl CLANGx64 -r   test\OfficeAutomation_demo_consoleCLANGx64.exe
-@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-umk Anboto examples/OfficeAutomation_demo_cl MSBT19x64 -r  test\OfficeAutomation_demo_consoleMSBT19x64.exe
+umk Anboto examples/ScatterCtrl_demo %1 -r   .\.test\ScatterCtrl_Demo.exe
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
-umk Anboto examples/ScatterCtrl_demo CLANGx64 -r   test\ScatterCtrl_DemoCLANGx64.exe
-@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-umk Anboto examples/ScatterCtrl_demo MSBT19x64 -r   test\ScatterCtrl_DemoMSBT19x64.exe
-@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
 

@@ -11,7 +11,8 @@ uses
 file
 	DemoTest.cpp,
 	TestMooring.cpp,
-	TestFilters.cpp;
+	TestFilters.cpp,
+	TestCombinations.cpp;
 
 mainconfig
 	"" = "";
