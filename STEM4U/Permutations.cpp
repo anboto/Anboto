@@ -3,6 +3,7 @@
 #include <Eigen/Eigen.h>
 #include "Permutations.h"
 
+
 namespace Upp {
 
 using namespace Eigen;
@@ -29,5 +30,5 @@ Buffer<Buffer<int>> PermutationsWithRepetition(int nVals, int nOptionsVal) {
 	}
 	return list;
 }
-
+	
 }

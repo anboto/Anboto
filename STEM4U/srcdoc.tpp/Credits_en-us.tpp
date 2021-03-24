@@ -21,4 +21,11 @@ here ][^https`:`/`/stackoverflow`.com`/questions`/17675053`/matlabs`-filtfilt`-a
 ttps://stackoverflow.com/questions/17675053/matlabs`-filtfilt`-algorithm/27270420#
 27270420]&]
 [s0;2 &]
-[s0;2 ]]
+[s0;2 &]
+[s0; [*2 Combinations]&]
+[s0;2 &]
+[s0; [2 Permutations and combinations library developed by Howard Hinnant 
+on ][^https`:`/`/github`.com`/HowardHinnant`/combinations^2 https://github.com/Howar
+dHinnant/combinations][2 .]&]
+[s0; [2 Combinations license is ][^http`:`/`/www`.boost`.org`/LICENSE`_1`_0`.txt^2 Boost 
+v. 1.0]]]

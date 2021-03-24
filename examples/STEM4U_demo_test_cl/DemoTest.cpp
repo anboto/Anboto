@@ -459,7 +459,6 @@ CONSOLE_APP_MAIN
 	bool test = CommandLine().size() > 0 && CommandLine()[0] == "-test";
 	
 	TestCombinations();
-/*	
 	TestXCorr();
 	TestMooring(test);
 	TestLocalFitting(test);
@@ -472,7 +471,7 @@ CONSOLE_APP_MAIN
     TestPolynomial();
     TestIntegral();
     TestSeaWaves();
-  */  
+  
     UppLog() << "\n\nAll tests passed\n";
     
 	#ifdef flagDEBUG

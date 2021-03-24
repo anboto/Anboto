@@ -155,7 +155,7 @@ public:
 		Vector<Vector<Pointf>> perimetersForbidden;
 		Init(perimetersAllowed, perimetersForbidden, rows, cols);
 	}
-	void SetInitPoint(int idFrom) 			{dist = Dijkstra(adjList, idFrom);}
+	void SetInitPoint(int _idFrom) 			{dist = Dijkstra(adjList, idFrom = _idFrom);}
 	void SetInitPoint(const Pointf &end) 	{SetInitPoint(ClosestId(end));}
 	
 	double Weight(int end) const {return dist[end].weight;}		
