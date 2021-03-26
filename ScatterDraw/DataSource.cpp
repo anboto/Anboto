@@ -812,8 +812,16 @@ double LinearInterpolate(double x, const VectorXd &vecx, const VectorXd &vecy) {
 }
 
 void Resample(const VectorXd &x, const VectorXd &y, VectorXd &rrx, VectorXd &rry, double srate) {
+	ASSERT(x.size() > 0 && y.size() > 0);
 	VectorXd rx, ry;
 		
+	if (x.size() == 0 || y.size() == 0)
+		return;
+	if (x.size() == 1 || y.size() == 1) {
+		rrx = clone(rrx);
+		rry = clone(rry);
+		return;
+	}
 	double delta = x[x.size()-1] - x[0];
 	if (!IsNum(srate)) 
 		srate = delta/(x.size()-1);

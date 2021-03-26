@@ -99,11 +99,11 @@ Vector<SegSP<T>> Dijkstra(const Vector<Vector<SegSP<T>>> &adjList, int start) {
 
 template <typename T>
 Vector<SegSP<T>> BellmanFord(const Vector<Vector<SegSP<T>>> &adjList, int start) {
-    Vector<SegSP<T>> dist(adjList.size());
+	Vector<SegSP<T>> dist(adjList.size());
     
-    int n = int(adjList.size());
+	int n = int(adjList.size());
     for(int i = 0; i < n; i++)
-        dist[i] = SegSP<T>(i, std::numeric_limits<T>::max());
+		dist[i] = SegSP<T>(i, std::numeric_limits<T>::max());
 	dist[start] = SegSP<T>(start, 0);
  
     for(int i = 0; i < n-1; i++) {
