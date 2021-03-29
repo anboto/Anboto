@@ -818,17 +818,17 @@ void Resample(const VectorXd &x, const VectorXd &y, VectorXd &rrx, VectorXd &rry
 	if (x.size() == 0 || y.size() == 0)
 		return;
 	if (x.size() == 1 || y.size() == 1) {
-		rrx = clone(rrx);
-		rry = clone(rry);
+		rrx = clone(x);
+		rry = clone(y);
 		return;
 	}
-	double delta = x[x.size()-1] - x[0];
+	double range = x[x.size()-1] - x[0];
 	if (!IsNum(srate)) 
-		srate = delta/(x.size()-1);
-	int len = int(delta/srate) + 1;
-	rx.resize(len);
-	ry.resize(len);
-	for (int i = 0; i < len; ++i) { 
+		srate = range/(x.size()-1);
+	int num = int(range/srate) + 1;
+	rx.resize(num);
+	ry.resize(num);
+	for (int i = 0; i < num; ++i) { 
 		rx[i] = x[0] + i*srate;
 		ry[i] = LinearInterpolate(rx[i], x, y);
 	}
@@ -838,16 +838,25 @@ void Resample(const VectorXd &x, const VectorXd &y, VectorXd &rrx, VectorXd &rry
 
 void Resample(const VectorXd &x, const VectorXd &y, const VectorXd &z, 
 			  VectorXd &rrx, VectorXd &rry, VectorXd &rrz, double srate) {
+	ASSERT(x.size() > 0 && y.size() > 0 && z.size() > 0);
 	VectorXd rx, ry, rz;
-		
-	double delta = x[x.size()-1] - x[0];
+	
+	if (x.size() == 0 || y.size() == 0 || z.size() == 0)
+		return;
+	if (x.size() == 1 || y.size() == 1 || z.size() == 1) {
+		rrx = clone(x);
+		rry = clone(y);
+		rrz = clone(z);
+		return;
+	}	
+	double range = x[x.size()-1] - x[0];
 	if (!IsNum(srate)) 
-		srate = delta/(x.size()-1);
-	int len = int(delta/srate) + 1;
-	rx.resize(len);
-	ry.resize(len);
-	rz.resize(len);
-	for (int i = 0; i < len; ++i) { 
+		srate = range/(x.size()-1);
+	int num = int(range/srate) + 1;
+	rx.resize(num);
+	ry.resize(num);
+	rz.resize(num);
+	for (int i = 0; i < num; ++i) { 
 		rx[i] = x[0] + i*srate;
 		ry[i] = LinearInterpolate(rx[i], x, y);
 		rz[i] = LinearInterpolate(rx[i], x, z);

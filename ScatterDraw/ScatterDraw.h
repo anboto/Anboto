@@ -440,7 +440,10 @@ public:
 	ScatterDraw& SetMode(int _mode = MD_ANTIALIASED)		{this->mode = _mode; Refresh(); return *this;};
 	int GetMode()											{return mode;};
 	
-	ScatterDraw &ZoomToFit(bool horizontal = true, bool vertical = false, double factor = 0);
+	ScatterDraw &ZoomToFit(bool horizontal = true, double factorH = 0, bool vertical = false, double factorV = 0);
+	ScatterDraw &ZoomToFit(bool horizontal = true, bool vertical = false, double factor = 0) {
+		return ZoomToFit(horizontal, factor, vertical, factor);
+	}
 	//ScatterDraw &ZoomToFit(bool horizontal, double minx, double maxx, bool vertical, double minxy, double maxy, 
 	//				bool vertical2, double miny2, double maxy2, double factor);
 	//ScatterDraw &ZoomToFitSmart(bool horizontal, double minx, double maxx, bool vertical, double minxy, double maxy, 
@@ -1241,7 +1244,7 @@ private:
 	static void ParseTextMultiline(const String &text, Upp::Font &fnt, 
 								   Upp::Vector <String> &texts, Upp::Vector <Size> &sizes);
 	
-	ScatterDraw &DoFitToData(bool horizontal, bool vertical, double factor);
+	ScatterDraw &DoFitToData(bool horizontal, double factorH, bool vertical, double factorV);
 	//ScatterDraw &DoFitToData(bool horizontal, double minx, double maxx, bool vertical, double minxy, double maxy, 
 	//				bool vertical2, double miny2, double maxy2, double factor = 0);
 	//ScatterDraw &DoFitToDataSmart(bool horizontal, double minx, double maxx, bool vertical, double minxy, double maxy, 

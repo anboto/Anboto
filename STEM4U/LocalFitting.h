@@ -1,6 +1,8 @@
 #ifndef _STEM4U_LocalFitting_h_
 #define _STEM4U_LocalFitting_h_
 
+#include "Utility.h"
+
 namespace Upp {
 using namespace Eigen;
 
@@ -77,9 +79,9 @@ void LocalFitting(const Range1 &x, const Range1 &y, Range2 &resx,
 		from = x[0];
 	if (IsNull(to))
 		to = x[x.size()-1];
-	ASSERT(x[0] <= from && x[x.size()-1] >= to);
+	//ASSERT(x[0] <= from && x[x.size()-1] >= to);
 	
-	resx.setLinSpaced(num, from, to);
+	LinSpaced(resx, num, from, to);
 	
 	return LocalFitting(x, y, resx, resy, deg, windowsize, weightless);
 }

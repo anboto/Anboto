@@ -178,7 +178,7 @@ public:
 
 class DampedSinEquation : public ExplicitEquation {
 public:
-	DampedSinEquation() 					{coeff.Clear();	coeff << 0. << 0.1 << 0.1 << 0.1 << 0.1;}
+	DampedSinEquation() 					{coeff.Clear();	coeff << 0. << 0.1 << 0.1 << 0.1 << 0.;}
 	DampedSinEquation(double offset, double A, double lambda, double w, double phi) {Init(offset, A, lambda, w, phi);}
 	void Init(double offset, double A, double lambda, double w, double phi) 	{coeff.Clear();	coeff << offset << A << lambda << w << phi;}
 	double f(double x)				{return coeff[0] + coeff[1]*exp(-coeff[2]*x)*cos(coeff[3]*x + coeff[4]);}
@@ -192,7 +192,7 @@ public:
 	void SetDegree(int )						{NEVER();}
 	virtual void GuessCoeff(DataSource &series)	{
 		coeff[0] = series.AvgY();	
-		coeff[2] = series.SinEstim_Amplitude(coeff[0]);
+		coeff[1] = series.SinEstim_Amplitude(coeff[0]);
 		double frequency, phase;
 		if (series.SinEstim_FreqPhase(frequency, phase, coeff[0])) {
 			coeff[3] = frequency;

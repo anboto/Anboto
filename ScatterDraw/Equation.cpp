@@ -83,7 +83,7 @@ double ExplicitEquation::R2Y(DataSource &serie, double mean) {
 	return 1 - sse/sst;
 }
 
-int ExplicitEquation::maxFitFunctionEvaluations = 1000;
+int ExplicitEquation::maxFitFunctionEvaluations = 2000;
 
 
 double PolynomialEquation::f(double x) {

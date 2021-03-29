@@ -313,21 +313,21 @@ ScatterDraw &ScatterDraw::SetXYMin(double xmin, double ymin, double ymin2) {
 	return *this;
 }
 
-ScatterDraw &ScatterDraw::ZoomToFit(bool horizontal, bool vertical, double factor) {
+ScatterDraw &ScatterDraw::ZoomToFit(bool horizontal, double factorH, bool vertical, double factorV) {
 	if (linkedMaster) {
-		linkedMaster->ZoomToFit(horizontal, vertical, factor);
+		linkedMaster->ZoomToFit(horizontal, factorH, vertical, factorV);
 		return *this;
 	}
-	DoFitToData(horizontal, vertical, factor);
+	DoFitToData(horizontal, factorH, vertical, factorV);
 	if (!linkedCtrls.IsEmpty()) {
 		for (int i = 0; i < linkedCtrls.GetCount(); ++i)
-	    	linkedCtrls[i]->DoFitToData(horizontal, vertical, factor);
+	    	linkedCtrls[i]->DoFitToData(horizontal, factorH, vertical, factorV);
 	}
 	WhenZoomToFit();
 	return *this;
 }
 			
-ScatterDraw &ScatterDraw::DoFitToData(bool horizontal, bool vertical, double factor) {
+ScatterDraw &ScatterDraw::DoFitToData(bool horizontal, double factorH, bool vertical, double factorV) {
 	double minx, maxx, miny, miny2, maxy, maxy2;
 	minx = miny = miny2 = -DOUBLE_NULL;
 	maxx = maxy = maxy2 = DOUBLE_NULL;
@@ -346,7 +346,7 @@ ScatterDraw &ScatterDraw::DoFitToData(bool horizontal, bool vertical, double fac
 					maxx = max(maxx, mx);
 			}
 			if (minx != -DOUBLE_NULL && maxx != DOUBLE_NULL) {
-				double deltaX = (maxx - minx)*factor;
+				double deltaX = (maxx - minx)*factorH;
 				minx -= deltaX;
 				maxx += deltaX;
 			}
@@ -378,12 +378,12 @@ ScatterDraw &ScatterDraw::DoFitToData(bool horizontal, bool vertical, double fac
 				}
 			}
 			if (miny != -DOUBLE_NULL && maxy != DOUBLE_NULL) {
-				double deltaY = (maxy - miny)*factor;
+				double deltaY = (maxy - miny)*factorV;
 				miny -= deltaY;
 				maxy += deltaY;		
 			}
 			if (miny2 != -DOUBLE_NULL && maxy2 != DOUBLE_NULL) {
-				double deltaY2 = (maxy2 - miny2)*factor;
+				double deltaY2 = (maxy2 - miny2)*factorV;
 				miny2 -= deltaY2;
 				maxy2 += deltaY2;		
 			}
