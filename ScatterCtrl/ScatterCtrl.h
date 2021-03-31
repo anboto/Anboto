@@ -511,7 +511,7 @@ public:
 		if (dataInternal)
 			scatter.SetDataSourceInternal();
 		if (zoomToFit)
-			scatter.ZoomToFit(true, 0, true, .05);
+			scatter.ZoomToFit(true, true, 0, .05);
 		TopWindow::SetRect(0, 0, width, height);
 		TopWindow::OpenMain();
 		Ctrl::ProcessEvents();

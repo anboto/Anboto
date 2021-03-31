@@ -440,9 +440,9 @@ public:
 	ScatterDraw& SetMode(int _mode = MD_ANTIALIASED)		{this->mode = _mode; Refresh(); return *this;};
 	int GetMode()											{return mode;};
 	
-	ScatterDraw &ZoomToFit(bool horizontal = true, double factorH = 0, bool vertical = false, double factorV = 0);
+	ScatterDraw &ZoomToFit(bool horizontal, bool vertical, double factorH, double factorV);
 	ScatterDraw &ZoomToFit(bool horizontal = true, bool vertical = false, double factor = 0) {
-		return ZoomToFit(horizontal, factor, vertical, factor);
+		return ZoomToFit(horizontal, vertical, factor, factor);
 	}
 	//ScatterDraw &ZoomToFit(bool horizontal, double minx, double maxx, bool vertical, double minxy, double maxy, 
 	//				bool vertical2, double miny2, double maxy2, double factor);

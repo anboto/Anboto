@@ -313,7 +313,7 @@ ScatterDraw &ScatterDraw::SetXYMin(double xmin, double ymin, double ymin2) {
 	return *this;
 }
 
-ScatterDraw &ScatterDraw::ZoomToFit(bool horizontal, double factorH, bool vertical, double factorV) {
+ScatterDraw &ScatterDraw::ZoomToFit(bool horizontal, bool vertical, double factorH, double factorV) {
 	if (linkedMaster) {
 		linkedMaster->ZoomToFit(horizontal, factorH, vertical, factorV);
 		return *this;
