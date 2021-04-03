@@ -11,6 +11,7 @@
 #include <STEM4U/SeaWaves.h>
 #include <STEM4U/Utility.h>
 #include <STEM4U/CrossCorrelation.h>
+#include <ScatterDraw/DataSource.h>
 
 using namespace Upp;
 
@@ -445,6 +446,22 @@ void TestXCorr() {
 	VERIFY(CompareDecimals(lags, realLags, 4));
 }
 
+void TestOthers() {
+	double x, y, dy, d2y;
+	
+	x = 3;
+	LinearInterpolate(x, 2., 4., 1., 5., y, dy);
+	VERIFY(EqualDecimals(y, 3., 10));
+	VERIFY(EqualDecimals(dy, 2., 10));
+	
+	x = 4;
+	QuadraticInterpolate(x, 2., 4., 5., 1., 5., 3., y, dy, d2y);
+	VERIFY(EqualDecimals(y, 5., 10));
+	VERIFY(EqualDecimals(dy,  -0.666666666666, 10));
+	VERIFY(EqualDecimals(d2y, -2.666666666666, 10));	
+}
+
+
 void TestLocalFitting(bool test);
 void TestMooring(bool test);
 void TestButterworth(bool test);
@@ -458,6 +475,7 @@ CONSOLE_APP_MAIN
 	
 	bool test = CommandLine().size() > 0 && CommandLine()[0] == "-test";
 	
+	TestOthers();
 	TestCombinations();
 	TestXCorr();
 	TestMooring(test);

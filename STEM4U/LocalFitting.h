@@ -7,12 +7,14 @@ namespace Upp {
 using namespace Eigen;
 
 template <class Range1, class Range2>
-void LocalFitting(const Range1 &x, const Range1 &y, const Range2 &resx, Range2 &resy, 
+void LocalFitting(const Range1 &x, const Range1 &y, const Range2 &resx, Range2 &resy, Range2 &resdy, Range2 &resd2y, 
 	int deg, typename Range1::value_type windowsize, bool weightless) {
 	using Scalar = typename Range1::value_type;
 	ASSERT(x.size() == y.size());
 	ASSERT(deg >=1 && deg <= 2);
 	Resize(resy, resx.size());
+	Resize(resdy, resx.size());
+	Resize(resd2y, resx.size());
 
 	const Scalar minweight = 0.05;
 	Scalar w_2 = windowsize/2;
@@ -36,10 +38,11 @@ void LocalFitting(const Range1 &x, const Range1 &y, const Range2 &resx, Range2 &
 			iend = min(iend, int(x.size()-1));
 			num = iend-ibegin+1;
 		}
-		if (num == 2) 
-			resy[i] = LinearInterpolate(rx, x[ibegin], x[iend], y[ibegin], y[iend]);
-		else if (num == 3 && deg == 2)
-		 	resy[i] = QuadraticInterpolate(rx, x[ibegin], x[ibegin+1], x[iend], y[ibegin], y[ibegin+1], y[iend]);
+		if (num == 2) {
+			LinearInterpolate(rx, x[ibegin], x[iend], y[ibegin], y[iend], resy[i], resdy[i]);
+			resd2y[i] = 0;
+		} else if (num == 3 && deg == 2)
+		 	QuadraticInterpolate(rx, x[ibegin], x[ibegin+1], x[iend], y[ibegin], y[ibegin+1], y[iend], resy[i], resdy[i], resd2y[i]);
 		else {
 			coeff.setConstant(deg+1, 1);
 			coeff[0] = 0;
@@ -61,17 +64,22 @@ void LocalFitting(const Range1 &x, const Range1 &y, const Range2 &resx, Range2 &
 				return 0;	
 			}))
 				throw Exc(t_("LocalFitting: Impossible to get coefficients"));
-			if (deg == 2)
-				resy[i] = coeff(0) + coeff(1)*rx + coeff(2)*sqr(rx);
-			else
-				resy[i] = coeff(0) + coeff(1)*rx;
+			if (deg == 2) {
+				resy[i]   = coeff(0) + coeff(1)*rx + coeff(2)*sqr(rx);
+				resdy[i]  = coeff(1) + 2*coeff(2)*rx;
+				resd2y[i] = 2*coeff(2);
+			} else {
+				resy[i]   = coeff(0) + coeff(1)*rx;
+				resdy[i]  = coeff(1);
+				resd2y[i] = 0;
+			}
 		}
 	}
 }
 
 template <class Range1, class Range2>
 void LocalFitting(const Range1 &x, const Range1 &y, Range2 &resx, 
-		Range2 &resy, int deg, typename Range1::value_type windowsize, 
+		Range2 &resy, Range2 &resdy, Range2 &resd2y, int deg, typename Range1::value_type windowsize, 
 		int num, bool weightless, 
 		typename Range1::value_type from = Null, typename Range1::value_type to = Null) {
 	ASSERT(x.size() == y.size());
@@ -83,7 +91,7 @@ void LocalFitting(const Range1 &x, const Range1 &y, Range2 &resx,
 	
 	LinSpaced(resx, num, from, to);
 	
-	return LocalFitting(x, y, resx, resy, deg, windowsize, weightless);
+	return LocalFitting(x, y, resx, resy, resdy, resd2y, deg, windowsize, weightless);
 }
 
 

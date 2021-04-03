@@ -70,14 +70,14 @@ void TestLocalFitting(bool test) {
 	const Vector<double> vx = {0.5578196,2.0217271,2.5773252,3.4140288,4.3014084,4.7448394,5.1073781,6.5411662,6.7216176,7.2600583,8.1335874,9.1224379,11.9296663,12.3797674,13.2728619,14.2767453,15.3731026,15.6476637,18.5605355,18.5866354,18.7572812};
 	const Vector<double> vy = {18.63654,103.49646,150.35391,190.51031,208.70115,213.71135,228.49353,233.55387,234.55054,223.89225,227.68339,223.91982,168.01999,164.9575,152.61107,160.78742,168.55567,152.42658,221.70702,222.6904,243.18828};
 
-	VectorXd x, y, resx, resy;
+	VectorXd x, y, resx, resy, resdy, resd2y;
 	CleanNANDupXSort(vx, vy, x, y);	    
 	
 	if (!test) {
 		String dir = AppendFileName(GetDesktopFolder(), "STEM4U_Demo");
 		RealizeDirectory(dir);
 		for (int i = 2; i < 10; ++i) {
-			LocalFitting(x, y, resx, resy, 1, i, 20, true);
+			LocalFitting(x, y, resx, resy, resdy, resd2y, 2, i, 20, true);
 		
 			ScatterDraw scatter;
 			scatter.AddSeries(x, y).Legend("Source").NoPlot();

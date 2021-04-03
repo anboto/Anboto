@@ -688,8 +688,8 @@ bool EqualRatio(const T& a, const T& b, const T& ratio, const T& zero = 0) {
 	return false;
 }
 
-template <class T>
-bool EqualDecimals(const T& a, const T& b, int numdecimals) {
+template <class T1, class T2>
+bool EqualDecimals(const T1& a, const T2& b, int numdecimals) {
 	String sa = FormatDouble(a, numdecimals);
 	String sb = FormatDouble(a, numdecimals);
 	return sa == sb;

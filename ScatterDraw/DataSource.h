@@ -841,6 +841,18 @@ inline T LinearInterpolate(T x, T x0, T x1, T y0, T y1) {
 }
 
 template <class T>
+inline void LinearInterpolate(T x, T x0, T x1, T y0, T y1, T &y, T &dy) {
+	T x1_0 = x1 - x0;
+	if (abs(x1_0) < T(FLT_EPSILON)) {
+		y = (y0 + y1)/T(2);
+		dy = 0;
+		return;
+	} 
+	dy = (y1 - y0)/x1_0;
+  	y = y0 + (x - x0)*dy;
+}
+
+template <class T>
 inline T QuadraticInterpolate(T x, T x0, T x1, T x2, T y0, T y1, T y2) {
 	T x0_1 = x0 - x1;
 	T x0_2 = x0 - x2;
@@ -856,8 +868,44 @@ inline T QuadraticInterpolate(T x, T x0, T x1, T x2, T y0, T y1, T y2) {
 	T x_1 = x - x1;
 	T x_2 = x - x2;
 	
-  	return ((x_1*x_2)/(x0_1*x0_2))*y0 - ((x_0*x_2)/(x0_1*x1_2))*y1 + ((x_0*x_1)/(x0_2*x1_2))*y2;
+	T l0 = y0/(x0_1*x0_2);
+	T l1 = y1/(x0_1*x1_2);
+	T l2 = y2/(x0_2*x1_2);
+	
+  	return x_1*x_2*l0 - x_0*x_2*l1 + x_0*x_1*l2;
 }
+
+template <class T>
+inline void QuadraticInterpolate(T x, T x0, T x1, T x2, T y0, T y1, T y2, T &y, T &dy, T &d2y) {
+	T x0_1 = x0 - x1;
+	T x0_2 = x0 - x2;
+	T x1_2 = x1 - x2;
+	if (abs(x0_1) < T(FLT_EPSILON)) {
+		d2y = 0;
+		LinearInterpolate(x, x0, x2, (y0 + y1)/T(2), y2, y, dy);
+		return;
+	} else if (abs(x0_2) < T(FLT_EPSILON)) {
+		d2y = 0;
+		LinearInterpolate(x, x0, x1, (y0 + y2)/T(2), y1, y, dy);
+		return;
+	} else if (abs(x1_2) < T(FLT_EPSILON)) {
+		d2y = 0;
+		LinearInterpolate(x, x0, x1, y0, (y1 + y2)/T(2), y, dy);
+		return;
+	}
+	T x_0 = x - x0;
+	T x_1 = x - x1;
+	T x_2 = x - x2;
+	
+	T l0 = y0/(x0_1*x0_2);
+	T l1 = y1/(x0_1*x1_2);
+	T l2 = y2/(x0_2*x1_2);
+	
+  	y = x_1*x_2*l0 - x_0*x_2*l1 + x_0*x_1*l2;
+	dy = (l0-l1)*x_2 + (l2+l0)*x_1 + (l2-l1)*x_0;
+	d2y = 2*l2 - 2*l1 + 2*l0;
+}
+
 
 template <class T>
 inline T BilinearInterpolate(T x, T y, T x0, T x1, T y0, T y1, T v00, T v01, T v10, T v11) {
