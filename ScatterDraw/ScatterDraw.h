@@ -1244,7 +1244,7 @@ private:
 	static void ParseTextMultiline(const String &text, Upp::Font &fnt, 
 								   Upp::Vector <String> &texts, Upp::Vector <Size> &sizes);
 	
-	ScatterDraw &DoFitToData(bool horizontal, double factorH, bool vertical, double factorV);
+	ScatterDraw &DoFitToData(bool horizontal, bool vertical, double factorH, double factorV);
 	//ScatterDraw &DoFitToData(bool horizontal, double minx, double maxx, bool vertical, double minxy, double maxy, 
 	//				bool vertical2, double miny2, double maxy2, double factor = 0);
 	//ScatterDraw &DoFitToDataSmart(bool horizontal, double minx, double maxx, bool vertical, double minxy, double maxy, 

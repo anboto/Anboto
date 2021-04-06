@@ -1262,28 +1262,28 @@ void FindPeaks(const Range &x, const Range &y, typename Range::value_type width,
 	FindPeaks(y, imx, imn);
 	
 	Scalar x0 = x[0];
-	int64 idm = -1;
+	int64 idm = Null;
 	for (int i = 0; i < imx.size(); ++i) {
 		int64 id = imx[i];
 		if (x[id] - x0 > width) {
-			if (idm >= 0)  
+			if (!IsNull(idm))  
 				rimx << idm;
 			x0 += width; 
-			idm = -1;
+			idm = Null;
 		} 
-		if (idm < 0 || y[id] > y[idm])
+		if (IsNull(idm) || y[id] > y[idm])
 			idm = id;
 	}
 	x0 = x[0];
 	for (int i = 0; i < imn.size(); ++i) {
 		int64 id = imn[i];
 		if (x[id] - x0 > width) {
-			if (idm >= 0)  
+			if (!IsNull(idm))  
 				rimn << idm;
 			x0 += width; 
-			idm = -1;
+			idm = Null;
 		} 
-		if (idm < 0 || y[id] < y[idm])
+		if (IsNull(idm) || y[id] < y[idm])
 			idm = id;
 	}
 }	

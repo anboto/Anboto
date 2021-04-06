@@ -315,19 +315,19 @@ ScatterDraw &ScatterDraw::SetXYMin(double xmin, double ymin, double ymin2) {
 
 ScatterDraw &ScatterDraw::ZoomToFit(bool horizontal, bool vertical, double factorH, double factorV) {
 	if (linkedMaster) {
-		linkedMaster->ZoomToFit(horizontal, factorH, vertical, factorV);
+		linkedMaster->ZoomToFit(horizontal, vertical, factorH, factorV);
 		return *this;
 	}
-	DoFitToData(horizontal, factorH, vertical, factorV);
+	DoFitToData(horizontal, vertical, factorH, factorV);
 	if (!linkedCtrls.IsEmpty()) {
 		for (int i = 0; i < linkedCtrls.GetCount(); ++i)
-	    	linkedCtrls[i]->DoFitToData(horizontal, factorH, vertical, factorV);
+	    	linkedCtrls[i]->DoFitToData(horizontal, vertical, factorH, factorV);
 	}
 	WhenZoomToFit();
 	return *this;
 }
 			
-ScatterDraw &ScatterDraw::DoFitToData(bool horizontal, double factorH, bool vertical, double factorV) {
+ScatterDraw &ScatterDraw::DoFitToData(bool horizontal, bool vertical, double factorH, double factorV) {
 	double minx, maxx, miny, miny2, maxy, maxy2;
 	minx = miny = miny2 = -DOUBLE_NULL;
 	maxx = maxy = maxy2 = DOUBLE_NULL;

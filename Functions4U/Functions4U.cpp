@@ -1185,6 +1185,8 @@ void Tokenize(const String &str, const String &token, Vector<String> &ret, int p
 
 String GetLine(const String &str, int &pos) {
 	String ret;
+	if (pos >= str.GetCount())
+		return String::GetVoid();
 	int npos = str.Find("\n", pos);
 	if (npos == -1) {
 		ret = str.Mid(pos);

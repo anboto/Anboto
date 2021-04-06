@@ -78,6 +78,13 @@ void LocalFitting(const Range1 &x, const Range1 &y, const Range2 &resx, Range2 &
 }
 
 template <class Range1, class Range2>
+void LocalFitting(const Range1 &x, const Range1 &y, const Range2 &resx, Range2 &resy, 
+	int deg, typename Range1::value_type windowsize, bool weightless) {
+	Range2 resdy, resd2y; 
+	LocalFitting(x, y, resx, resy, resdy, resd2y, deg, windowsize, weightless);	
+}
+	
+template <class Range1, class Range2>
 void LocalFitting(const Range1 &x, const Range1 &y, Range2 &resx, 
 		Range2 &resy, Range2 &resdy, Range2 &resd2y, int deg, typename Range1::value_type windowsize, 
 		int num, bool weightless, 
@@ -92,6 +99,15 @@ void LocalFitting(const Range1 &x, const Range1 &y, Range2 &resx,
 	LinSpaced(resx, num, from, to);
 	
 	return LocalFitting(x, y, resx, resy, resdy, resd2y, deg, windowsize, weightless);
+}
+
+template <class Range1, class Range2>
+void LocalFitting(const Range1 &x, const Range1 &y, Range2 &resx, 
+		Range2 &resy, int deg, typename Range1::value_type windowsize, 
+		int num, bool weightless, 
+		typename Range1::value_type from = Null, typename Range1::value_type to = Null) {
+	Range2 resdy, resd2y; 
+	return LocalFitting(x, y, resx, resy, resdy, resd2y, deg, windowsize, num, weightless, from, to);
 }
 
 
