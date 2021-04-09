@@ -228,7 +228,7 @@ void SolveDAE(const double y[], const double dy[], int numEq, double dt, double 
 		CheckRet(retval, "IDASetLinearSolver");
 		
 		/* Create Newton SUNNonlinearSolver object. IDA uses a
-		* Newton SUNNonlinearSolver by default, so it is unecessary
+		* Newton SUNNonlinearSolver by default, so it is unnecessary
 		* to create it and attach it. It is done in this example code
 		* solely for demonstration purposes. */
 		NLS = SUNNonlinSol_Newton(yy);

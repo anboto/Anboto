@@ -600,10 +600,6 @@ void ScatterCtrl::ClearMouseBehavior()
 	mouseBehavior.Clear();
 }	
 
-#ifdef PLATFORM_POSIX
-int GetKeyCodeX(int key);
-#endif
-
 void ScatterCtrl::AddKeyBehavior(bool ctrl, bool alt, bool shift, int key, bool isVirtualKey, ScatterAction action) 
 {
 	if (!isVirtualKey) {
@@ -612,7 +608,7 @@ void ScatterCtrl::AddKeyBehavior(bool ctrl, bool alt, bool shift, int key, bool 
 		key = VkKeyScanExW(key, hKeyboardLayout) + K_DELTA;
 	}
 #else
-		key = key + K_DELTA;//GetKeyCodeX(key);
+		key = key + K_DELTA;
 	}
 #endif
 	keyBehavior << KeyBehavior(ctrl, alt, shift, key, isVirtualKey, action);

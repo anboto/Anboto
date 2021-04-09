@@ -254,7 +254,6 @@ void PressKey(wchar key, _XDisplay *dpy = NULL) {
 			return;
 		local = true;
 	}
-	//wchar k = key;
 	if (key > 0x00ff)
     	key = key | 0x01000000;
  	

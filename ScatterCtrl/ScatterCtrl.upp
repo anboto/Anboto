@@ -10,7 +10,6 @@ uses
 file
 	ScatterCtrl.cpp,
 	ScatterCtrl.h,
-	ScatterCtrlX.cpp,
 	Processing.cpp,
 	Properties.cpp,
 	Properties.h,
