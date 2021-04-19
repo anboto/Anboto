@@ -131,7 +131,12 @@ void ScatterDraw::DrawLegend(Draw& w) const {
 					serie.markPlot->Paint(w, plotScaleAvg, mark_p, serie.markWidth, serie.markColor, 
 						serie.markBorderWidth, serie.markBorderColor);   
 				Upp::Font &font = serie.primaryY ? boldFont : italic;
-				DrawText(w, lx + lineLen + xWidth, ly - int((2*rowAscent)/3), 0, legends[ireal], font, serie.color);                   
+				Color textColor;
+				if (serie.opacity > 0 && serie.thickness > 0 && (serie.seriesPlot || serie.legendLine))
+					textColor = serie.color;
+				else
+					textColor = serie.markColor;					
+				DrawText(w, lx + lineLen + xWidth, ly - int((2*rowAscent)/3), 0, legends[ireal], font, textColor);                   
 				ireal++;
 			} 
 		}

@@ -297,10 +297,6 @@ protected:
 			}
 		}
 	};
-
-	static Color GetNewColor(int index, int version = 1);
-	static String GetNewDash(int index);
-	static MarkPlot *GetNewMarkPlot(int index);
 	
 	void WhenPaint(Painter &w)	{WhenPainter(w);}
 	void WhenPaint(Draw &w) 	{WhenDraw(w);}
@@ -308,6 +304,10 @@ protected:
 public:	
 	template<class T>
 	void SetDrawing(T& w, bool ctrl = false);
+	
+	static Color GetNewColor(int index, int version = 1);
+	static String GetNewDash(int index);
+	static MarkPlot *GetNewMarkPlot(int index);
 	
 	Function<void(String&, int, double)> cbModifFormatX;
 	Function<void(String&, int, double)> cbModifFormatXGridUnits;
