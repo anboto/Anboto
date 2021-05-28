@@ -737,7 +737,7 @@ typedef HyperlinkLabel CLASSNAME;
 public:
 	HyperlinkLabel() {
 		NoIgnoreMouse();
-		SetInk(LtBlue());
+		SetInk(SColorMark());
 	}
 	virtual ~HyperlinkLabel() {};
 	

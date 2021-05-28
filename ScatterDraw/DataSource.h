@@ -1191,6 +1191,7 @@ template <class Range1, class Range2>
 void MovingAverage(const Range1 &x, const Range1 &y, typename Range1::value_type width, Range2 &rresy) {
 	using Scalar = typename Range1::value_type;
 	ASSERT(x.size() == y.size());
+	
 	Range2 resy(x.size());
 	
 	if (x.size() == 0)
@@ -1212,6 +1213,26 @@ void MovingAverage(const Range1 &x, const Range1 &y, typename Range1::value_type
 		resy[i] = std::accumulate(&y[ifrom], &y[ito], 0.)/(ito - ifrom + 1);
 	}
 	rresy = pick(resy);
+}
+
+template <class Range>
+void FindZeroCrossing(const Range &x, const Range &y, bool ascending, bool descending, 
+					  Vector<typename Range::value_type> &zeros, Vector<int64> &idzeros) {
+	using Scalar = typename Range::value_type;
+	ASSERT(x.size() == y.size());
+	
+	zeros.Clear();
+	idzeros.Clear();
+	
+	Scalar y_prev = y[0], x_prev = x[0];
+	for (int i = 1; i < x.size(); ++i) {
+		if (((y[i] >= 0 && y_prev < 0) && ascending) || ((y[i] <= 0 && y_prev > 0) && descending)) {
+			idzeros << i;
+			zeros << (x_prev - (x[i] - x_prev)*y_prev/(y[i] - y_prev));
+		}
+		x_prev = x[i];
+		y_prev = y[i];
+	}
 }
 
 template <class Range>
@@ -1266,26 +1287,52 @@ void FindPeaks(const Range &x, const Range &y, typename Range::value_type width,
 	for (int i = 0; i < imx.size(); ++i) {
 		int64 id = imx[i];
 		if (x[id] - x0 > width) {
-			if (!IsNull(idm))  
-				rimx << idm;
+			if (!IsNull(idm)) {
+				if (rimx.size() > 0) {
+					int prev = rimx.size()-1;
+					if (x[idm] - x[rimx[prev]] > width)
+						rimx << idm;
+					else {
+						if (y[idm] > y[rimx[prev]])
+							rimx[prev] = idm;
+					}
+				} else  
+					rimx << idm;
+			}
 			x0 += width; 
 			idm = Null;
 		} 
 		if (IsNull(idm) || y[id] > y[idm])
 			idm = id;
 	}
+	if (!IsNull(idm)) 
+		rimx << idm;
+		
 	x0 = x[0];
+	idm = Null;
 	for (int i = 0; i < imn.size(); ++i) {
 		int64 id = imn[i];
 		if (x[id] - x0 > width) {
-			if (!IsNull(idm))  
-				rimn << idm;
+			if (!IsNull(idm)) {
+				if (rimn.size() > 0) {
+					int prev = rimn.size()-1;
+					if (x[idm] - x[rimn[prev]] > width)
+						rimn << idm;
+					else {
+						if (y[idm] < y[rimn[prev]])
+							rimn[prev] = idm;
+					}
+				} else  
+					rimn << idm;
+			}
 			x0 += width; 
 			idm = Null;
 		} 
 		if (IsNull(idm) || y[id] < y[idm])
 			idm = id;
 	}
+	if (!IsNull(idm)) 
+		rimn << idm;
 }	
 
 template <class Range>

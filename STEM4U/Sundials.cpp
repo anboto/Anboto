@@ -202,6 +202,11 @@ void SolveDAE(const double y[], const double dy[], int numEq, double dt, double 
 		retval = IDAInit(mem, ResFun, t0, yy, yp);
 		CheckRet(retval, "IDAInit");
 		
+		IDASetErrHandlerFn(mem, [](int error_code, const char *module, const char *function,
+                                char *msg, void *user_data) {
+        	throw Exc(Format(t_("Sundials %s error (%s): %s"), module, function, msg));
+                                }, nullptr);
+                                       
 		/* Call IDASVtolerances to set tolerances */
 		retval = IDASVtolerances(mem, rtol, avtol);
 		CheckRet(retval, "IDASVtolerances");
@@ -241,7 +246,7 @@ void SolveDAE(const double y[], const double dy[], int numEq, double dt, double 
 		userData.iiter = 0; 
 		double tnext = 0.000001;
 		double titer;
-		while(tnext <= maxt) {
+		while(tnext <= maxt && userData.iiter < int(maxt/dt)+1) {
 			retval = IDASolve(mem, tnext, &titer, yy, yp, IDA_NORMAL);
 			CheckRet(retval, "IDASolve");
 		

@@ -177,10 +177,12 @@ MooringStatus Catenary(double moorlen, double xanchorvessel, double zanchor, dou
 			zanchor, zvessel, Fhanchorvessel, Fvanchor, Fvvessel, xonfloor, x, z, 0);
 }
 
-MooringStatus CatenaryGetLen(double xonfloor, double xanchorvessel, double zanchor, double zvessel, double &moorlen) {
+
+bool CatenaryGetLen0(double xonfloor, double xanchorvessel, double zanchor, double zvessel, 
+					double &moorlen) {
 	if (xonfloor >= xanchorvessel) {
 		moorlen = xanchorvessel + 2*(xonfloor - xanchorvessel) + zanchor + zvessel;
-		return LOOSE_ON_FLOOR;
+		return false;
 	} 
 	
 	Buffer<int> consdata(2, 2);		// B > 0 && moorlen > 0
@@ -198,16 +200,37 @@ MooringStatus CatenaryGetLen(double xonfloor, double xanchorvessel, double zanch
 	}, consdata);		
 	//double B = udata[0];
 	moorlen = udata[1];
+
+	return true;
+					}
+
+MooringStatus CatenaryGetLen(double xonfloor, double xanchorvessel, double zanchor, double zvessel, 
+			double &moorlen) {
+	if (!CatenaryGetLen0(xonfloor, xanchorvessel, zanchor, zvessel, moorlen))
+		return LOOSE_ON_FLOOR;
 	
 	return Catenary(moorlen, xanchorvessel, zanchor, zvessel, xonfloor);
 }
 
+MooringStatus CatenaryGetLen(double rho_m, double rho_m3, double rho_water, double xonfloor, 
+			double BL, double xanchorvessel, double zanchor, double zvessel, 
+			double &Fhanchorvessel, double &Fvanchor, double &Fvvessel, double &moorlen) {
+	if (!CatenaryGetLen0(xonfloor, xanchorvessel, zanchor, zvessel, moorlen))
+		return LOOSE_ON_FLOOR;
+	
+	return Catenary(rho_m, rho_m3, rho_water, moorlen, BL, xanchorvessel, zanchor, zvessel, 
+					Fhanchorvessel, Fvanchor, Fvvessel, xonfloor);
+}
 
 const char *MooringStatusStr(MooringStatus status) {
 	const char *str[5] = {"loose on floor", "catenary on floor", "catenary", 
 						 "line length exceeded", "break load exdeeded"};
 	ASSERT(int(status) < 5);
 	return str[int(status)];
+}
+
+bool IsOK(MooringStatus status) { 
+	return status < BROKEN;
 }
 
 }

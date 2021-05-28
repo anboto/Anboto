@@ -68,6 +68,8 @@ bool DeleteFolderDeepX(const char *path, EXT_FILE_FLAGS flags = NO_FLAG);
 bool RenameDeepWildcardsX(const char *path, const char *namewc, const char *newname, bool forfile, bool forfolder, EXT_FILE_FLAGS flags = NO_FLAG);
 bool FolderIsEmpty(const char *path);
 
+bool DirectoryCreateX(const char *path);
+	
 bool FileMoveX(const char *oldpath, const char *newpath, EXT_FILE_FLAGS flags = NO_FLAG);
 bool FileDeleteX(const char *path, EXT_FILE_FLAGS flags = NO_FLAG);
 
@@ -1032,6 +1034,11 @@ size_t GetNumLines(Stream &stream);
 class FileInLine : public FileIn {
 public:
 	explicit FileInLine(String _fileName) : FileIn(_fileName), line(0), fileName(_fileName) {};
+	
+	bool Open(const char *fn) {
+		line = 0;
+		return FileIn::Open(fn);
+	}
 	String GetLine() {
 		line++;	
 		return FileIn::GetLine();
@@ -1041,7 +1048,7 @@ public:
 			GetLine();
 	}
 	int GetLineNumber()	const 	{return line;}
-	String Str() const 			{return Format(t_("[File: '%s', line: %d]:"), fileName, line);}
+	String Str() const 			{return Format(t_("[File: '%s', line: %d]: "), fileName, line);}
 	
 	struct Pos {
 		Pos() : byt(0), line(0) {}
@@ -1114,6 +1121,10 @@ public:
 		fields = Split(line, IsSeparator, true);
 		return *this;
 	}
+	FieldSplit& LoadLine() {
+		Load(in->GetLine());
+		return *this;
+	}
 	String GetText() const {
 		return line;
 	}
@@ -1176,7 +1187,7 @@ protected:
 			throw Exc(in->Str() + Format(t_("Field #%d not found in line\n'%s'"), i+1, line));
 	}
 	static int defaultIsSeparator(int c) {
-		if (c == '\t' || c == ' ')
+		if (c == '\t' || c == ' ' || c == ';' || c == ',')
 			return true;
 		return false;
 	}

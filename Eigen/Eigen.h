@@ -283,6 +283,10 @@ auto Begin(Eigen::Matrix<T, Eigen::Dynamic, 1> &v)		{return v.data();}
 template <typename T>
 auto End(const Eigen::Matrix<T, Eigen::Dynamic, 1> &v)	{return v.data() + v.size();}
 
+template <class Range>
+auto &Last(Range &data) {
+	return data[data.size()-1];	
+}
 
 template <typename T>
 void Reverse(Vector<T> &v) {

@@ -273,6 +273,11 @@ true) and/or folders (if [%-*@3 forfolder] is set to true) under
 [s2; Returns true in case of success.&]
 [s3; &]
 [s4;%- &]
+[s5;:Upp`:`:DirectoryCreateX`(const char`*`):%- [@(0.0.255) bool]_[* DirectoryCreateX]([@(0.0.255) c
+onst]_[@(0.0.255) char]_`*[*@3 path])&]
+[s2; Creates [%-*@3 path] directory. Returns true if [%-*@3 path] exists.&]
+[s3; &]
+[s4;%- &]
 [s5;:FileMoveX`(const char`*`,const char`*`,EXT`_FILE`_FLAGS`):%- [@(0.0.255) bool]_[* Fi
 leMoveX]([@(0.0.255) const]_[@(0.0.255) char]_`*[*@3 oldpath], [@(0.0.255) const]_[@(0.0.255) c
 har]_`*[*@3 newpath], EXT`_FILE`_FLAGS_[*@3 flags]_`=_NO`_FLAG)&]

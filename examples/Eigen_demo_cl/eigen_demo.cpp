@@ -319,7 +319,7 @@ CONSOLE_APP_MAIN
 		m.topLeftCorner(1,3) = m.bottomRightCorner(3,1).transpose();
 		UppLog() << "\nAfter assignment, m = \n" << m;
 	}
-	UppLog() << "\n\nBlock operations for vectors";
+	UppLog() << "\n\nBlock operations for vectors. Get a segment or fragment";
 	{
 		Eigen::ArrayXf v(6);
 		v << 1, 2, 3, 4, 5, 6;

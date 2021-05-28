@@ -470,28 +470,37 @@ void TestCombinations();
 CONSOLE_APP_MAIN 
 {
 	StdLogSetup(LOG_COUT|LOG_FILE);
+	SetExitCode(0);
 	
 	UppLog() << "STEM4U demo and test";
 	
-	bool test = CommandLine().size() > 0 && CommandLine()[0] == "-test";
-	
-	TestOthers();
-	TestCombinations();
-	TestXCorr();
-	TestMooring(test);
-	TestLocalFitting(test);
-	TestButterworth(test);
-	TestTravellingSalesman();
-	TestShortestPath();
-	TestRational();
-	TestDAESolver();
-	TestIntInf();
-    TestPolynomial();
-    TestIntegral();
-    TestSeaWaves();
-  
-    UppLog() << "\n\nAll tests passed\n";
-    
+	try {
+		bool test = CommandLine().size() > 0 && CommandLine()[0] == "-test";
+		
+		TestOthers();
+		TestCombinations();
+		TestXCorr();
+		TestMooring(test);
+		TestLocalFitting(test);
+		TestButterworth(test);
+		TestTravellingSalesman();
+		TestShortestPath();
+		TestRational();
+		TestDAESolver();
+		TestIntInf();
+	    TestPolynomial();
+	    TestIntegral();
+	    TestSeaWaves();
+	  
+	    UppLog() << "\n\nAll tests passed\n";
+   	} catch (Exc e) {
+		UppLog() << "\nError: " << e << "\n";  
+		SetExitCode(1);
+	} catch (...) {
+		UppLog() << "\nUnknown Error\n";  
+		SetExitCode(1);
+	}
+	 
 	#ifdef flagDEBUG
 	UppLog() << "\n";
 	Cout() << "\nPress enter key to end";

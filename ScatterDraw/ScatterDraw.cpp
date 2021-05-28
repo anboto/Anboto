@@ -486,18 +486,27 @@ String ScatterDraw::VariableFormat(double range, double d) {
 }
 
 Color ScatterDraw::GetNewColor(int index, int version) {
-	Color old[20] = {LtBlue(), LtRed(), LtGreen(), Black(), LtGray(), Brown(), Blue(), Red(), Green(), Gray(), 
-					 LtBlue(), LtRed(), LtGreen(), Black(), LtGray(), Brown(), Blue(), Red(), Green(), Gray()};
+	static Color oldc[20] = {LtBlue(), LtRed(), LtGreen(), Black(), LtGray(), Brown(), Blue(), Red(), Green(), Gray(), 
+			LtBlue(), LtRed(), LtGreen(), Black(), LtGray(), Brown(), Blue(), Red(), Green(), Gray()};
 	// Colours from http://tools.medialab.sciences-po.fr/iwanthue/
-	Color nwc[20] = {Color(197,127,117), Color(115,214,74), Color(205,80,212), Color(124,193,215), Color(85,82,139),
-					 Color(109,212,161), Color(207,72,48), Color(209,206,59), Color(194,134,55), Color(63,72,41), 
-					 Color(201,63,109), Color(193,192,158), Color(91,134,56), Color(105,48,38), Color(201,170,200),
-					 Color(86,117,119), Color(188,91,165), Color(124,120,216), Color(195,208,119), Color(79,46,75)};
+	static Color newc[20] = {Color(197,127,117), Color(115,214,74), Color(205,80,212), Color(124,193,215), Color(85,82,139),
+			Color(109,212,161), Color(207,72,48), Color(209,206,59), Color(194,134,55), Color(63,72,41), 
+			Color(201,63,109), Color(193,192,158), Color(91,134,56), Color(105,48,38), Color(201,170,200),
+			Color(86,117,119), Color(188,91,165), Color(124,120,216), Color(195,208,119), Color(79,46,75)};
+	static Color dark[20] = {Color(93,143,203), Color(98,190,74), Color(182,86,196), Color(168,180,56), 
+			Color(101,103,203), Color(214,158,53), Color(187,136,208), Color(75,137,53), Color(214,67,135),
+			Color(89,193,135), Color(212,62,65), Color(65,193,195), Color(206,98,47), Color(57,133,95),
+			Color(156,76,127), Color(165,177,106), Color(229,135,158), Color(115,111,39), Color(176,81,81), Color(193,132,81)};
+
 	if (index < 20) {
 		if (version == 0) 
-			return AdjustIfDark(old[index]);
-		else
-			return AdjustIfDark(nwc[index]);
+			return AdjustIfDark(oldc[index]);
+		else {
+			if (!IsDarkTheme())
+				return newc[index];
+			else
+				return dark[index];
+		}
 	} else
 		return Color(Random(), Random(), Random());
 }
@@ -907,12 +916,14 @@ ScatterDraw &ScatterDraw::BarWidth(int index, double width) {
 }
 	
 ScatterDraw &ScatterDraw::Dash(const char *dash) {
+	ASSERT(CheckDash(dash));
 	int index = series.GetCount() - 1;
 	
 	return Dash(index, dash);		
 }
 
 ScatterDraw &ScatterDraw::Dash(int index, const char *dash) {
+	ASSERT(CheckDash(dash));
 	ASSERT(IsValid(index));
 	ASSERT(!series[index].IsDeleted());
 	
@@ -1650,6 +1661,13 @@ String ScatterDraw::GetCSV() {
 	return ret;
 }
 
+bool ScatterDraw::CheckDash(const char *dash) {
+	for (const char *c = dash; *c != '\0'; ++c) {
+		if ((*c < '0' || *c > '9') && *c != ' ')
+			return false;
+	}
+	return true;
+}
 
 INITBLOCK {
 	SeriesPlot::Register<LineSeriesPlot>("Line");

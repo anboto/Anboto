@@ -234,6 +234,10 @@ bool FolderDeleteX(const char *path, EXT_FILE_FLAGS flags) {
 	}
 }
 
+bool DirectoryCreateX(const char *path) {
+	DirectoryCreate(path);
+	return DirectoryExists(path);
+}
 
 bool DirectoryExistsX_Each(const char *name) {
 #if defined(PLATFORM_WIN32)
@@ -1559,14 +1563,6 @@ String GetUpperFolder(const String &folderName) {
 		pos++;
 	return folderName.Left(pos);
 }
-/*
-bool CreateFolderDeep(const char *dir)
-{
-	if (RealizePath(dir))
-		return DirectoryCreate(dir);
-	else
-		return false;
-}*/
 
 bool DeleteDeepWildcardsX(const char *pathwc, bool filefolder, EXT_FILE_FLAGS flags, bool deep)
 {

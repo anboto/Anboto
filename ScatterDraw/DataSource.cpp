@@ -301,31 +301,11 @@ Vector<Pointf> DataSource::SectorAverage(Getdatafun getdataY, Getdatafun getdata
 }
 
 void DataSource::ZeroCrossing(Getdatafun getdataY, Getdatafun getdataX, bool ascending, bool descending, 
-							  Vector<double> &zeros, Vector<int64> &ids) {
-	zeros.Clear();
-	ids.Clear();
+							  Vector<double> &zeros, Vector<int64> &idzeros) {
+	VectorXd x, y;
+	Copy(getdataX, getdataY, x, y);	
 	
-	double y_prev = 0, x_prev = 0;
-	int i0;
-	for (i0 = 0; i0 < GetCount(); ++i0) {
-		y_prev = Membercall(getdataY)(i0);
-		x_prev = Membercall(getdataX)(i0);
-		if (IsNum(x_prev) && IsNum(y_prev))
-			break;
-	}
-	for (int i = i0; i < GetCount(); ++i) {
-		double y = Membercall(getdataY)(i);
-		double x = Membercall(getdataX)(i);
-		if (!IsNum(x) || !IsNum(y))
-			continue;
-		
-		if (((y >= 0 && y_prev < 0) && ascending) || ((y <= 0 && y_prev > 0) && descending)) {
-			ids << i;
-			zeros << (x_prev - (x - x_prev)*y_prev/(y - y_prev));
-		}
-		x_prev = x;
-		y_prev = y;
-	}
+	FindZeroCrossing(x, y, ascending, descending, zeros, idzeros);
 }
 
 double DataSource::StdDev(Getdatafun getdata, double avg) {

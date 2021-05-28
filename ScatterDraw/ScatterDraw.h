@@ -405,7 +405,7 @@ public:
 	Color &GetGridColor() 							{return gridColor;}
 	ScatterDraw& SetGridWidth(double grid_width)	{gridWidth = grid_width;	return *this;}
 	double GetGridWidth() 							{return gridWidth;}
-	ScatterDraw& SetGridDash(const char *dash)		{gridDash = dash;			return *this;}
+	ScatterDraw& SetGridDash(const char *dash)		{ASSERT(CheckDash(dash));	gridDash = dash;	return *this;}
 	const char *GetGridDash()						{return gridDash;}
 	
 	ScatterDraw& ShowVGrid(bool show);
@@ -622,9 +622,10 @@ public:
 	
 	ScatterDraw &PlotStyle(int index, SeriesPlot *data);
 	ScatterDraw &PlotStyle(SeriesPlot *data)				{return PlotStyle(series.GetCount() - 1, data);}
-	ScatterDraw &PlotStyle(int index, const String name);
-	ScatterDraw &PlotStyle(const String name)				{return PlotStyle(series.GetCount() - 1, name);}
-	const String GetPlotStyleName(int index);	
+	
+	//ScatterDraw &PlotStyle(int index, const String name);
+	//ScatterDraw &PlotStyle(const String name)				{return PlotStyle(series.GetCount() - 1, name);}
+	//const String GetPlotStyleName(int index);	
 	
 	ScatterDraw &NoPlot()	{return PlotStyle();};
 
@@ -1259,6 +1260,8 @@ private:
 	
 	void AddId(Vector<Vector<int>> &ids, int id);
 		
+	static bool CheckDash(const char *dash);
+	
 	int plotW = Null, plotH = Null;
 	bool labelsChanged = false;
 	bool stacked = false;
