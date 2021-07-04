@@ -908,6 +908,12 @@ and [%-*@3 t] considering an alphabet of length [%-*@3 alphabetLength].&]
 ere] and [^https`:`/`/stackoverflow`.com`/questions`/6033631`/levenshtein`-to`-damerau`-levenshtein`/6035519`#6035519^ h
 ere].&]
 [s4;%- &]
+[s5;:Upp`:`:GetPythonDeclaration`(const Upp`:`:String`&`):%- [_^Upp`:`:String^ String]_
+[* GetPythonDeclaration]([@(0.0.255) const]_[_^Upp`:`:String^ String]_`&[*@3 include])&]
+[s2; Returns the Python ctypes declarations based on C declarations 
+in [%-*@3 include].&]
+[s3; &]
+[s4;%- &]
 [s5;:LevenshteinDistance`(const char`*`,const char`*`):%- [@(0.0.255) int]_[* Levenshtein
 Distance]([@(0.0.255) const]_[@(0.0.255) char]_`*[*@3 s], [@(0.0.255) const]_[@(0.0.255) ch
 ar]_`*[*@3 t])&]

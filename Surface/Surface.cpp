@@ -1911,6 +1911,8 @@ bool Surface::GetDryPanels(const Surface &orig) {
 		if (p0.z >= -EPS_XYZ && p1.z >= -EPS_XYZ && p2.z >= -EPS_XYZ && p3.z >= -EPS_XYZ) 
 			panels << clone(pan);
 	}
+	Heal(true);	
+	
 	return !panels.IsEmpty();
 }
 

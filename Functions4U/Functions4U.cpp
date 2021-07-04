@@ -2863,6 +2863,76 @@ void ConsoleOutputDisable(bool disable) {
 #endif
 }
 
+String GetPythonDeclaration(const String &include) {
+	static String str;
+	const Vector<String> ctypes = {"int",   "double", 	"const char *", "bool"}; 
+	const Vector<String> ptypes = {"c_int", "c_double", "c_char_p", "c_bool"}; 
+		
+	str << "# LIBRARY DECLARATION\n"
+		   "libc = ctypes.CDLL(dll)\n\n";
+		   
+	String strIn  = "# INPUT TYPES\n";
+	String strOut = "# OUTPUT TYPES\n";
+	
+	String cleaned = CleanCFromDeclaration(include);
+	
+	Vector<String> lines = Split(cleaned, "\n");
+	for (const auto &line : lines) {
+		int pospar = line.Find("(");
+		String function;
+		
+		for (int i = 0; i < ctypes.size(); ++i) {
+			const auto &type = ctypes[i];
+			if (line.StartsWith(type)) {
+				function = Trim(line.Mid(type.GetCount(), pospar - type.GetCount()));
+				strOut << "libc." << function << ".restype = ctypes." << ptypes[i] << "\n";
+				break;
+			} 
+		}
+		if (function.IsEmpty() && line.StartsWith("void")) 
+			function = Trim(line.Mid(String("void").GetCount(), pospar - String("void").GetCount()));
+		
+		if (!function.IsEmpty()) {
+			int posparout = line.Find(")");
+			String strargs = line.Mid(pospar+1, posparout - pospar-1);
+			Vector<String> args = Split(strargs, ",");
+			if (!args.IsEmpty()) {
+				String pargs;
+				
+				for (int i = 0; i < args.size(); ++i) {
+					for (int j = 0; j < ctypes.size(); ++j) {
+						const auto &type = ctypes[j];
+						if (Trim(args[i]).StartsWith(type)) {
+							if (!pargs.IsEmpty())
+								pargs << ", ";	
+							pargs << "ctypes." << ptypes[j];
+							break;
+						}
+					}
+				}
+				if (!pargs.IsEmpty())
+					strIn << "libc." << function << ".argtypes = [" << pargs << "]\n";
+			}
+		}
+	}
+	str << strIn << "\n" << strOut << "\n";
+	
+	return str = Trim(str);	
+}
 
+String CleanCFromDeclaration(const String &include) {
+	String str = include;
+	
+	str.Replace("	__declspec(dllexport) ", "");
+	str.Replace("extern \"C\" {", "");
+	str.Replace("};", "");
+	str.Replace("\r\n\r\n", "\r\n");
+	str.Replace(";", "");
+	str.Replace("noexcept", "");
+	str.Replace("  ", "");
+	str.Replace("\t", "");
+	
+	return str;
+}
 
 }

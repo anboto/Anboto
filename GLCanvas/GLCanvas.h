@@ -12,6 +12,9 @@ public:
 	typedef GLCanvas CLASSNAME;
 
 	GLCanvas();
+	
+	void SetLineThickness(int t)		{lineThickness = float(t);}
+	void SetBackgroundColor(Color c)	{backgroundColor = c;} 
 
 private:
 	TrackBall trackBall;
@@ -26,6 +29,8 @@ private:
 	VolumeEnvelope *env = nullptr;
 	String defaultFileName;
 	
+	Color backgroundColor = White();
+	float lineThickness = 1;
 	int jpgQuality = 90;
 		
 protected:

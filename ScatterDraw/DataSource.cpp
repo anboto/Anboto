@@ -371,16 +371,17 @@ double CArray::znFixed(int n, int64 id) {
 	return Null;
 }
 
-Vector<Pointf> FFTSimple(VectorXd &data, double tSample, bool frequency, int type, 
+Vector<Pointf> FFT(const VectorXd &_data, double tSample, bool frequency, int type, 
 		int window, int numOver) {
+	VectorXd data = clone(_data);
 	int numData = int(data.size());
     
     double numDataFact = 0;
     switch (window) {
-    case DataSource::HAMMING:	
+    case FFT_WINDOW::HAMMING:	
 				numDataFact = HammingWindow<VectorXd>(data);
 			    break;
-	case DataSource::COS:		
+	case FFT_WINDOW::COS:		
 				numDataFact = CosWindow<VectorXd>(data, numOver);
 			    break;
 	default:	numDataFact = numData;
@@ -388,14 +389,14 @@ Vector<Pointf> FFTSimple(VectorXd &data, double tSample, bool frequency, int typ
     Vector<Pointf> res;
     VectorXcd freqbuf;
     try {
-	    FFT<double> fft;
+	    Eigen::FFT<double> fft;
 	    fft.SetFlag(fft.HalfSpectrum);
 	    fft.fwd(freqbuf, data);
     } catch(...) {
         return res;
     }
     double threshold = 0;
-    if (type == DataSource::T_PHASE) {
+    if (type == FFT_TYPE::T_PHASE) {
         for (int i = 0; i < int(freqbuf.size()); ++i) {    
             if (threshold < std::abs(freqbuf[i]))
                 threshold = std::abs(freqbuf[i]);
@@ -407,15 +408,15 @@ Vector<Pointf> FFTSimple(VectorXd &data, double tSample, bool frequency, int typ
     		double xdata = i/(tSample*numData);
 		
 			switch (type) {
-			case DataSource::T_PHASE:	
+			case FFT_TYPE::T_PHASE:	
 					if (std::abs(freqbuf[i]) > threshold)
 						res << Pointf(xdata, std::arg(freqbuf[i]));
 					else
 						res << Pointf(xdata, 0);
 					break;
-			case DataSource::T_FFT:		// Amplitude spectrum
+			case FFT_TYPE::T_FFT:		// Amplitude spectrum
 					res << Pointf(xdata, 2*std::abs(freqbuf[i])/numDataFact);		break;
-			case DataSource::T_PSD:		// Variance density spectrum
+			case FFT_TYPE::T_PSD:		// Variance density spectrum
 					res << Pointf(xdata, 2*sqr(std::abs(freqbuf[i]))/(numDataFact/tSample)); // 1/2*FFT^2
 			}
     	}
@@ -424,15 +425,15 @@ Vector<Pointf> FFTSimple(VectorXd &data, double tSample, bool frequency, int typ
     		double xdata = (tSample*numData)/i;
 		
 			switch (type) {
-			case DataSource::T_PHASE:	
+			case FFT_TYPE::T_PHASE:	
 					if (std::abs(freqbuf[i]) > threshold) 
 						res << Pointf(xdata, std::arg(freqbuf[i]));
 					else
 						res << Pointf(xdata, 0);
 					break;
-			case DataSource::T_FFT:		
+			case FFT_TYPE::T_FFT:		
 					res << Pointf(xdata, 2*std::abs(freqbuf[i])/numDataFact);		break;
-			case DataSource::T_PSD:		
+			case FFT_TYPE::T_PSD:		
 					res << Pointf(xdata, 2*sqr(std::abs(freqbuf[i]))/(numDataFact/tSample));
 			}
     	}
@@ -463,7 +464,7 @@ Vector<Pointf> DataSource::FFT(Getdatafun getdata, double tSample, bool frequenc
 	    
 	if (numSub == 1) {
 		numOver = numData*overlapping;
-		return FFTSimple(data, tSample, frequency, type, window, int(numOver));
+		return Upp::FFT(data, tSample, frequency, type, window, int(numOver));
 	} else {	// solve v t=2*(v-f*v/2) + (n-2)*(v-f*v) ==> v=t/(f + n -f*n)
 		double numDataPart = numData/(overlapping + numSub - overlapping*numSub); 
 		int inumDataPart = int(numDataPart);
@@ -480,7 +481,7 @@ Vector<Pointf> DataSource::FFT(Getdatafun getdata, double tSample, bool frequenc
 			for (int i = 0; i < inumDataPart; ++i)
 				dataPart[i] = data[izerod + i];
 			Vector<Pointf> fftPart;
-			fftPart = FFTSimple(dataPart, tSample, frequency, type, window, int(numOver));
+			fftPart = Upp::FFT(dataPart, tSample, frequency, type, window, int(numOver));
 			if (iPart == 0)
 				fft = clone(fftPart);		// pick()
 			else {
@@ -786,13 +787,11 @@ Vector<Pointf> DataSource::SavitzkyGolay(Getdatafun getdataY, Getdatafun getdata
 }
 
 double LinearInterpolate(double x, const VectorXd &vecx, const VectorXd &vecy) {
-	ASSERT(vecx.size() > 1);
 	ASSERT(vecx.size() == vecy.size());
 	return LinearInterpolate(x, vecx.data(), vecy.data(), vecx.size());
 }
 
 void Resample(const VectorXd &x, const VectorXd &y, VectorXd &rrx, VectorXd &rry, double srate) {
-	ASSERT(x.size() > 0 && y.size() > 0);
 	VectorXd rx, ry;
 		
 	if (x.size() == 0 || y.size() == 0)
@@ -818,7 +817,6 @@ void Resample(const VectorXd &x, const VectorXd &y, VectorXd &rrx, VectorXd &rry
 
 void Resample(const VectorXd &x, const VectorXd &y, const VectorXd &z, 
 			  VectorXd &rrx, VectorXd &rry, VectorXd &rrz, double srate) {
-	ASSERT(x.size() > 0 && y.size() > 0 && z.size() > 0);
 	VectorXd rx, ry, rz;
 	
 	if (x.size() == 0 || y.size() == 0 || z.size() == 0)

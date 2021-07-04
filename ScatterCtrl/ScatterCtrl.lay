@@ -115,7 +115,7 @@ LAYOUT(General, 340, 188)
 	ITEM(Upp::EditString, editCsv, LeftPosZ(84, 20).TopPosZ(128, 19))
 	ITEM(Upp::Button, butApplyToAll, SetLabel(t_("Apply to all plots")).RightPosZ(8, 96).BottomPosZ(8, 20))
 	ITEM(Upp::Label, dv___15, SetLabel(t_("JPG quality:")).LeftPosZ(136, 64).TopPosZ(80, 19))
-	ITEM(Upp::EditDouble, editSensitivity, Min(0).LeftPosZ(216, 24).TopPosZ(48, 19))
+	ITEM(Upp::EditDouble, editSensitivity, Min(0.1).LeftPosZ(216, 24).TopPosZ(48, 19))
 END_LAYOUT
 
 LAYOUT(SeriesLeft, 128, 228)

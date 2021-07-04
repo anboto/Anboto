@@ -342,7 +342,8 @@ void GeneralTab::Change() {
     scatter.Rotate((ScatterCtrl::Angle)(int)dropRotate.GetData());
     Size size(~editWidth, ~editHeight);
     scatter.SetSaveSize(size);
-    scatter.ScatterDraw::Responsive(~opResponsive, ~editSensitivity);
+    if (!IsNull(~editSensitivity)) 
+    	scatter.ScatterDraw::Responsive(~opResponsive, ~editSensitivity);
     scatter.SetJPGQuality(~editJpgQ);
     scatter.SetDefaultCSVSeparator(~editCsv);
     
@@ -358,7 +359,8 @@ void GeneralTab::ChangeAll() {
 	    scatter.Rotate((ScatterCtrl::Angle)(int)dropRotate.GetData());
 	    Size size(~editWidth, ~editHeight);
 	    scatter.SetSaveSize(size);
-	    scatter.ScatterDraw::Responsive(~opResponsive, ~editSensitivity);
+	    if (!IsNull(~editSensitivity)) 
+	    	scatter.ScatterDraw::Responsive(~opResponsive, ~editSensitivity);
 	    scatter.SetJPGQuality(~editJpgQ);
 	    scatter.SetDefaultCSVSeparator(~editCsv);
 	    

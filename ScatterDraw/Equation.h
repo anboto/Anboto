@@ -184,8 +184,12 @@ public:
 	double f(double x)				{return coeff[0] + coeff[1]*exp(-coeff[2]*x)*cos(coeff[3]*x + coeff[4]);}
 	virtual String GetName() 		{return t_("DampedSinusoidal");}
 	virtual String GetEquation(int _numDigits = 3) {
-		String ret = Format("%s + %s*e^(-%s*t)*cos(%s*t + %s)", FormatCoeff(0, _numDigits), 
-			FormatCoeff(1, _numDigits), FormatCoeff(2, _numDigits), FormatCoeff(3, _numDigits), FormatCoeff(4, _numDigits));
+		double zeta  = coeff[2]/coeff[3];
+		String szeta = IsNull(_numDigits) ? String("ζ") : FormatDoubleFix(zeta, _numDigits);
+
+		String ret = Format("%s + %s*e^(-%s*t)*cos(%s*t + %s) (ζ: %s)", FormatCoeff(0, _numDigits), 
+			FormatCoeff(1, _numDigits), FormatCoeff(2, _numDigits), FormatCoeff(3, _numDigits), FormatCoeff(4, _numDigits),
+			szeta);
 		ret.Replace("+ -", "- ");
 		return ret;
 	}													
@@ -632,7 +636,10 @@ public:
 class EvalExpr {
 public:
 	EvalExpr();
-	void Clear()									  		{variables.Clear();}
+	void Clear() {
+		variables.Clear();
+		lastVariableSetId = -1;
+	}
 	doubleUnit Eval(String line);
 	doubleUnit AssignVariable(String var, String expr);
 	doubleUnit AssignVariable(String var, double d);

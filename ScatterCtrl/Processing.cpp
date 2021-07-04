@@ -797,11 +797,9 @@ void ProcessingTab::OnFFT()
 			return;
 		DataSource &data = tabFitLeft.scatter.GetDataSource(0);
 
-		Eigen::VectorXd sourcex(data.GetCount()), sourcey(data.GetCount());
-		for (int64 i = 0; i < data.GetCount(); ++i) {
-			sourcex[i] = data.x(i);
-			sourcey[i] = data.y(i);
-		}		
+		Eigen::VectorXd sourcex, sourcey;
+		data.CopyXY(sourcex, sourcey);
+			
 		Eigen::VectorXd resx, resy;
 		Resample(sourcex, sourcey, resx, resy, samplingTime);
 		
@@ -813,7 +811,7 @@ void ProcessingTab::OnFFT()
 		if (!IsNull(mxy))
 			tabFreqRight.eMax <<= Format("(%f,%f)", fftData.x(idMaxFFT), mxy);
 		
-		if (tabFreqRight.type == DataSource::T_PSD) {
+		if (tabFreqRight.type == FFT_TYPE::T_PSD) {
 			double m_1, m0, m1, m2;
 			fftData.GetSpectralMomentsY(tabFreqRight.opXAxis == 1, m_1, m0, m1, m2);
 			tabFreqRight.m_1 <<= FormatDouble(m_1);
@@ -826,11 +824,11 @@ void ProcessingTab::OnFFT()
 			tabFreqRight.m1  <<= "";
 			tabFreqRight.m2  <<= "";
 		}
-		tabFreqRight.m_1.Enable(tabFreqRight.type == DataSource::T_PSD);
-		tabFreqRight.m0.Enable(tabFreqRight.type == DataSource::T_PSD);
-		tabFreqRight.m1.Enable(tabFreqRight.type == DataSource::T_PSD);
-		tabFreqRight.m2.Enable(tabFreqRight.type == DataSource::T_PSD);
-		tabFreqRight.labSpectral.Enable(tabFreqRight.type == DataSource::T_PSD);
+		tabFreqRight.m_1.Enable(tabFreqRight.type == FFT_TYPE::T_PSD);
+		tabFreqRight.m0.Enable(tabFreqRight.type == FFT_TYPE::T_PSD);
+		tabFreqRight.m1.Enable(tabFreqRight.type == FFT_TYPE::T_PSD);
+		tabFreqRight.m2.Enable(tabFreqRight.type == FFT_TYPE::T_PSD);
+		tabFreqRight.labSpectral.Enable(tabFreqRight.type == FFT_TYPE::T_PSD);
 	}
 	if (fft.IsEmpty()) {
 		tabFreqLeft.comments.SetText(errText);
@@ -840,9 +838,9 @@ void ProcessingTab::OnFFT()
 	
 	String strtype;
 	switch(tabFreqRight.type) {
-	case DataSource::T_FFT:		strtype = t_("FFT");					break;
-	case DataSource::T_PHASE:	strtype = t_("FFT-phase [rad]");		break;
-	case DataSource::T_PSD:		strtype = t_("Power Spectral Density");	break;
+	case FFT_TYPE::T_FFT:	strtype = t_("FFT");					break;
+	case FFT_TYPE::T_PHASE:	strtype = t_("FFT-phase [rad]");		break;
+	case FFT_TYPE::T_PSD:	strtype = t_("Power Spectral Density");	break;
 	}
 	String legend = tabFitLeft.scatter.GetLegend(0) + String("-") + strtype;
 	tabFreqLeft.scatter.AddSeries(fft).Legend(legend);

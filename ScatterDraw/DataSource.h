@@ -11,6 +11,9 @@ namespace Upp {
 bool IsNum(double n);
 bool IsNum(int n);
 
+enum FFT_WINDOW {NO_WINDOW = 0, HAMMING, COS};
+enum FFT_TYPE   {T_FFT = 0, T_PHASE, T_PSD};
+	
 class DataSource : public Pte<DataSource>  {
 public:
 	typedef double (DataSource::*Getdatafun)(int64 id);
@@ -66,7 +69,11 @@ public:
 		ResizeConservative(out1, n);
 	}
 	template <class Range>
-	void CopyXY(Range &outX, Range &outY) {	Copy(&DataSource::x, &DataSource::y, outX, outY);}
+	void CopyX(Range &out) 			  	  {Copy(&DataSource::x, out);}
+	template <class Range>
+	void CopyY(Range &out) 			  	  {Copy(&DataSource::y, out);}
+	template <class Range>
+	void CopyXY(Range &outX, Range &outY) {Copy(&DataSource::x, &DataSource::y, outX, outY);}
 	
 	template <class Range>
 	void Copy(Getdatafun getdata0, Getdatafun getdata1, Getdatafun getdata2, Range &out0, Range &out1, Range &out2) {
@@ -124,9 +131,6 @@ public:
 		return ZeroCrossing(&DataSource::y, &DataSource::x, ascending, descending, zeros, ids);}
 	double IntegralY() 			{return Integral(&DataSource::y, &DataSource::x);}
 	double IntegralY(double from, double to, double n) 	{return Integral(from, to, n);}
-
-	enum FFT_WINDOW {NO_WINDOW = 0, HAMMING, COS};
-	enum FFT_TYPE   {T_FFT = 0, T_PHASE, T_PSD};
 
 	Upp::Vector<Pointf> FFTY(double tSample, bool frequency = false, int type = FFT_TYPE::T_FFT, 
 					int window = FFT_WINDOW::HAMMING, int numSub = 1, double overlapping = 0)  {
@@ -929,8 +933,8 @@ inline T TrilinearInterpolate(T x, T y, T z, T x0, T x1, T y0, T y1, T z0, T z1,
 
 template <class T>
 T LinearInterpolate(const T x, const Point_<T> *vec, int len) {
-	ASSERT(len > 1);
-	if (x < vec[0].x)
+	ASSERT(len > 0);
+	if (len == 1 || x < vec[0].x)
 		return vec[0].y;
 	for (int i = 0; i < len-1; ++i) {
 		if (vec[i+1].x >= x && vec[i].x <= x) 
@@ -941,8 +945,7 @@ T LinearInterpolate(const T x, const Point_<T> *vec, int len) {
 
 template <class Range>
 typename Range::value_type LinearInterpolate(const typename Range::value_type x, const Range &vec) {
-	ASSERT(vec.GetCount() > 1);
-	return LinearInterpolate(x, (const typename Range::value_type *)vec, vec.GetCount());
+	return LinearInterpolate(x, (const typename Range::value_type *)vec, vec.size());
 }
 
 template <class T>
@@ -1436,6 +1439,8 @@ void CleanNANDupXSort(const Range1 &x, const Range1 &y, Range2 &rrx, Range2 &rry
 	CleanNAN(x, y, rx, ry);
 	
 	int n = int(rx.size());
+	if (n == 0)
+		return;
 	Vector<int> indices(n);
 	for (int i = 0; i < indices.size(); ++i)
 		indices[i] = i;
@@ -1473,6 +1478,8 @@ void CleanNANDupXSort(const Range1 &x, const Range1 &y, const Range1 &z, Range2 
 	CleanNAN(x, y, z, rx, ry, rz);
 	
 	int n = int(rx.size());
+	if (n == 0)
+		return;
 	Vector<int> indices(n);
 	for (int i = 0; i < indices.size(); ++i)
 		indices[i] = i;
@@ -1513,8 +1520,8 @@ void Resample(const Eigen::VectorXd &sx, const Eigen::VectorXd &sy,
 			  Eigen::VectorXd &rx, Eigen::VectorXd &ry, double srate = Null);
 void Resample(const Eigen::VectorXd &sx, const Eigen::VectorXd &sy, const Eigen::VectorXd &sz, 
 			  Eigen::VectorXd &rx, Eigen::VectorXd &ry, Eigen::VectorXd &rz, double srate = Null);
-Vector<Pointf> FFTSimple(Eigen::VectorXd &data, double tSample, bool frequency, int type, 
-						 int window, int numOver);
+Vector<Pointf> FFT(const Eigen::VectorXd &data, double tSample, bool frequency, int type = FFT_TYPE::T_FFT, 
+						 int window = FFT_WINDOW::NO_WINDOW, int numOver = 0);
 void FilterFFT(Eigen::VectorXd &data, double T, double fromT, double toT);
 
 }

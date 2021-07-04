@@ -241,6 +241,7 @@ void GLCanvas::View(bool x, bool y, bool z) {
 
 void GLCanvas::Layout() {
 	GLCtrl::Layout();
+	
 	glMatrixMode (GL_MODELVIEW);
 	glViewport (0, 0, GetSize().cx, GetSize().cy);
 	glLoadIdentity();
@@ -254,7 +255,7 @@ void GLCanvas::OnPaint() {
 	
 	MemoryIgnoreLeaksBlock __; 
 	
-	glClearColor(1, 1, 1, 0);
+	glClearColor(float(backgroundColor.GetR()/255.), float(backgroundColor.GetG()/255.), float(backgroundColor.GetB()/255.), 0);
 	glClearDepth(0); 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
@@ -270,6 +271,7 @@ void GLCanvas::OnPaint() {
 }
 
 void GLCanvas::PaintLine(double x0, double y0, double z0, double x1, double y1, double z1, const Color &color) {
+	glLineWidth(lineThickness); 
 	glBegin(GL_LINES);
 		glColor4d(color.GetR()/255., color.GetG()/255., color.GetB()/255., 1);
 		glVertex3d(x0, y0, z0);

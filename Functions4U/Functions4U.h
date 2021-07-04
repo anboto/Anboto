@@ -1122,8 +1122,13 @@ public:
 		return *this;
 	}
 	FieldSplit& LoadLine() {
+		ASSERT(in);
 		Load(in->GetLine());
 		return *this;
+	}
+	bool IsEof() {
+		ASSERT(in);
+		return in->IsEof();
 	}
 	String GetText() const {
 		return line;
@@ -1136,41 +1141,43 @@ public:
 		CheckId(i);
 		return fields[i];
 	}
-	int GetInt(int i) const {
+	int GetInt_nothrow(int i) const {
 		if (fields.IsEmpty())
 			throw Exc(in->Str() + t_("No data available"));
 		if (IsNull(i))
 			i = fields.GetCount()-1;
 		CheckId(i);
-		int res = ScanInt(fields[i]);
+		return ScanInt(fields[i]);
+	}
+	int GetInt(int i) const {
+		int res = GetInt_nothrow(i);
 		if (IsNull(res))
 			throw Exc(in->Str() + Format(t_("Bad %s '%s' in field #%d, line\n'%s'"), "integer", fields[i], i+1, line));
 		return res; 
 	}
 	bool IsInt(int i) const {
+		return !IsNull(GetInt_nothrow(i));
+	}
+	double GetDouble_nothrow(int i) const {
 		if (fields.IsEmpty())
 			throw Exc(in->Str() + t_("No data available"));
 		if (IsNull(i))
 			i = fields.GetCount()-1;
 		CheckId(i);
-		return !IsNull(ScanInt(fields[i]));
+		String data = fields[i];
+		data.Replace("D", "");
+		return ScanDouble(data);
 	}
 	double GetDouble(int i) const {
-		if (fields.IsEmpty())
-			throw Exc(in->Str() + t_("No data available"));
-		if (IsNull(i))
-			i = fields.GetCount()-1;
-		CheckId(i);
-		double res = ScanDouble(fields[i]);
+		double res = GetDouble_nothrow(i);
 		if (IsNull(res))
-			throw Exc(in->Str() + Format(t_("Bad %s '%s' in field #%d, line\n'%s'"), "double", fields[i], i+1, line));
-		return res;
+			throw Exc(in->Str() + Format(t_("Bad %s '%s' in field #%d, line\n'%s'"), "integer", fields[i], i+1, line));
+		return res; 
 	}
-	
-	bool IsEof() {
-		return in->IsEof();
+	bool IsDouble(int i) const {
+		return !IsNull(GetDouble_nothrow(i));
 	}
-	
+		
 	int size() const 		{return fields.GetCount();}
 	int GetCount() const 	{return size();}
 	bool IsEmpty() const 	{return size() == 0;}
@@ -1180,7 +1187,7 @@ public:
 protected:
 	String line;
 	Upp::Vector<String> fields;
-	FileInLine *in;
+	FileInLine *in = nullptr;
 	
 	void CheckId(int i) const {
 		if (i >= fields.GetCount() || i < 0)
@@ -1236,6 +1243,9 @@ enum CONSOLE_COLOR {
 bool SetConsoleColor(CONSOLE_COLOR color);
 void ConsoleOutputDisable(bool disable);
 
+String GetPythonDeclaration(const String &include);
+String CleanCFromDeclaration(const String &include);
+	
 }
 
 #endif
