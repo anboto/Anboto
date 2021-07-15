@@ -88,6 +88,11 @@ typename Range::value_type GetSampleRate(const Range &x, int numDecimals, double
 	}
 }
 
+template <typename T>
+void LinSpaced(Eigen::Matrix<T, Eigen::Dynamic, 1> &v, Eigen::Index n, T min, T max) {
+	v.LinSpaced(n, min, max);
+}
+
 template <class Range>
 void LinSpaced(Range &v, int n, typename Range::value_type min, typename Range::value_type max) {
 	ASSERT(n > 0);
