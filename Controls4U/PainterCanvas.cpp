@@ -433,151 +433,6 @@ void ParseG(GraphElemList &elems, XmlParser &xp, Svg2DTransform , SvgStyle , con
 		xp.Skip();
 }
 
-/*
-
-bool ParseSVG(DrawingCanvas &canvas, const char *svgFile, const char *svgFolder) {
-	XmlParser xp(svgFile);
-	while(!xp.IsTag())
-		xp.Skip();
-	xp.PassTag("svg");
-	Svg2DTransform transf;
-	SvgStyle style;
-	style.SetFill(Black()).SetOpacity(1);
-	//p.Begin();
-	while(!xp.End()) {
-		transf.Init();
-		style.Init();
-		ParseG(canvas.elemList, xp, transf, style, svgFolder);
-	}
-	//p.End();
-	return true;
-}
-
-
-DrawingCanvas::DrawingCanvas() {
-	transparent = false;
-	translateX = translateY = 0;
-	rotate = 0;
-	scale = 1;
-	
-	quality = MODE_ANTIALIASED;	// 1 or 2 MODE_NOAA        = 1, MODE_SUBPIXEL    = 2,
-	linejoin = LINEJOIN_MITER;
-	linecap = LINECAP_BUTT;
-	transparent = false;
-	opacity = 1;
-	scaleFactor = 1.2;
-
-	focusMove.focusMoving = false;
-	selectionWindow.isSelected = false;
-}
-		
-void DrawingCanvas::Paint(Draw& w) {
-	Size sz = GetSize();
-	if(transparent) {
-		for(int y = 0; y + 32 < sz.cy; y += 32)
-			for(int x = 0; x + 32 < sz.cx; x += 32)
-				w.DrawRect(x, y, 32, 32, (x ^ y) & 32 ? Color(254, 172, 120) : Color(124, 135, 253));
-	}
-	ImageBuffer ib(sz);
-	BufferPainter sw(ib, quality);
-	DoPaint(sw);
-	if (selectionWindow.isSelected) { 
-		sw.Rectangle(selectionWindow.selected.left, selectionWindow.selected.top, 
-			selectionWindow.selected.GetWidth(), selectionWindow.selected.GetHeight())
-			.Opacity(0.4).Dash("1").Stroke(1, Black()).Fill(LtGray());
-		//sw.RectPath(selectionWindow.selected).Dash("1").Stroke(0.5, Black());
-	}
-	w.DrawImage(0, 0, ib);
-}
-
-void DrawingCanvas::DoPaint(Painter& sw) {
-	sw.Translate(translateX, translateY);
-	sw.Rotate(rotate);
-	sw.Scale(scale);
-	sw.Opacity(opacity);
-	sw.LineCap(linecap);
-	sw.LineJoin(linejoin);
-	{ PAINTER_TIMING("FILL");
-		if(transparent)
-			sw.Clear(RGBAZero());
-		else
-			sw.Clear(White());
-	}
-	Svg2DTransform trans;
-	SvgStyle style;
-	style.SetFill(Null).SetStrokeColor(Black()).SetOpacity(1).SetStrokeWidth(1);
-	
-	sw.Begin();
-	elemList.Paint(sw, trans, style, true);
-	sw.End();
-}
-
-
-bool LoadSvg(DrawingCanvas &canvas, String fileName) {
-	if (!FileExists(fileName))
-		return false;
-
-	return ParseSVG(canvas, LoadFileBOM(fileName), GetFileDirectory(fileName));
-}
-
-void DrawingCanvas::MouseWheel(Point p, int zdelta, dword keyflags) {
-	Size sz = GetSize();
-	double factor;
-	if(zdelta > 0)
-		factor = scaleFactor;
-	else
-		factor = 1/scaleFactor;
-	
-	scale *= factor;
-	translateX = sz.cx*(1-factor)/2. + translateX*factor;
-	translateY = sz.cy*(1-factor)/2. + translateY*factor;
-	
-	Refresh();
-}
-
-void DrawingCanvas::MiddleDown(Point p, dword keyflags) {
-	focusMove.lastFocusPoint = p;
-    focusMove.focusMoving = true;
-}
-
-void DrawingCanvas::MiddleUp(Point p, dword keyflags) {
-    focusMove.focusMoving = false;
-}
-
-void DrawingCanvas::MouseLeave() {
-    focusMove.focusMoving = false;
-}
-
-void DrawingCanvas::MouseMove(Point p, dword keyflags) {
-    if (focusMove.focusMoving) {
-     	translateX -= focusMove.lastFocusPoint.x - p.x;
-      	translateY -= focusMove.lastFocusPoint.y - p.y;
-      	focusMove.lastFocusPoint = p;
-
-        Refresh();
-    }
-    if (selectionWindow.isSelected) {
-      	selectionWindow.selected.right = p.x;
-		selectionWindow.selected.bottom = p.y;  
-		
-		Refresh();
-    }
-}
-
-void DrawingCanvas::LeftDown(Point p, dword keyflags) {
-	selectionWindow.isSelected = true;
-	selectionWindow.selected.left = selectionWindow.selected.right = p.x;
-	selectionWindow.selected.top = selectionWindow.selected.bottom = p.y;
-}
-
-void DrawingCanvas::LeftUp(Point p, dword keyflags) {
-	if (selectionWindow.isSelected) {
-		Refresh();
-		selectionWindow.isSelected = false;
-	}
-}
-*/
-
 
 PainterCanvas::PainterCanvas() {
 	rotate = 0;
@@ -624,47 +479,17 @@ Image PainterCanvas::GetImage(Size sz)
 		sw.Clear(backColor);
 	else
 		sw.Clear(SColorFace());
-//sw.Move(0, 0).Line(300, 300).Stroke(2, Black());
+
 	if (canvasSize.cx > 0 && canvasSize.cy > 0) {
 		if (!IsNull(backImage)) 
 			sw.Rectangle(0, 0, canvasSize.cx, canvasSize.cy).Fill(backImage, 0, 0, canvasSize.cx, 0, FILL_FAST).Stroke(0, Black());
 		DoPaint(sw);
 		WhenPaint(sw);
-//		sw.Move(0, 0).Line(300, 300).Stroke(2, Black());
 	}	
 	return ib;
 }
 		
 void PainterCanvas::Paint(Draw& w) {
-/*	Size sz = GetSize();
-	ImageBuffer ib(sz);
-	BufferPainter sw(ib, mode);
-	
-	sw.Translate(translateX, translateY);
-	sw.Rotate(rotate);
-	sw.Scale(scale);
-	sw.Opacity(opacity);
-	sw.LineCap(linecap);
-	sw.LineJoin(linejoin);*/
-	//if (/*IsNull(backImage) || */colorUnderBackgroundImage) 
-	//	sw.Clear(backColor);
-	//else
-	//	sw.Clear(RGBAZero());
-/*	if (backColor)
-		sw.Clear(backColor);
-	else
-		sw.Clear(SColorFace());*/
-	//else {
-	//	Color c = Null;
-	//	sw.Clear(c);
-	//}
-
-/*	if (canvasSize.cx > 0 && canvasSize.cy > 0) {
-		if (!IsNull(backImage)) 
-			sw.Rectangle(0, 0, canvasSize.cx, canvasSize.cy).Fill(backImage, 0, 0, canvasSize.cx, 0, FILL_FAST).Stroke(0, Black());
-		DoPaint(sw);
-		WhenPaint(sw);
-	}*/
 	w.DrawImage(0, 0, GetImage());	
 	if (legendShowXY) {
 		Size sz = GetTextSize(legendText, legendFont);
@@ -968,18 +793,6 @@ Image PainterCanvas::CursorImage(Point , dword ) {
 }
 
 void PainterCanvas::DoPaint(Painter& sw) {
-	//sw.Translate(translateX, translateY);
-	//sw.Rotate(rotate);
-	//sw.Scale(scale);
-	//sw.Opacity(opacity);
-	//sw.LineCap(linecap);
-	//sw.LineJoin(linejoin);
-	/*{ PAINTER_TIMING("FILL");
-		if(transparent)
-			sw.Clear(RGBAZero());
-		else
-			sw.Clear(White());
-	}*/
 	Svg2DTransform trans;
 	SvgStyle style;
 	style.SetFill(Null).SetStrokeColor(Black()).SetOpacity(1).SetStrokeWidth(1);
@@ -995,12 +808,10 @@ PainterCanvas &PainterCanvas::SetLegend(bool _legendShowXY, Font _legendFont) {
 	return *this;
 }
 
-INITBLOCK{
+INITBLOCK {
 	GraphElem::Register<GraphElem>("GraphElem");
 	GraphElem::Register<LineElem>("LineElem");
 	GraphElem::Register<RectElem>("RectElem");
-	
-
 }
 
 }

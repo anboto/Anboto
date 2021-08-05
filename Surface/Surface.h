@@ -325,8 +325,10 @@ public:
 	void GetLimits(); 
 	void GetPanelParams();
 	String CheckErrors() const;
-	double GetWaterPlaneArea() const;
 	void GetSurface();
+	double GetSurfaceXProjection(bool positive, bool negative) const;
+	double GetSurfaceYProjection(bool positive, bool negative) const;
+	double GetSurfaceZProjection(bool positive, bool negative) const;
 	void GetSegments();
 	double GetAvgLenSegment()	{return avgLenSegment;}
 	void GetVolume();

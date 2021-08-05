@@ -225,9 +225,9 @@ void ScatterDraw::AdjustMajorUnitY2() {
 }
 
 ScatterDraw &ScatterDraw::SetRange(double rx, double ry, double ry2) {
-	ASSERT(IsNull(rx) || rx  > 0);
-	ASSERT(IsNull(ry) || ry  > 0);
-	ASSERT(IsNull(ry2)|| ry2 > 0);
+	ASSERT(IsNull(rx) || rx  >= 0);
+	ASSERT(IsNull(ry) || ry  >= 0);
+	ASSERT(IsNull(ry2)|| ry2 >= 0);
 	
 	if (!IsNull(rx)) {
 		xRange = rx;

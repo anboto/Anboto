@@ -868,12 +868,77 @@ void Surface::GetSurface() {
 	avgFacetSideLen  = sqrt(surface/panels.GetCount());
 }
 
-double Surface::GetWaterPlaneArea() const {
+double Surface::GetSurfaceXProjection(bool positive, bool negative) const {
 	double area = 0;
 	
 	for (int ip = 0; ip < panels.GetCount(); ++ip) {
 		const Panel &panel = panels[ip];
-		area += -(panel.surface0*panel.normal0.z + panel.surface1*panel.normal1.z);
+		
+		bool add0;
+		if (panel.normal0.x > 0)
+			add0 = positive;
+		else if (panel.normal0.x < 0)
+			add0 = negative;
+		if (add0)
+			area += -panel.surface0*panel.normal0.x;
+		
+		bool add1;
+		if (panel.normal1.x > 0)
+			add1 = positive;
+		else if (panel.normal1.x < 0)
+			add1 = negative;
+		if (add1)
+			area += -panel.surface1*panel.normal1.x;
+	}
+	return area;
+}
+
+double Surface::GetSurfaceYProjection(bool positive, bool negative) const {
+	double area = 0;
+	
+	for (int ip = 0; ip < panels.GetCount(); ++ip) {
+		const Panel &panel = panels[ip];
+		
+		bool add0;
+		if (panel.normal0.y > 0)
+			add0 = positive;
+		else if (panel.normal0.y < 0)
+			add0 = negative;
+		if (add0)
+			area += -panel.surface0*panel.normal0.y;
+		
+		bool add1;
+		if (panel.normal1.y > 0)
+			add1 = positive;
+		else if (panel.normal1.y < 0)
+			add1 = negative;
+		if (add1)
+			area += -panel.surface1*panel.normal1.y;
+	}
+	return area;
+}
+
+double Surface::GetSurfaceZProjection(bool positive, bool negative) const {
+	double area = 0;
+	
+	for (int ip = 0; ip < panels.GetCount(); ++ip) {
+		const Panel &panel = panels[ip];
+		
+		bool add0;
+		if (panel.normal0.z > 0)
+			add0 = positive;
+		else if (panel.normal0.z < 0)
+			add0 = negative;
+		if (add0)
+			area += -panel.surface0*panel.normal0.z;
+		
+		bool add1;
+		if (panel.normal1.z > 0)
+			add1 = positive;
+		else if (panel.normal1.z < 0)
+			add1 = negative;
+		if (add1)
+			area += -panel.surface1*panel.normal1.z;
 	}
 	return area;
 }
