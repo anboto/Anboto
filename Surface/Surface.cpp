@@ -556,7 +556,7 @@ bool Surface::ReorientPanels0(bool _side) {
 	return true;
 }
 
-Vector<Vector<int>> Surface::GetPanelSets(Function <void(String, int pos)> Status) {
+Vector<Vector<int>> Surface::GetPanelSets(Function <bool(String, int pos)> Status) {
 	Vector<Vector<int>> ret;
 	
 	double zTolerance = -0.1;
@@ -678,7 +678,7 @@ bool Surface::SameOrderPanel(int ip0, int ip1, int in0, int in1) {
 	return first0in0 != first1in0;
 }
 
-String Surface::Heal(bool basic, Function <void(String, int pos)> Status) {
+String Surface::Heal(bool basic, Function <bool(String, int pos)> Status) {
 	String ret;
 	
 	if (basic) {

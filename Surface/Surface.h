@@ -319,7 +319,7 @@ public:
 	
 	VolumeEnvelope env;
 	
-	String Heal(bool basic, Function <void(String, int pos)> Status = Null);
+	String Heal(bool basic, Function <bool(String, int pos)> Status = Null);
 	void Orient();
 	void Image(int axis);
 	void GetLimits(); 
@@ -346,7 +346,7 @@ public:
 	void CutZ(const Surface &orig, int factor = 1);
 	
 	void Join(const Surface &orig);
-	Vector<Vector<int>> GetPanelSets(Function <void(String, int pos)> Status);
+	Vector<Vector<int>> GetPanelSets(Function <bool(String, int pos)> Status);
 	
 	void TriangleToQuad(int ip);
 	void TriangleToQuad(Panel &pan);
