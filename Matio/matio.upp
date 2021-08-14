@@ -12,7 +12,7 @@ options
 file
 	matio.cpp,
 	matio.h,
-	matio.tpp,
+	srcdoc.tpp,
 	Copying;
 
  spellcheck_comments "EN-GB"

@@ -10,3 +10,7 @@ TOPIC("Properties_en-us")
 #include "Properties_en-us.tppi"
 END_TOPIC
 
+TOPIC("ScatterCtrl_en-us")
+#include "ScatterCtrl_en-us.tppi"
+END_TOPIC
+
