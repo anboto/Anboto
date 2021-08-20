@@ -4,6 +4,7 @@
 
 using namespace Upp;
 
+#include "OfficeAutomation.h"
 #include "OfficeAutomationMethods.h"
 
 typedef IDispatch* ObjectOle;
