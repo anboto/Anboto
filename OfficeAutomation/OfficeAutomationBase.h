@@ -4,6 +4,7 @@
 
 using namespace Upp;
 
+#include "OfficeAutomation.h"
 #include "OfficeAutomationMethods.h"
 
 typedef IDispatch* ObjectOle;
@@ -46,6 +47,15 @@ public:
 	virtual bool IsAvailable();					
 	
 	Sheet_METHOD_LIST
+		
+	bool SetVisible(bool visible);
+	bool ExportAsFixedFormat(int type, String filename, int quality = 0, bool includedocproperties = true, bool ignoreprintareas = false, int from = 1, int to = 0, bool openafterpublish = false);
+	bool SetDisplayAlerts(bool display = true);
+	bool SetLargeOperationCellThousandCount(int count = 65536);
+	bool SetFormat(String format);
+
+	bool Close();
+
 	
 private:
 	ObjectOle App;
@@ -56,9 +66,8 @@ private:
 	
 	VariantOle Matrix;
 	
-	bool quit;	
+	bool quit;
 	
-	bool SetVisible(bool visible);
 	bool SetBorder(ObjectOle &borders, int borderIndx, int lineStyle, int weight, Color color);
 	
 	bool killProcess;
@@ -164,6 +173,10 @@ public:
 	static bool Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3);
 	static bool Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4);
 	static bool Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5);
+	static bool Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6);
+	static bool Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7);
+	static bool Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7, VariantOle &value8);
+	static bool Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7, VariantOle &value8, VariantOle &value9);
 	static bool Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7, VariantOle &value8, VariantOle &value9, VariantOle &value10, VariantOle &value11);
 	static ObjectOle MethodGet(ObjectOle from, String which);
 	static ObjectOle MethodGet(ObjectOle from, String which, VariantOle &value);

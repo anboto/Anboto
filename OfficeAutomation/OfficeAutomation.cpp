@@ -354,13 +354,37 @@ bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &va
 bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4) {
 	VARIANT result;
 	VariantInit(&result);
-	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 3, value.var, value2.var, value3.var, value4.var);
+	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 4, value.var, value2.var, value3.var, value4.var);
 }
 
 bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5) {
 	VARIANT result;
 	VariantInit(&result);
-	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 3, value.var, value2.var, value3.var, value4.var, value5.var);
+	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 5, value.var, value2.var, value3.var, value4.var, value5.var);
+}
+
+bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6) {
+	VARIANT result;
+	VariantInit(&result);
+	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 6, value.var, value2.var, value3.var, value4.var, value5.var, value6.var);
+}
+
+bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7) {
+	VARIANT result;
+	VariantInit(&result);
+	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 7, value.var, value2.var, value3.var, value4.var, value5.var, value6.var, value7.var);
+}
+
+bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7, VariantOle &value8) {
+	VARIANT result;
+	VariantInit(&result);
+	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 8, value.var, value2.var, value3.var, value4.var, value5.var, value6.var, value7.var, value8.var);
+}
+
+bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7, VariantOle &value8, VariantOle &value9) {
+	VARIANT result;
+	VariantInit(&result);
+	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 9, value.var, value2.var, value3.var, value4.var, value5.var, value6.var, value7.var, value8.var, value9.var);
 }
 
 bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7, VariantOle &value8, VariantOle &value9, VariantOle &value10, VariantOle &value11) {
@@ -799,6 +823,8 @@ bool MSSheet::SaveAs(String fileName, String type) {
 	vFileName.BString(fileName);
 	if (type == "csv")
 		vType.Int(6);
+	else if (type == "pdf")
+		vType.Int(57);
 	else if (type == "html")
 		vType.Int(44);
 	else if (type == "txt")
@@ -821,6 +847,63 @@ bool MSSheet::SaveAs(String fileName, String type) {
 
 	return (bool)ret;
 }
+
+bool MSSheet::ExportAsFixedFormat(int type, String filename, int quality, bool includedocproperties, bool ignoreprintareas, int from, int to, bool openafterpublish)
+{
+	if (!Book)
+		return false;
+
+	VariantOle vType, vFileName, vQuality, vIncludeDocProperties, vIgnorePrintAreas, vFrom, vTo, vOpenAfterPublish, vFixedFormatExtClassPtr;
+
+	vType.Int(type);
+	vFileName.BString(filename);
+	vQuality.Int(quality);
+	vIncludeDocProperties.Int4(includedocproperties ? 1 : 0);
+	vIgnorePrintAreas.Int4(ignoreprintareas ? 1 : 0);
+	vFrom.Int4(from);
+	if (to < 0)
+		vTo.Optional();
+	else
+		vTo.Int4(to);
+	vOpenAfterPublish.Int4(openafterpublish ? 1 : 0);
+
+	return Ole::Method(Book, "ExportAsFixedFormat", vOpenAfterPublish, 
+							vTo, 
+							vFrom, 
+							vIgnorePrintAreas, 
+							vIncludeDocProperties, 
+							vQuality, 
+							vFileName, 
+							vType);
+}
+
+bool MSSheet::SetDisplayAlerts(bool display)
+{
+	VariantOle vDisplayAlerts;
+	vDisplayAlerts.Int4(display ? 1: 0);
+	return Ole::SetValue(App, "DisplayAlerts", vDisplayAlerts);
+}
+
+bool MSSheet::SetLargeOperationCellThousandCount(int count)
+{
+	VariantOle vCount;
+	vCount.Int4(count);
+	return Ole::SetValue(App, "LargeOperationCellThousandCount", vCount);
+}
+
+bool MSSheet::SetFormat(String format) {
+	VariantOle vFormat;
+	vFormat.BString(format);
+	return Ole::SetValue(Range, "NumberFormat", vFormat);
+}
+
+bool MSSheet::Close() {
+	if (!Books)
+		return false;
+
+	return (bool)Ole::Method(Book, "Close");
+}
+
 
 bool MSSheet::SetBold(String cell, bool bold) {
 	int col, row;
