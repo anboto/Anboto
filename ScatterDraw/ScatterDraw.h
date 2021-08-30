@@ -448,8 +448,17 @@ public:
 	//				bool vertical2, double miny2, double maxy2, double factor);
 	//ScatterDraw &ZoomToFitSmart(bool horizontal, double minx, double maxx, bool vertical, double minxy, double maxy, 
 	//				bool vertical2, double miny2, double maxy2, double factor);
+	ScatterDraw &ZoomToFitNonLinked(bool horizontal, bool vertical, double factorH, double factorV);
+	//ScatterDraw &DoFitToData(bool horizontal, double minx, double maxx, bool vertical, double minxy, double maxy, 
+	//				bool vertical2, double miny2, double maxy2, double factor = 0);
+	//ScatterDraw &DoFitToDataSmart(bool horizontal, double minx, double maxx, bool vertical, double minxy, double maxy, 
+	//				bool vertical2, double miny2, double maxy2, double factor = 0);
+	
 	void Zoom(double scale, bool hor = true, bool ver = true); 
+	void ZoomNonLinked(double scale, bool hor, bool ver); 
+	
 	void Scroll(double factorX, double factorY);
+	void ScrollNonLinked(double factorX, double factorY);
 	
 	enum ZoomStyle {TO_CENTER, FROM_BASE};
 	ScatterDraw &SetZoomStyleX(ZoomStyle style = TO_CENTER) {zoomStyleX = style; return *this;}
@@ -1244,14 +1253,6 @@ private:
 	
 	static void ParseTextMultiline(const String &text, Upp::Font &fnt, 
 								   Upp::Vector <String> &texts, Upp::Vector <Size> &sizes);
-	
-	ScatterDraw &DoFitToData(bool horizontal, bool vertical, double factorH, double factorV);
-	//ScatterDraw &DoFitToData(bool horizontal, double minx, double maxx, bool vertical, double minxy, double maxy, 
-	//				bool vertical2, double miny2, double maxy2, double factor = 0);
-	//ScatterDraw &DoFitToDataSmart(bool horizontal, double minx, double maxx, bool vertical, double minxy, double maxy, 
-	//				bool vertical2, double miny2, double maxy2, double factor = 0);
-	void DoZoom(double scale, bool hor, bool ver); 
-	void DoScroll(double factorX, double factorY);
 	
 	void SetXYMinLinkedEach(double xmin, double xmin0, double ymin, double ymin0, double ymin2, double ymin20);
 	void SetRangeLinkedEach(double rx, double rx0, double ry, double ry0, double ry2, double ry20);

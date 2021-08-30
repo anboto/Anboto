@@ -318,16 +318,16 @@ ScatterDraw &ScatterDraw::ZoomToFit(bool horizontal, bool vertical, double facto
 		linkedMaster->ZoomToFit(horizontal, vertical, factorH, factorV);
 		return *this;
 	}
-	DoFitToData(horizontal, vertical, factorH, factorV);
+	ZoomToFitNonLinked(horizontal, vertical, factorH, factorV);
 	if (!linkedCtrls.IsEmpty()) {
 		for (int i = 0; i < linkedCtrls.GetCount(); ++i)
-	    	linkedCtrls[i]->DoFitToData(horizontal, vertical, factorH, factorV);
+	    	linkedCtrls[i]->ZoomToFitNonLinked(horizontal, vertical, factorH, factorV);
 	}
 	WhenZoomToFit();
 	return *this;
 }
 			
-ScatterDraw &ScatterDraw::DoFitToData(bool horizontal, bool vertical, double factorH, double factorV) {
+ScatterDraw &ScatterDraw::ZoomToFitNonLinked(bool horizontal, bool vertical, double factorH, double factorV) {
 	double minx, maxx, miny, miny2, maxy, maxy2;
 	minx = miny = miny2 = -DOUBLE_NULL;
 	maxx = maxy = maxy2 = DOUBLE_NULL;
@@ -1337,14 +1337,14 @@ void ScatterDraw::Zoom(double scale, bool mouseX, bool mouseY) {
 		linkedMaster->Zoom(scale, mouseX, mouseY);
 		return;
 	}
-	DoZoom(scale, mouseX, mouseY);
+	ZoomNonLinked(scale, mouseX, mouseY);
 	if (!linkedCtrls.IsEmpty()) {
 		for (int i = 0; i < linkedCtrls.GetCount(); ++i) 
-	    	linkedCtrls[i]->DoZoom(scale, mouseX, mouseY);
+	    	linkedCtrls[i]->ZoomNonLinked(scale, mouseX, mouseY);
 	}
 }
 
-void ScatterDraw::DoZoom(double scale, bool mouseX, bool mouseY) {
+void ScatterDraw::ZoomNonLinked(double scale, bool mouseX, bool mouseY) {
 	if (scale == 1)
 		return;
 	lastRefresh_sign = (scale >= 0) ? 1 : -1;
@@ -1458,14 +1458,14 @@ void ScatterDraw::Scroll(double factorX, double factorY) {
 		linkedMaster->Scroll(factorX, factorY);
 		return;
 	}
-	DoScroll(factorX, factorY);
+	ScrollNonLinked(factorX, factorY);
 	if (!linkedCtrls.IsEmpty()) {
 		for (int i = 0; i < linkedCtrls.GetCount(); ++i)
-	    	linkedCtrls[i]->DoScroll(factorX, factorY);
+	    	linkedCtrls[i]->ScrollNonLinked(factorX, factorY);
 	}
 }
 
-void ScatterDraw::DoScroll(double factorX, double factorY) {
+void ScatterDraw::ScrollNonLinked(double factorX, double factorY) {
 	if (factorX != 0) {
 		double deltaX = factorX*xRange;
 		if (!IsNull(minXmin) && factorX > 0) {
