@@ -5,7 +5,7 @@
 
 namespace Upp {
 
-#define FormatCoeff(id, numDigits)		(IsNull(numDigits) ? (String("C") + FormatInt(id)) : FormatDoubleFix(coeff[id], numDigits))
+#define FormatCoeff(id, numDigits)		(IsNull(numDigits) ? (String("C") + FormatInt(id)) : FormatF(coeff[id], numDigits))
 
 class ExplicitEquation : public DataSource {
 public:
@@ -185,7 +185,7 @@ public:
 	virtual String GetName() 		{return t_("DampedSinusoidal");}
 	virtual String GetEquation(int _numDigits = 3) {
 		double zeta  = coeff[2]/coeff[3];
-		String szeta = IsNull(_numDigits) ? String("ζ") : FormatDoubleFix(zeta, _numDigits);
+		String szeta = IsNull(_numDigits) ? String("ζ") : FormatF(zeta, _numDigits);
 
 		String ret = Format("%s + %s*e^(-%s*t)*cos(%s*t + %s) (ζ: %s)", FormatCoeff(0, _numDigits), 
 			FormatCoeff(1, _numDigits), FormatCoeff(2, _numDigits), FormatCoeff(3, _numDigits), FormatCoeff(4, _numDigits),
@@ -594,7 +594,7 @@ public:
 	bool IsNullInstance() const    {return IsNull(unit) && IsNull(val);}
 };
 
-template<> inline bool IsNull(const doubleUnit& r)  {return r.val < DOUBLE_NULL_LIM;}
+template<> inline bool IsNull(const doubleUnit& r)  {return r.val < -std::numeric_limits<double>::infinity();}
 
 class CParserPP : public CParser {
 public:

@@ -522,7 +522,7 @@ String EvalExpr::TermStr(CParserPP& p, int numDigits) {
 				return strId;
 			else {
 				lastVariableSetId = variables.FindAdd(strId, 0);
-				return FormatDoubleFix(variables[lastVariableSetId].val, numDigits);
+				return FormatF(variables[lastVariableSetId].val, numDigits);
 			}
 		}
 	}
@@ -531,7 +531,7 @@ String EvalExpr::TermStr(CParserPP& p, int numDigits) {
 		p.PassChar(')');
 		return "(" + x + ")";
 	}
-	return FormatDoubleFix(p.ReadDouble(), IsNull(numDigits) ? 3 : numDigits);
+	return FormatF(p.ReadDouble(), IsNull(numDigits) ? 3 : numDigits);
 }
 
 String EvalExpr::PowStr(CParserPP& p, int numDigits) {

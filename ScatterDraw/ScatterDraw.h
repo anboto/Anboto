@@ -1184,7 +1184,7 @@ protected:
 
 	void Scrolling(bool down, Point &pt, bool isOut = false);
 	
-	static void ExpFormat(String& s, int , double d)	{s = FormatDoubleExp(d, 1);}
+	static void ExpFormat(String& s, int , double d)	{s = FormatE(d, 1);}
 	static void MonFormat(String& s, int , double d)	{s = Format("%Mon", int(d));}
 	static void DyFormat(String& s, int , double d)		{s = Format("%Dy", int(d));}
 	

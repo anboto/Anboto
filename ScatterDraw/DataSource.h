@@ -1373,6 +1373,19 @@ typename Range::value_type CosWindow(Range &data, int numOver) {
 	return numDataFact;			    
 }
 
+bool IsNum(const Eigen::MatrixXd& r);
+
+template <class Range>
+bool IsNum(const Range& r) {
+	if (r.size() == 0)
+		return true;
+	for (int i = 0; i < r.size(); i++) {
+		if (!IsNum(r[i]))  
+			return false;
+	}
+	return true;
+}
+
 template <class Range1, class Range2>
 void CleanNAN(const Range1 &x, Range2 &retx) {
 	int num = x.size();

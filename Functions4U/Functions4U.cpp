@@ -1027,7 +1027,20 @@ String FormatDoubleAdjust(double d, double range) {
 	else if (1     <= range && range < 10) 		return FormatDouble(d,2);
 	else if (10	   <= range && range < 100) 	return FormatDouble(d,1);
 	else if (100   <= range && range < 100000) 	return FormatDouble(d,0);
-	else return FormatDoubleExp(d,2);	
+	else return FormatE(d,2);	
+}
+
+String FormatDoubleSize(double d, int fieldWidth) {		
+	String format, data;
+	for (int res = 0; fieldWidth > res; res++) {
+		format = S("%.") + FormatInt(fieldWidth-res) + S("G");
+		data = Format(format, d);
+		if (data.GetCount() <= fieldWidth) {
+			data = String(' ', fieldWidth - data.GetCount()) + data;
+			break;
+		}
+	}
+	return data;
 }
 
 String RemoveAccent(wchar c) {

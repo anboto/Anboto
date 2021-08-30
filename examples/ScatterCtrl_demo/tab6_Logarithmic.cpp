@@ -22,7 +22,7 @@ void Tab6_Logarithmic::FormatX(String& s, int , double d)
 {
 	double val = pow(10, d);
 	if (val >= 1 && val <= 1e5)
-		s = FormatDoubleExp(val, 0);
+		s = FormatE(val, 0);
 }
 
 void Tab6_Logarithmic::FormatXGridUnits(String& s, int , double d)
@@ -33,7 +33,7 @@ void Tab6_Logarithmic::FormatXGridUnits(String& s, int , double d)
 		while (valint < -9 || valint > 9) 
 			valint /= 10;
 		if (valint == 1)
-			s = FormatDoubleExp(pow(10, d), 0);
+			s = FormatE(pow(10, d), 0);
 	}
 }
 

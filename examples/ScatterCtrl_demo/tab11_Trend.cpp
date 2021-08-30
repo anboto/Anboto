@@ -85,13 +85,13 @@ void Tab11_Trend::OnSeries() {
 	scatter.ZoomToFit(true, true);
 	scatter.Refresh();
 	
-	grid.Add(linear.GetFullName(), 	linear.GetEquation(),  FormatDoubleFix(l_r2, 5));
-	grid.Add(poly2.GetFullName(), 	poly2.GetEquation(),   FormatDoubleFix(p2_r2, 5));
-	grid.Add(poly4.GetFullName(), 	poly4.GetEquation(),   FormatDoubleFix(p4_r2, 5));
-	grid.Add(fourier.GetFullName(), fourier.GetEquation(), FormatDoubleFix(f_r2, 5));
-	grid.Add(exponential.GetFullName(), exponential.GetEquation(), FormatDoubleFix(exp_r2, 5));
-	grid.Add(rational1.GetFullName(), rational1.GetEquation(), FormatDoubleFix(rat1_r2, 5));
-	grid.Add(sin.GetFullName(), sin.GetEquation(), FormatDoubleFix(s_r2, 5));
+	grid.Add(linear.GetFullName(), 	linear.GetEquation(),  FormatF(l_r2, 5));
+	grid.Add(poly2.GetFullName(), 	poly2.GetEquation(),   FormatF(p2_r2, 5));
+	grid.Add(poly4.GetFullName(), 	poly4.GetEquation(),   FormatF(p4_r2, 5));
+	grid.Add(fourier.GetFullName(), fourier.GetEquation(), FormatF(f_r2, 5));
+	grid.Add(exponential.GetFullName(), exponential.GetEquation(), FormatF(exp_r2, 5));
+	grid.Add(rational1.GetFullName(), rational1.GetEquation(), FormatF(rat1_r2, 5));
+	grid.Add(sin.GetFullName(), sin.GetEquation(), FormatF(s_r2, 5));
 	grid.SetSortColumn(2, true);
 }
 

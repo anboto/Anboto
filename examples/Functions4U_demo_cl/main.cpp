@@ -115,6 +115,18 @@ void DistanceDemo() {
 }
 
 void MiscellaneousDemos() {
+	UppLog() << "Float formatting\n";
+	
+	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 6,  FormatDoubleSize(2345678.9017654, 6));
+	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 7,  FormatDoubleSize(2345678.9017654, 7));
+	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 8,  FormatDoubleSize(2345678.9017654, 8));
+	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 9,  FormatDoubleSize(2345678.9017654, 9));
+	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 10, FormatDoubleSize(2345678.9017654, 10));
+	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 11, FormatDoubleSize(2345678.9017654, 11));
+	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 12, FormatDoubleSize(2345678.9017654, 12));
+	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 13, FormatDoubleSize(2345678.9017654, 13));
+	UppLog() << "\n";
+	
 	SetConsoleColor(CONSOLE_COLOR::LTRED);
 	UppLog() << "This message is in red\n";
 	SetConsoleColor(CONSOLE_COLOR::LTYELLOW);

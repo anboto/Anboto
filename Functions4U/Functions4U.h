@@ -230,6 +230,7 @@ String SeasonName(int iseason);
 int GetSeason(Date &date);
 	
 String FormatDoubleAdjust(double d, double range);
+String FormatDoubleSize(double d, int fieldWidth);
 
 String RemoveAccents(String str);
 String RemoveAccent(wchar c);
@@ -699,7 +700,7 @@ bool EqualDecimals(const T1& a, const T2& b, int numdecimals) {
 
 template <class Range>
 int Find(const Range& r, const typename Range::value_type& value, int from = 0) {
-	for(int i = from; i < r.size(); i++)
+	for (int i = from; i < r.size(); i++)
 		if(r[i] == value) 
 			return i;
 	return -1;
@@ -716,9 +717,10 @@ int FindAdd(Range& r, const typename Range::value_type& value, int from = 0) {
 
 template <class Range>
 int FindRatio(const Range& r, const typename Range::value_type& value, const typename Range::value_type& ratio, int from = 0) {
-	for(int i = from; i < r.size(); i++) {
-		if (EqualRatio(r[i], value, ratio))
-			return i;
+	int id = FindClosest(r, value, from);
+	if (id >= 0) {
+		if (EqualRatio(r[id], value, ratio))
+			return id;
 	}
 	return -1;
 }
@@ -734,9 +736,11 @@ int FindAddRatio(Range& r, const typename Range::value_type& value, const typena
 
 template <class Range>
 int FindDelta(const Range& r, const typename Range::value_type& value, const typename Range::value_type& delta, int from = 0) {
-	for(int i = from; i < r.size(); i++) 
-		if(abs(r[i] - value) <= delta) 
-			return i;
+	int id = FindClosest(r, value, from);
+	if (id >= 0) {
+		if (abs(r[id] - value) <= delta) 
+			return id;
+	}
 	return -1;
 }
 
@@ -751,10 +755,12 @@ int FindAddDelta(Range& r, const typename Range::value_type& value, const typena
 
 template <class Range>
 int FindRoundDecimals(const Range& r, const typename Range::value_type& value, int numDecimals, int from = 0) {
-	String svalue = FormatDouble(value, numDecimals);
-	for(int i = from; i < r.size(); i++) 
-		if(FormatDouble(r[i], numDecimals) == svalue) 
-			return i;
+	int id = FindClosest(r, value, from);
+	if (id >= 0) {
+		String svalue = FormatDouble(value, numDecimals);
+		if (FormatDouble(r[id], numDecimals) == svalue) 
+			return id;
+	}
 	return -1;
 }
 
@@ -762,7 +768,7 @@ template <class Range>
 int FindClosest(const Range& r, const typename Range::value_type& value, int from = 0) {
 	int minId = -1;
 	typename Range::value_type minDiff = std::numeric_limits<typename Range::value_type>::max();
-	for(int i = from; i < r.size(); i++) {
+	for (int i = from; i < r.size(); i++) {
 		typename Range::value_type diff = abs(value - r[i]);
 		if (diff < minDiff) {
 			minDiff = diff;	
@@ -776,7 +782,7 @@ template <class Range>
 bool Compare(const Range& a, const Range& b) {
 	if (a.size() != b.size())
 		return false;
-	for(int i = 0; i < a.size(); i++) {
+	for (int i = 0; i < a.size(); i++) {
 		if(a[i] != b[i]) 
 			return false;
 	}
@@ -797,7 +803,7 @@ template <class Range1, class Range2>
 bool CompareDecimals(const Range1& a, const Range2& b, int numDecimals) {
 	if (a.size() != b.size())
 		return false;
-	for(int i = 0; i < a.size(); i++) 
+	for (int i = 0; i < a.size(); i++) 
 		if (!EqualDecimals(a[i], b[i], numDecimals)) 
 			return false;
 	return true;
@@ -806,13 +812,22 @@ bool CompareDecimals(const Range1& a, const Range2& b, int numDecimals) {
 template <class Range>
 String ToString(const Range& a) {
 	String ret;
-	for(int i = 0; i < a.size(); i++) {
+	for (int i = 0; i < a.size(); i++) {
 		if (i > 0)
 			ret << ";";
 		ret << a[i]; 
 	}
 	return ret;
 }
+
+template <class Range1, class Range2>
+void SetSortOrder(Range1& a, const Range2& order) {
+	ASSERT(a.size() == order.size());
+	Range1 temp = clone(a);
+	for (int i = 0; i < order.size(); ++i)
+		a[i] = temp[order[i]];	
+}
+
 
 class RealTimeStop {  
 typedef RealTimeStop CLASSNAME;
@@ -1121,6 +1136,20 @@ public:
 		fields = Split(line, IsSeparator, true);
 		return *this;
 	}
+	FieldSplit& Load(String _line, const Vector<int> &separators) {
+		line = _line;
+		fields.Clear();
+		int from = 0, to;
+		for (int i = 0; i < separators.size(); ++i) {
+			to = separators[i];
+			if (to > line.GetCount()-1)
+				break; 
+			fields << line.Mid(from, to-from);
+			from = to;
+		}
+		fields << line.Mid(from);
+		return *this;
+	}
 	FieldSplit& LoadLine() {
 		ASSERT(in);
 		Load(in->GetLine());
@@ -1171,7 +1200,7 @@ public:
 	double GetDouble(int i) const {
 		double res = GetDouble_nothrow(i);
 		if (IsNull(res))
-			throw Exc(in->Str() + Format(t_("Bad %s '%s' in field #%d, line\n'%s'"), "integer", fields[i], i+1, line));
+			throw Exc(in->Str() + Format(t_("Bad %s '%s' in field #%d, line\n'%s'"), "double", fields[i], i+1, line));
 		return res; 
 	}
 	bool IsDouble(int i) const {

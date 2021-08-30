@@ -482,7 +482,7 @@ String ScatterDraw::VariableFormat(double range, double d) {
 	else if (1	   <= range && range < 10) 	   return FormatDouble(d, 2);
 	else if (10	   <= range && range < 100)    return FormatDouble(d, 1);
 	else if (100   <= range && range < 10000000)return FormatDouble(d, 0);
-	else return FormatDoubleExp(d, 2);
+	else return FormatE(d, 2);
 }
 
 Color ScatterDraw::GetNewColor(int index, int version) {

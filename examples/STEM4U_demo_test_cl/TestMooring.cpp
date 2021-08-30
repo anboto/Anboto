@@ -57,12 +57,12 @@ void TestMooring(bool test) {
 	double angvessel = atan2(Fvvessel, Fhanchorvessel)*180./M_PI;
 	UppLog() << Format("\nFhanchorvessel=%.2f, Fvanchor=%.2f, Fanchor=%.2f, ang_anchor=%.1f grad\nFvvessel=%.2f, Fvessel=%.2f, ang_vessel=%.1f, xonfloor=%.1f", 
 		Fhanchorvessel, -Fvanchor, Fanchor, anganchor, -Fvvessel, Fvessel, angvessel, xonfloor);
-	VERIFY(FormatDouble(angvessel, 4) == "30.5976");
+	VERIFY(FormatF(angvessel, 4) == "30.5976");
 		
 	UppLog() << "\nX\tY";
 	for (int i = 0; i < x.size(); ++i) 
 		UppLog() << Format("\n%.2f\t%.4f", x[i], z[i]);
-	VERIFY(FormatDouble(z[7], 4) == "9.8116");
+	VERIFY(FormatF(z[7], 4) == "9.8116");
 	
 	if (!test) {
 		int num = 100;

@@ -7,10 +7,24 @@ bool IsNum(double n) {
 	return IsFin(n) && !IsNull(n);
 }
 
+bool IsNum(float n) {
+	return IsFin(n);
+}
+
 bool IsNum(int n) {
 	return !IsNull(n);
 }
 
+bool IsNum(const MatrixXd& r) {
+	if (r.size() == 0)
+		return true;
+	const double *d = r.data();
+	for (int i = 0; i < r.size(); i++) {
+		if (!IsNum(d[i]))  
+			return false;
+	}
+	return true;
+}
 
 double DataSource::Min(Getdatafun getdata, int64& id) {
 	double minVal = std::numeric_limits<double>::max();

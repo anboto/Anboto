@@ -111,8 +111,8 @@ public:
 		Reset();
 	}
 	void Reset() {
-		left = top = -DOUBLE_NULL_LIM;
-		right = bottom = DOUBLE_NULL_LIM;
+		left = top = std::numeric_limits<double>::infinity();
+		right = bottom = -std::numeric_limits<double>::infinity();
 	}
 	void UpdateLimits(const Pointf &p) {
 		UpdateLimitsH(p.x);

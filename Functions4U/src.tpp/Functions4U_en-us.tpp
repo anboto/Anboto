@@ -446,6 +446,13 @@ other elements that require to show the minimum right quantity
 of digits from a double.&]
 [s3; &]
 [s4;%- &]
+[s5;:Upp`:`:FormatDoubleSize`(double`,int`):%- [_^Upp`:`:String^ String]_[* FormatDoubleS
+ize]([@(0.0.255) double]_[*@3 d], [@(0.0.255) int]_[*@3 fieldWidth])&]
+[s2; Returns number [%-*@3 d] converted to a String with the best resolution, 
+using either fixed or exponential notation,  filling exactly 
+[%-*@3 fieldWidth] chars.&]
+[s3; &]
+[s4;%- &]
 [s5;:RemoveAccents`(String`):%- [_^String^ String]_[* RemoveAccents]([_^String^ String]_[*@3 s
 tr])&]
 [s2; Returns [%-*@3 str ]with the accented characters substituted with 
