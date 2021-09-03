@@ -8,6 +8,7 @@
 #include "DrawingFunctions.h"
 #include "SeriesPlot.h"
 #include "MarkPlot.h"
+#include <Functions4U/Functions4U.h>
 
 namespace Upp {
 
@@ -1116,10 +1117,10 @@ public:
 	static void SetDefaultCSVSeparator(String sep) 	{defaultCSVseparator = sep;}
 	static String GetDefaultCSVSeparator() 			{return defaultCSVseparator;}
 
-	String VariableFormatX(double d) const  {return VariableFormat(xRange, d);}
-	String VariableFormatY(double d) const  {return VariableFormat(yRange, d);} 
-	String VariableFormatY2(double d) const {return VariableFormat(yRange2, d);}
-	String VariableFormatZ(double d) const  {return VariableFormat(GetSurfMaxZ()-GetSurfMinZ(), d);}
+	String VariableFormatX(double d) const  {return FormatDoubleAdjust(d, xRange);}
+	String VariableFormatY(double d) const  {return FormatDoubleAdjust(d, yRange);} 
+	String VariableFormatY2(double d) const {return FormatDoubleAdjust(d, yRange2);}
+	String VariableFormatZ(double d) const  {return FormatDoubleAdjust(d, GetSurfMaxZ()-GetSurfMinZ());}
 		
 protected:
 	ScatterDraw &_AddSeries(DataSource *data);
@@ -1196,8 +1197,6 @@ protected:
 	static void ExpFormat(String& s, int , double d)	{s = FormatE(d, 1);}
 	static void MonFormat(String& s, int , double d)	{s = Format("%Mon", int(d));}
 	static void DyFormat(String& s, int , double d)		{s = Format("%Dy", int(d));}
-	
-	static String VariableFormat(double range, double d);	
 
 	template<class T>
 	void Plot(T& w);	
@@ -1288,7 +1287,7 @@ void ScatterDraw::SetDrawing(T& w, bool ctrl) {
 }
 
 template <class T>
-bool ScatterDraw::PlotTexts(T& w, const bool boldX, bool boldY) {
+bool ScatterDraw::PlotTexts(T& w, bool boldX, bool boldY) {
 	if(titleHeight > 0) {
 		Upp::Font fontTitle6;
 		fontTitle6 = titleFont;
@@ -1397,7 +1396,16 @@ bool ScatterDraw::PlotTexts(T& w, const bool boldX, bool boldY) {
 		fontYNum.Bold();
 	Upp::Font fontY2Num = fontYNum;
 	fontY2Num.Italic();
-
+	
+	double factorX = plotW/xRange;
+	
+	double widthY  = plotScaleX*hPlotLeft - plotScaleX*2 - 1.5*fontY.GetHeight();
+	int numNumY  = min(10, int(widthY/(fontYNum.GetLeftSpace('0') + fontYNum.GetWidth('0'))));
+	double widthY2 = plotScaleX*hPlotRight - plotScaleX*2 - 1.5*fontY2.GetHeight();
+	int numNumY2 = min(10, int(widthY2/(fontY2Num.GetLeftSpace('0') + fontY2Num.GetWidth('0'))));
+	double widthX = 0.9*xMajorUnit*factorX;
+	int numNumX = min(10, int(widthX/(fontXNum.GetLeftSpace('0') + fontXNum.GetWidth('0'))));
+	
 	if (drawXReticle || drawXReticleNumbers) {
 		Vector<double> unitsX;
 		if (SetGridLinesX)
@@ -1406,7 +1414,6 @@ bool ScatterDraw::PlotTexts(T& w, const bool boldX, bool boldY) {
 			for(int i = 0; xMinUnit + i*xMajorUnit <= xRange; i++) 
 				unitsX << xMinUnit + i*xMajorUnit;
 		}
-		double factorX = plotW/xRange;
 		for(int i = 0; i < unitsX.GetCount(); ++i) {
 			double reticleX = factorX*unitsX[i];
 			if (reticleX >=0 && reticleX <= plotW+0.001) {
@@ -1417,7 +1424,7 @@ bool ScatterDraw::PlotTexts(T& w, const bool boldX, bool boldY) {
 				else if (cbModifFormatX)
 					cbModifFormatX(gridLabelX, i, gridX);
 				else
-					gridLabelX = VariableFormatX(gridX);
+					gridLabelX = FormatDoubleSize(gridX, numNumX, false);
 				
 				if (!gridLabelX.IsEmpty()) {
 					if (drawXReticleNumbers) {
@@ -1459,7 +1466,7 @@ bool ScatterDraw::PlotTexts(T& w, const bool boldX, bool boldY) {
 				else if (cbModifFormatY)
 					cbModifFormatY(gridLabelY, i, gridY);
 				else
-					gridLabelY = VariableFormatY(gridY);
+					gridLabelY = FormatDoubleSize(gridY, numNumY, false);
 				Size sz = GetTextSizeSpace(gridLabelY, fontYNum);
 				DrawText(w, -sz.cx - plotScaleX*6, reticleY - sz.cy/2, 0, gridLabelY, fontYNum, axisColor);
 			}
@@ -1471,7 +1478,7 @@ bool ScatterDraw::PlotTexts(T& w, const bool boldX, bool boldY) {
 				else if (cbModifFormatY2)
 					cbModifFormatY2(gridLabelY2, i, gridY2);
 				else
-					gridLabelY2 = VariableFormatY2(gridY2);
+					gridLabelY2 = FormatDoubleSize(gridY2, numNumY2, false);
 				Size sz = GetTextSizeSpace(gridLabelY2, fontY2Num);
 				DrawText(w, plotW + plotScaleX*10, reticleY - sz.cy/2, 0, gridLabelY2, fontY2Num, axisColor);
 			}

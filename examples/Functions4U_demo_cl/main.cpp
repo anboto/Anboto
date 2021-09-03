@@ -125,6 +125,8 @@ void MiscellaneousDemos() {
 	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 11, FormatDoubleSize(2345678.9017654, 11));
 	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 12, FormatDoubleSize(2345678.9017654, 12));
 	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 13, FormatDoubleSize(2345678.9017654, 13));
+	
+	
 	UppLog() << "\n";
 	
 	SetConsoleColor(CONSOLE_COLOR::LTRED);

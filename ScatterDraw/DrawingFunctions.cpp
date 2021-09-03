@@ -2,8 +2,6 @@
 
 namespace Upp {
 	
-inline bool Even(int val)	  	{return !(val%2);}
-
 Vector <double> GetLineDash(String dash) {
 	Vector<double> d;
 	CParser p(dash);

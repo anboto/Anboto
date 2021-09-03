@@ -1023,20 +1023,21 @@ String FormatDoubleAdjust(double d, double range) {
 		d = 0;
 	if 		(0.001 <= range && range < 0.01) 	return FormatDouble(d,5);
 	else if (0.01  <= range && range < 0.1) 	return FormatDouble(d,4);
-	else if (0.1   <= range && range < 1) 		return FormatDouble(d,3);
-	else if (1     <= range && range < 10) 		return FormatDouble(d,2);
-	else if (10	   <= range && range < 100) 	return FormatDouble(d,1);
-	else if (100   <= range && range < 100000) 	return FormatDouble(d,0);
-	else return FormatE(d,2);	
+	else if (0.1   <= range && range < 10) 		return FormatDouble(d,3);
+	else if (10	   <= range && range < 100) 	return FormatDouble(d,2);
+	else if (100   <= range && range < 10000) 	return FormatDouble(d,1);
+	else if (10000 <= range && range < 100000) 	return FormatDouble(d,0);
+	else return FormatE(d, 2);	
 }
 
-String FormatDoubleSize(double d, int fieldWidth) {		
+String FormatDoubleSize(double d, int fieldWidth, bool fillSpaces) {		
 	String format, data;
 	for (int res = 0; fieldWidth > res; res++) {
 		format = S("%.") + FormatInt(fieldWidth-res) + S("G");
 		data = Format(format, d);
 		if (data.GetCount() <= fieldWidth) {
-			data = String(' ', fieldWidth - data.GetCount()) + data;
+			if (fillSpaces)
+				data = String(' ', fieldWidth - data.GetCount()) + data;
 			break;
 		}
 	}

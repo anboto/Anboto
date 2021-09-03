@@ -143,7 +143,7 @@ void PieDraw::PaintPie(Draw& w, int scale) {
 		for(int i = 0; i < vValues.GetCount(); i++) {
 			a0 = alfa0;                            		              
 			alfa0 += fround(3600.0*vValues[i]/sum);
-			String percent = GetPercent(vValues[i],sum);
+			String percent = GetPercent(vValues[i], sum);
 			Upp::Font scaledFont;
 			scaledFont.Height(scale*(StdFont().GetHeight() + StdFont().GetDescent()));
 			scaledFont.Width(scale*StdFont().GetWidth());
@@ -188,7 +188,7 @@ void PieDraw::PaintPie(Draw& w, int scale) {
 
 String PieDraw::GetPercent(double a, double total) {
 	double p = a*100/total;
-	return FormatDouble(p, 1) + '%';
+	return FormatF(p, 1) + '%';
 }
 
 Drawing PieDraw::GetDrawing(int scale) {

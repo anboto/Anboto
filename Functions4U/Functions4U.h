@@ -230,7 +230,7 @@ String SeasonName(int iseason);
 int GetSeason(Date &date);
 	
 String FormatDoubleAdjust(double d, double range);
-String FormatDoubleSize(double d, int fieldWidth);
+String FormatDoubleSize(double d, int fieldWidth, bool fillSpaces = false);
 
 String RemoveAccents(String str);
 String RemoveAccent(wchar c);
