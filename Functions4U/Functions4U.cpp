@@ -1021,15 +1021,16 @@ String BytesToString(uint64 _bytes, bool units)
 String FormatDoubleAdjust(double d, double range) {
 	if (fabs(d) <= 1e-15)
 		d = 0;
-	if 		(0.001 <= range && range < 0.01) 	return FormatDouble(d,5);
-	else if (0.01  <= range && range < 0.1) 	return FormatDouble(d,4);
-	else if (0.1   <= range && range < 10) 		return FormatDouble(d,3);
-	else if (10	   <= range && range < 100) 	return FormatDouble(d,2);
-	else if (100   <= range && range < 10000) 	return FormatDouble(d,1);
-	else if (10000 <= range && range < 100000) 	return FormatDouble(d,0);
+	if 		(0.001 <= range && range < 0.01) 	return FormatF(d,5);
+	else if (0.01  <= range && range < 0.1) 	return FormatF(d,4);
+	else if (0.1   <= range && range < 10) 		return FormatF(d,3);
+	else if (10	   <= range && range < 100) 	return FormatF(d,2);
+	else if (100   <= range && range < 10000) 	return FormatF(d,1);
+	else if (10000 <= range && range < 100000) 	return FormatF(d,0);
 	else return FormatE(d, 2);	
 }
 
+/*
 String FormatDoubleSize(double d, int fieldWidth, bool fillSpaces) {		
 	String format, data;
 	for (int res = 0; fieldWidth > res; res++) {
@@ -1042,6 +1043,18 @@ String FormatDoubleSize(double d, int fieldWidth, bool fillSpaces) {
 		}
 	}
 	return data;
+}*/
+
+String FormatDoubleSize(double d, int fieldWidth, bool fillSpaces) {		
+	int actualWidth = fieldWidth;
+	String data = FormatDouble(d, fieldWidth, FD_CAP_E|FD_SPECIAL|FD_MINIMAL_EXP);
+	while (data.GetCount() > fieldWidth && actualWidth >= 3) {
+		actualWidth--;
+		data = FormatDouble(d, actualWidth, FD_CAP_E|FD_SPECIAL|FD_MINIMAL_EXP);
+	}
+	if (fillSpaces && data.GetCount() <= fieldWidth) 
+		data = String(' ', fieldWidth - data.GetCount()) + data;
+	return data;	
 }
 
 String RemoveAccent(wchar c) {

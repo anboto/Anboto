@@ -253,12 +253,12 @@ void VLC_Demo::UpdateInfo() {
 	if (t == -1)
 		time <<= "-";	
 	else
-		time <<= FormatDouble(t/1000., 2, FD_ZEROS);
+		time <<= FormatDouble(t/1000., 10, FD_ZEROS);
 	int l = player.GetLength();
 	if (l == -1)
 		length = "-";	
 	else
-		length = FormatDouble(l/1000., 2, FD_ZEROS);
+		length = FormatDouble(l/1000., 10, FD_ZEROS);
 }
 
 

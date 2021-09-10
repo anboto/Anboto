@@ -333,6 +333,7 @@ public:
 	double GetAvgLenSegment()	{return avgLenSegment;}
 	void GetVolume();
 	Point3D GetCenterOfBuoyancy() const;
+	void GetInertia(Eigen::Matrix3d &inertia, const Point3D &center) const;
 	void GetHydrostaticStiffness(Eigen::MatrixXd &c, const Point3D &cb, double rho, const Point3D &cg, double mass, double g);
 	static Vector<Point3D> GetClosedPolygons(Vector<Segment3D> &segs);
 	static Array<Pointf> Point3dto2D(const Vector<Point3D> &bound);

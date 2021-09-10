@@ -117,15 +117,40 @@ void DistanceDemo() {
 void MiscellaneousDemos() {
 	UppLog() << "Float formatting\n";
 	
-	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 6,  FormatDoubleSize(2345678.9017654, 6));
-	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 7,  FormatDoubleSize(2345678.9017654, 7));
-	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 8,  FormatDoubleSize(2345678.9017654, 8));
-	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 9,  FormatDoubleSize(2345678.9017654, 9));
-	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 10, FormatDoubleSize(2345678.9017654, 10));
-	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 11, FormatDoubleSize(2345678.9017654, 11));
-	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 12, FormatDoubleSize(2345678.9017654, 12));
-	UppLog() << Format("FormatDoubleSize(%s, %2d) = '%s'\n", "2345678.9017654", 13, FormatDoubleSize(2345678.9017654, 13));
+	const double num = 2345678.9017654;
+	UppLog() << "\nFormatting 2345678.9017654";
+	String str;
+	UppLog() << "\nFormatF(, 2) = '" << (str = FormatF(num, 2)) << "'";
+	VERIFY(str == "2345678.90");
+	UppLog() << "\nFormatF(, 3) = '" << (str = FormatF(num, 3)) << "'";
+	VERIFY(str == "2345678.902");
+	UppLog() << "\nFormatF(, 4) = '" << (str = FormatF(num, 4)) << "'";
+	VERIFY(str == "2345678.9018");
+	UppLog() << "\nFormatF(, 5) = '" << (str = FormatF(num, 5)) << "'";
+	VERIFY(str == "2345678.90177");
 	
+	UppLog() << "\nFormatDoubleSize(, 3) = '" << (str = FormatDoubleSize(num, 3, true)) << "'";
+	VERIFY(str == "2.3E6");
+	UppLog() << "\nFormatDoubleSize(, 4) = '" << (str = FormatDoubleSize(num, 4, true)) << "'";
+	VERIFY(str == "2.3E6");
+	UppLog() << "\nFormatDoubleSize(, 5) = '" << (str = FormatDoubleSize(num, 5, true)) << "'";
+	VERIFY(str == "2.3E6");
+	UppLog() << "\nFormatDoubleSize(, 6) = '" << (str = FormatDoubleSize(num, 6, true)) << "'";
+	VERIFY(str == "2.35E6");
+	UppLog() << "\nFormatDoubleSize(, 7) = '" << (str = FormatDoubleSize(num, 7, true)) << "'";
+	VERIFY(str == "2345679");
+	UppLog() << "\nFormatDoubleSize(, 8) = '" << (str = FormatDoubleSize(num, 8, true)) << "'";
+	VERIFY(str == " 2345679");
+	UppLog() << "\nFormatDoubleSize(, 9) = '" << (str = FormatDoubleSize(num, 9, true)) << "'";
+	VERIFY(str == "2345678.9");
+	UppLog() << "\nFormatDoubleSize(,10) = '" << (str = FormatDoubleSize(num,10, true)) << "'";
+	VERIFY(str == " 2345678.9");
+	UppLog() << "\nFormatDoubleSize(,11) = '" << (str = FormatDoubleSize(num,11, true)) << "'";
+	VERIFY(str == "2345678.902");
+	UppLog() << "\nFormatDoubleSize(,12) = '" << (str = FormatDoubleSize(num,12, true)) << "'";
+	VERIFY(str == "2345678.9018");
+	UppLog() << "\nFormatDoubleSize(,13) = '" << (str = FormatDoubleSize(num,13, true)) << "'";
+	VERIFY(str == "2345678.90177");
 	
 	UppLog() << "\n";
 	

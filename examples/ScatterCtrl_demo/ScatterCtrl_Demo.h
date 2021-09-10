@@ -140,7 +140,7 @@ public:
 	}
 	void MyFormatDelta(String& s, int , double d)
 	{
-		s = FormatDouble(d, 1) + " " + t_("months");
+		s = FormatDouble(d) + " " + t_("months");
 	}
 	virtual ScatterCtrl &Scatter()	{return scatter;};
 

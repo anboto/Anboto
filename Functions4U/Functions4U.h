@@ -231,6 +231,7 @@ int GetSeason(Date &date);
 	
 String FormatDoubleAdjust(double d, double range);
 String FormatDoubleSize(double d, int fieldWidth, bool fillSpaces = false);
+String FormatDoubleSize2(double d, int fieldWidth, bool fillSpaces = false);
 
 String RemoveAccents(String str);
 String RemoveAccent(wchar c);
@@ -693,8 +694,8 @@ bool EqualRatio(const T& a, const T& b, const T& ratio, const T& zero = 0) {
 
 template <class T1, class T2>
 bool EqualDecimals(const T1& a, const T2& b, int numdecimals) {
-	String sa = FormatDouble(a, numdecimals);
-	String sb = FormatDouble(a, numdecimals);
+	String sa = FormatF(a, numdecimals);
+	String sb = FormatF(a, numdecimals);
 	return sa == sb;
 }
 
@@ -757,8 +758,8 @@ template <class Range>
 int FindRoundDecimals(const Range& r, const typename Range::value_type& value, int numDecimals, int from = 0) {
 	int id = FindClosest(r, value, from);
 	if (id >= 0) {
-		String svalue = FormatDouble(value, numDecimals);
-		if (FormatDouble(r[id], numDecimals) == svalue) 
+		String svalue = FormatF(value, numDecimals);
+		if (FormatF(r[id], numDecimals) == svalue) 
 			return id;
 	}
 	return -1;

@@ -986,6 +986,54 @@ Point3D Surface::GetCenterOfBuoyancy() const {
 	return Point3D(xb, yb, zb);
 }
 
+static void CalcDet(const Matrix3d &A, Vector3d &diag, Vector3d &offd, double &volume) {
+	double d = A.determinant();  	// vol of tiny parallelepiped= d * dr * ds * dt (the 3 partials of my tetral triple integral equation)
+	volume += d;                   	// add vol of current tetra (note it could be negative - that's ok we need that sometimes)
+	for (int j = 0; j < 3; j++) {
+		int j1 = (j + 1) % 3;
+		int j2 = (j + 2) % 3;
+		diag[j] += (A(0, j) * A(1, j) + A(1, j) * A(2, j) + A(2, j) * A(0, j) +
+					A(0, j) * A(0, j) + A(1, j) * A(1, j) + A(2, j) * A(2, j)) *d; 
+		offd(j) += (A(0, j1) * A(1, j2) + A(1, j1) * A(2, j2) + A(2, j1) * A(0, j2) +
+					A(0, j1) * A(2, j2) + A(1, j1) * A(0, j2) + A(2, j1) * A(1, j2) +
+					A(0, j1) * A(0, j2) * 2 + A(1, j1) * A(1, j2) * 2 + A(2, j1) * A(2, j2) * 2) *d; 
+	}	
+}
+
+// From https://github.com/melax/sandbox
+void Surface::GetInertia(Matrix3d &inertia, const Point3D &center) const {
+	double volume = 0;                  
+	Vector3d diag(0, 0, 0);             // accumulate matrix main diagonal integrals [x*x, y*y, z*z]
+	Vector3d offd(0, 0, 0);             // accumulate matrix off-diagonal  integrals [y*z, x*z, x*y]
+	
+	for (int ip = 0; ip < panels.GetCount(); ++ip) {
+		const Panel &panel = panels[ip];
+		Matrix3d A;
+		
+		Point3D r0 = nodes[panel.id[0]] - center;
+		Point3D r1 = nodes[panel.id[1]] - center;
+		Point3D r2 = nodes[panel.id[2]] - center;
+		Point3D r3 = nodes[panel.id[3]] - center;
+		
+		A.row(0) << r0.x, r0.y, r0.z;
+		A.row(1) << r1.x, r1.y, r1.z;
+		A.row(2) << r2.x, r2.y, r2.z;
+		
+		CalcDet(A, diag, offd, volume);
+		
+		A.row(1) << r2.x, r2.y, r2.z;
+		A.row(2) << r3.x, r3.y, r3.z;
+		
+		CalcDet(A, diag, offd, volume);
+	}
+	volume /= 6;
+	diag /= volume*60;  
+	offd /= volume*120;
+	inertia << 	diag[1] + diag[2], -offd[2], 		  -offd[1],
+				-offd[2], 		   diag[0] + diag[2], -offd[0],
+				-offd[1], 		   -offd[0], 		  diag[0] + diag[1];
+}
+
 void Surface::GetHydrostaticStiffness(MatrixXd &c, const Point3D &cb, double rho, 
 					const Point3D &cg, double mass, double g) {
 	c.setConstant(6, 6, 0);

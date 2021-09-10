@@ -1,5 +1,5 @@
 #include <Core/Core.h>
-#include "SysInfo_in.h"
+#include "Crash.h"
 #include <signal.h>
 #include <exception>
 #include <fenv.h>
@@ -17,23 +17,27 @@
 
 namespace Upp {
 
-#if defined(_DEBUG) 
 
 #if defined(PLATFORM_WIN32)
 #pragma float_control(except, on)
 #endif
 
-static CrashHandler crash;
+//static CrashHandler crash;
+
+
+static void PanicMessage(const char *title, const char *text) {
+	printf("\n>>>>>>>%s %s", title, text);
+}
 
 CrashHandler::CrashHandler() {
 #if defined(PLATFORM_WIN32)
 	_clearfp();
 	_controlfp(_controlfp(0, 0) & ~(_EM_INVALID | _EM_ZERODIVIDE | _EM_OVERFLOW), _MCW_EM);
-	
+
 	SetUnhandledExceptionFilter(UnhandledHandler);    
 	_set_purecall_handler(PureCallHandler);    
 	_set_invalid_parameter_handler(InvalidParameterHandler); 
-	_set_abort_behavior(_CALL_REPORTFAULT, _CALL_REPORTFAULT);
+	//_set_abort_behavior(_CALL_REPORTFAULT, _CALL_REPORTFAULT);
 #else
 	feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 #endif
@@ -41,13 +45,15 @@ CrashHandler::CrashHandler() {
 	std::set_new_handler(NewHandler);
 	std::set_terminate(TerminateHandler);
 	std::set_unexpected(UnexpectedHandler);
-	
+
 	signal(SIGABRT, SigabrtHandler);  
 	signal(SIGINT, SigintHandler);     
 	signal(SIGTERM, SigtermHandler);          
 	signal(SIGFPE, SigfpeHandler);     
 	signal(SIGILL, SigillHandler);     
 	signal(SIGSEGV, SigsegvHandler); 
+	
+	//InstallPanicMessageBox(PanicMessage);
 }
 
 #if defined(PLATFORM_WIN32)	
@@ -55,6 +61,7 @@ LONG WINAPI CrashHandler::UnhandledHandler(EXCEPTION_POINTERS *exceptionPtrs) {
 	Panic("Default exception");
 	return EXCEPTION_EXECUTE_HANDLER;
 }
+
 void __cdecl CrashHandler::SEHHandler(unsigned u, EXCEPTION_POINTERS* p) {
 	switch(u) {
 		case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -116,6 +123,5 @@ void CrashHandler::SigtermHandler(int) {
 	Panic("SIGTERM: Process has been asked to terminate by other application");
 }
 
-#endif
 
-};
+}

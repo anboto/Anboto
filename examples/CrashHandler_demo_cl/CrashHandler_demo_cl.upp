@@ -2,7 +2,7 @@ description "Console demo of SysInfo package\377";
 
 uses
 	Core,
-	SysInfo;
+	CrashHandler;
 
 file
 	main.cpp;
