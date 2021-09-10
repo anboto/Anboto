@@ -594,7 +594,7 @@ public:
 	bool IsNullInstance() const    {return IsNull(unit) && IsNull(val);}
 };
 
-template<> inline bool IsNull(const doubleUnit& r)  {return r.val < -std::numeric_limits<double>::infinity();}
+template<> inline bool IsNull(const doubleUnit& r)  {return IsNull(r.val);}
 
 class CParserPP : public CParser {
 public:
