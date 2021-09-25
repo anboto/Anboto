@@ -129,6 +129,16 @@ void MiscellaneousDemos() {
 	UppLog() << "\nFormatF(, 5) = '" << (str = FormatF(num, 5)) << "'";
 	VERIFY(str == "2345678.90177");
 	
+	double res;
+	UppLog() << "\nfround(, 2) = '" << (res = fround(num, 2)) << "'";
+	VERIFY(res == 2345678.90);
+	UppLog() << "\nfround(, 3) = '" << (res = fround(num, 3)) << "'";
+	VERIFY(res == 2345678.902);
+	UppLog() << "\nfround(, 4) = '" << (res = fround(num, 4)) << "'";
+	VERIFY(res == 2345678.9018);
+	UppLog() << "\nfround(, 5) = '" << (res = fround(num, 5)) << "'";
+	VERIFY(res == 2345678.90177);
+	
 	UppLog() << "\nFormatDoubleSize(, 3) = '" << (str = FormatDoubleSize(num, 3, true)) << "'";
 	VERIFY(str == "2.3E6");
 	UppLog() << "\nFormatDoubleSize(, 4) = '" << (str = FormatDoubleSize(num, 4, true)) << "'";
@@ -151,6 +161,7 @@ void MiscellaneousDemos() {
 	VERIFY(str == "2345678.9018");
 	UppLog() << "\nFormatDoubleSize(,13) = '" << (str = FormatDoubleSize(num,13, true)) << "'";
 	VERIFY(str == "2345678.90177");
+	
 	
 	UppLog() << "\n";
 	

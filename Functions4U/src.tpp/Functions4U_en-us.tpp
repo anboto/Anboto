@@ -437,13 +437,13 @@ but returning directly a Date.&]
 ([%-*@3 i] `= 0).&]
 [s3; &]
 [s4;%- &]
-[s5;:FormatDoubleAdjust`(double`,double`):%- [_^String^ String]_[* FormatDoubleAdjust]([@(0.0.255) d
-ouble]_[*@3 d], [@(0.0.255) double]_[*@3 range])&]
+[s5;:Upp`:`:FormatDoubleAutosize`(double`,double`):%- [_^Upp`:`:String^ String]_[* Format
+DoubleAutosize]([@(0.0.255) double]_[*@3 d], [@(0.0.255) double]_[*@3 range])&]
 [s2; Returns number [%-*@3 d] in [%-*@3 range ]converted to a String, 
 so that it has the right number of digits.&]
-[s0;l288; This function serves to show numbers in graph axis and 
-other elements that require to show the minimum right quantity 
-of digits from a double.&]
+[s2; This function serves to show numbers in graph axis and other 
+elements that require to show the minimum right quantity of digits 
+from a double.&]
 [s3; &]
 [s4;%- &]
 [s5;:Upp`:`:FormatDoubleSize`(double`,int`,bool`):%- [_^Upp`:`:String^ String]_[* FormatD
@@ -534,6 +534,11 @@ rage]([*@4 T]_[*@3 a], [*@4 T]_[*@3 b], [*@4 T]_[*@3 c], [*@4 T]_[*@3 d])&]
 [s5;:pow4`(T`):%- [@(0.0.255) template]_<[@(0.0.255) class]_[*@4 T]>_[*@4 T]_[* pow4]([*@4 T]_[*@3 a
 ])&]
 [s2; Raises [%-*@3 a] to 4.&]
+[s3; &]
+[s4;%- &]
+[s5;:Upp`:`:fround`(T`,int`):%- [@(0.0.255) template]_<[@(0.0.255) class]_[*@4 T]>_[*@4 T]_[* f
+round]([*@4 T]_[*@3 x], [@(0.0.255) int]_[*@3 numdec])&]
+[s2; Rounds floating point [%-*@3 x] to [%-*@3 numdec] number of decimals..&]
 [s3; &]
 [s4;%- &]
 [s5;:Between`(const T`&`,const T`&`,const T`&`):%- [@(0.0.255) template]_<[@(0.0.255) cla

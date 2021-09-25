@@ -121,39 +121,21 @@ ScatterDraw& ScatterDraw::ShowHGrid(bool show) {
 	return *this;
 }
 
-/*ScatterDraw& ScatterDraw::ShowHGrid2(bool show) {
-	drawHGrid2 = show;
-	return *this;
-}*/
-
 ScatterDraw& ScatterDraw::ShowVGrid(bool show) {
 	drawVGrid = show;
 	return *this;
 }
 
-/*ScatterDraw& ScatterDraw::ShowVGrid2(bool show) {
-	drawVGrid2 = show;
-	return *this;
-}
-
-ScatterDraw& ScatterDraw::FreqGrid2(double freq) {
-	freqGrid2 = freq;
-	return *this;
-}*/
-
-bool ScatterDraw::PointInPlot(Point &pt) 
-{
+bool ScatterDraw::PointInPlot(Point &pt) {
 	return 	hPlotLeft*plotScaleX <= pt.x && pt.x <= (GetSize().cx - hPlotRight*plotScaleX) && 
 		  	(vPlotTop*plotScaleY + titleHeight) <= pt.y && pt.y <= (GetSize().cy - vPlotBottom*plotScaleY);
 }
 
-bool ScatterDraw::PointInBorder(Point &pt) 
-{
+bool ScatterDraw::PointInBorder(Point &pt)  {
 	return !PointInPlot(pt);
 }
 
-bool ScatterDraw::PointInLegend(Point &) 
-{
+bool ScatterDraw::PointInLegend(Point &)  {
 	return false;
 }
 

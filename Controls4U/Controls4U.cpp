@@ -1474,11 +1474,11 @@ void Knob::PaintNumbers(BufferPainter &w, double cx, double cy, double R, double
 	step = ToRad(step);
 	Font fnt = Arial(3+static_cast<int>(4*bigF));
 	String strminv;
-	String strmaxv = FormatDoubleAdjust(_maxv, range);
+	String strmaxv = FormatDoubleAutosize(_maxv, range);
 	while (strminv != strmaxv) {
 		double x = cx + 0.8*R*cos(a0);
 		double y = cy - 0.8*R*sin(a0);
-		strminv = FormatDoubleAdjust(_minv, range);
+		strminv = FormatDoubleAutosize(_minv, range);
 		PaintCenterText(w, x, y, strminv, fnt, color);
 		a0 += step*direction;
 		_minv += stepv;

@@ -716,11 +716,11 @@ public:
 	bool GetDrawXReticleNumbers()					{return drawXReticleNumbers;}
 	bool GetDrawYReticleNumbers()					{return drawYReticleNumbers;}
 	bool GetDrawY2ReticleNumbers()					{return drawY2ReticleNumbers;}
-	ScatterDraw &SetReticleFont(const Font &fnt)	{reticleFont = fnt;		return *this;}
+	ScatterDraw &SetReticleFont(const Font &fnt)	{reticleFont = fnt;			return *this;}
 	Font &GetReticleFont()							{return reticleFont;}
-	ScatterDraw &SetReticleColor(const Color &col)	{reticleColor = col;	return *this;}
+	ScatterDraw &SetReticleColor(const Color &col)	{reticleColor = col;		return *this;}
 	Color &GetReticleColor()						{return reticleColor;}
-		
+	
 	ScatterDraw &SetFillColor(int index, const Color& color);
 	ScatterDraw &SetFillColor(const Color& color) {return SetFillColor(series.GetCount() - 1, color);}
 	Color GetFillColor(int index) const;
@@ -1117,10 +1117,10 @@ public:
 	static void SetDefaultCSVSeparator(String sep) 	{defaultCSVseparator = sep;}
 	static String GetDefaultCSVSeparator() 			{return defaultCSVseparator;}
 
-	String VariableFormatX(double d) const  {return FormatDoubleAdjust(d, xRange);}
-	String VariableFormatY(double d) const  {return FormatDoubleAdjust(d, yRange);} 
-	String VariableFormatY2(double d) const {return FormatDoubleAdjust(d, yRange2);}
-	String VariableFormatZ(double d) const  {return FormatDoubleAdjust(d, GetSurfMaxZ()-GetSurfMinZ());}
+	String VariableFormatX(double d) const  {return FormatDoubleAutosize(d, xRange);}
+	String VariableFormatY(double d) const  {return FormatDoubleAutosize(d, yRange);} 
+	String VariableFormatY2(double d) const {return FormatDoubleAutosize(d, yRange2);}
+	String VariableFormatZ(double d) const  {return FormatDoubleAutosize(d, GetSurfMaxZ()-GetSurfMinZ());}
 		
 protected:
 	ScatterDraw &_AddSeries(DataSource *data);
@@ -1398,13 +1398,13 @@ bool ScatterDraw::PlotTexts(T& w, bool boldX, bool boldY) {
 	fontY2Num.Italic();
 	
 	double factorX = plotW/xRange;
-	
-	double widthY  = plotScaleX*hPlotLeft - plotScaleX*2 - 1.5*fontY.GetHeight();
-	int numNumY  = min(10, int(widthY/(fontYNum.GetLeftSpace('0') + fontYNum.GetWidth('0'))));
-	double widthY2 = plotScaleX*hPlotRight - plotScaleX*2 - 1.5*fontY2.GetHeight();
-	int numNumY2 = min(10, int(widthY2/(fontY2Num.GetLeftSpace('0') + fontY2Num.GetWidth('0'))));
+
 	double widthX = 0.9*xMajorUnit*factorX;
-	int numNumX = min(10, int(widthX/(fontXNum.GetLeftSpace('0') + fontXNum.GetWidth('0'))));
+	int numNumX   = int(widthX/(fontXNum.GetLeftSpace('0') + fontXNum.GetWidth('0')));	
+	double widthY = plotScaleX*hPlotLeft - plotScaleX*2 - 1.5*fontY.GetHeight();
+	int numNumY   = int(widthY/(fontYNum.GetLeftSpace('0') + fontYNum.GetWidth('0')));
+	double widthY2= plotScaleX*hPlotRight - plotScaleX*2 - 1.5*fontY2.GetHeight();
+	int numNumY2  = int(widthY2/(fontY2Num.GetLeftSpace('0') + fontY2Num.GetWidth('0')));
 	
 	if (drawXReticle || drawXReticleNumbers) {
 		Vector<double> unitsX;
@@ -1424,7 +1424,7 @@ bool ScatterDraw::PlotTexts(T& w, bool boldX, bool boldY) {
 				else if (cbModifFormatX)
 					cbModifFormatX(gridLabelX, i, gridX);
 				else
-					gridLabelX = FormatDoubleSize(gridX, numNumX, false);
+					gridLabelX = FormatDoubleSize(gridX, min(numNumX, NumAdvicedDigits(gridX, xRange)), false);
 				
 				if (!gridLabelX.IsEmpty()) {
 					if (drawXReticleNumbers) {
@@ -1466,7 +1466,7 @@ bool ScatterDraw::PlotTexts(T& w, bool boldX, bool boldY) {
 				else if (cbModifFormatY)
 					cbModifFormatY(gridLabelY, i, gridY);
 				else
-					gridLabelY = FormatDoubleSize(gridY, numNumY, false);
+					gridLabelY = FormatDoubleSize(gridY, min(numNumY, NumAdvicedDigits(gridY, yRange)), false);
 				Size sz = GetTextSizeSpace(gridLabelY, fontYNum);
 				DrawText(w, -sz.cx - plotScaleX*6, reticleY - sz.cy/2, 0, gridLabelY, fontYNum, axisColor);
 			}
@@ -1478,7 +1478,7 @@ bool ScatterDraw::PlotTexts(T& w, bool boldX, bool boldY) {
 				else if (cbModifFormatY2)
 					cbModifFormatY2(gridLabelY2, i, gridY2);
 				else
-					gridLabelY2 = FormatDoubleSize(gridY2, numNumY2, false);
+					gridLabelY2 = FormatDoubleSize(gridY2, min(numNumY2, NumAdvicedDigits(gridY2, yRange2)), false);
 				Size sz = GetTextSizeSpace(gridLabelY2, fontY2Num);
 				DrawText(w, plotW + plotScaleX*10, reticleY - sz.cy/2, 0, gridLabelY2, fontY2Num, axisColor);
 			}

@@ -1011,20 +1011,21 @@ every Y grid line are shown.&]
 every Y grid line are shown.&]
 [s1;%- &]
 [s6;%- &]
-[s5;:ScatterDraw`:`:SetReticleFont`(const Upp`:`:Font`&`):%- [_^ScatterDraw^ ScatterDra
-w]_`&[* SetReticleFont]([@(0.0.255) const]_[_^Upp`:`:Font^ Font]_`&[*@3 fnt])&]
-[s3; Sets [%-*@3 fnt] as reticle font..&]
+[s5;:Upp`:`:ScatterDraw`:`:SetReticleFont`(const Upp`:`:Font`&`):%- [_^Upp`:`:ScatterDraw^ S
+catterDraw]_`&[* SetReticleFont]([@(0.0.255) const]_[_^Upp`:`:Font^ Font]_`&[*@3 fnt])&]
+[s3; Sets [%-*@3 fnt] as reticle font.&]
 [s1; &]
 [s6;%- &]
 [s5;:ScatterDraw`:`:GetReticleFont`(`):%- [_^Upp`:`:Font^ Font]_`&[* GetReticleFont]()&]
 [s3; Gets reticle font.&]
 [s1;%- &]
 [s6;%- &]
-[s5;:ScatterDraw`:`:SetReticleColor`(const Upp`:`:Color`&`):%- [_^ScatterDraw^ ScatterD
-raw]_`&[* SetReticleColor]([@(0.0.255) const]_[_^Upp`:`:Color^ Color]_`&[*@3 col])&]
+[s5;:Upp`:`:ScatterDraw`:`:SetReticleColor`(const Upp`:`:Color`&`):%- [_^Upp`:`:ScatterDraw^ S
+catterDraw]_`&[* SetReticleColor]([@(0.0.255) const]_[_^Upp`:`:Color^ Color]_`&[*@3 col])
+&]
 [s3; Sets [%-*@3 col] as reticle color.&]
 [s1; &]
-[s6;%- &]
+[s6; &]
 [s5;:ScatterDraw`:`:GetReticleColor`(`):%- [_^Upp`:`:Color^ Color]_`&[* GetReticleColor](
 )&]
 [s3; Gets reticle color&]

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 #include <Core/Core.h>
 #include "Functions4U.h"
 
@@ -1018,16 +1019,22 @@ String BytesToString(uint64 _bytes, bool units)
 	return ret;
 }
 
-String FormatDoubleAdjust(double d, double range) {
-	if (fabs(d) <= 1e-15)
-		d = 0;
-	if 		(0.001 <= range && range < 0.01) 	return FormatF(d,5);
-	else if (0.01  <= range && range < 0.1) 	return FormatF(d,4);
-	else if (0.1   <= range && range < 10) 		return FormatF(d,3);
-	else if (10	   <= range && range < 100) 	return FormatF(d,2);
-	else if (100   <= range && range < 10000) 	return FormatF(d,1);
-	else if (10000 <= range && range < 100000) 	return FormatF(d,0);
-	else return FormatE(d, 2);	
+int NumAdvicedDigits(double d, double range) {
+	if 		(0.001 <= range && range < 0.01) 	return 7;
+	else if (0.01  <= range && range < 0.1) 	return 6;
+	else if (0.1   <= range && range < 10) 		return 5;
+	else if (10	   <= range && range < 100) 	return 5;
+	else if (100   <= range && range < 10000) 	return 6;
+	else if (10000 <= range && range < 100000) 	return 7;
+	else return 6;
+}
+
+String FormatDoubleAutosize(double d) {
+	return FormatDoubleAutosize(d, d);
+}
+	
+String FormatDoubleAutosize(double d, double range) {
+	return FormatDoubleSize(d, NumAdvicedDigits(d, range));
 }
 
 /*

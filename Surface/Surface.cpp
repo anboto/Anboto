@@ -1115,14 +1115,14 @@ void Surface::CutZ(const Surface &orig, int factor) {
 		const Point3D &p3 = nodes[id3];	
 		
 		CheckAddSegZero(segWaterlevel, p0, p1, p2, p3);
-		
-		if ((p0.z)*factor >= -EPS_XYZ && (p1.z)*factor >= -EPS_XYZ && 
+
+		if ((p0.z)*factor <= EPS_XYZ && (p1.z)*factor <= EPS_XYZ && 
+				 (p2.z)*factor <= EPS_XYZ && (p3.z)*factor <= EPS_XYZ) 
+			panels << Panel(orig.panels[ip]);			// Gets the panels that comply
+		else if ((p0.z)*factor >= -EPS_XYZ && (p1.z)*factor >= -EPS_XYZ && 
 			(p2.z)*factor >= -EPS_XYZ && (p3.z)*factor >= -EPS_XYZ) 
-			;
-		else if ((p0.z)*factor <= EPS_XYZ && (p1.z)*factor <= EPS_XYZ && 
-				 (p2.z)*factor <= EPS_XYZ && (p3.z)*factor <= EPS_XYZ) {
-			panels << Panel(orig.panels[ip]);
-		} else {
+			;											// Refuses the panels that don't
+		else {											// Process the intermediate
 			const int *origPanelid = orig.panels[ip].id;
 			Vector<int> nodeFrom, nodeTo;
 			Segment3D segWL;

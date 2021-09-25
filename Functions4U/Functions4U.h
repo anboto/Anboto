@@ -228,10 +228,11 @@ void StringToHMS(String durat, int &hour, int &min, double &seconds);
 
 String SeasonName(int iseason);
 int GetSeason(Date &date);
-	
-String FormatDoubleAdjust(double d, double range);
+
+int NumAdvicedDigits(double d, double range);
+String FormatDoubleAutosize(double d);	
+String FormatDoubleAutosize(double d, double range);
 String FormatDoubleSize(double d, int fieldWidth, bool fillSpaces = false);
-String FormatDoubleSize2(double d, int fieldWidth, bool fillSpaces = false);
 
 String RemoveAccents(String str);
 String RemoveAccent(wchar c);
@@ -275,8 +276,8 @@ template<class T>
 inline T pow4(T a) {return pow2(pow2(a));}
 template<class T>
 inline T fround(T x, int numdec) {
-	int64 mult = 10*numdec;
-	return T(int64(x*mult + .5))/mult;	
+	T pow10 = pow(10, numdec);
+  	return round(x*pow10)/pow10;
 }
 template<typename T>
 T fact(T val) {
