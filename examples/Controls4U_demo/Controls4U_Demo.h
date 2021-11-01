@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #ifndef _Controls4U_Demo_Controls4U_Demo_h
 #define _Controls4U_Demo_Controls4U_Demo_h
 

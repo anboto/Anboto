@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #ifndef _PluginDemo_Spreadsheet_h_
 #define _PluginDemo_Spreadsheet_h_
 

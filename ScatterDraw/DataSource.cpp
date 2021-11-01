@@ -1,19 +1,9 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include "ScatterDraw.h"
 
 namespace Upp {
 using namespace Eigen;
-
-bool IsNum(double n) {
-	return IsFin(n) && !IsNull(n);
-}
-
-bool IsNum(float n) {
-	return IsFin(n);
-}
-
-bool IsNum(int n) {
-	return !IsNull(n);
-}
 
 bool IsNum(const MatrixXd& r) {
 	if (r.size() == 0)

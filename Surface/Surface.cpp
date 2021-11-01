@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include <Core/Core.h>
 
 #include <Eigen/Eigen.h>
@@ -1001,7 +1003,7 @@ static void CalcDet(const Matrix3d &A, Vector3d &diag, Vector3d &offd, double &v
 }
 
 // From https://github.com/melax/sandbox
-void Surface::GetInertia(Matrix3d &inertia, const Point3D &center) const {
+void Surface::GetInertia(Matrix3d &inertia, const Point3D &center, bool refine) const {
 	double volume = 0;                  
 	Vector3d diag(0, 0, 0);             // accumulate matrix main diagonal integrals [x*x, y*y, z*z]
 	Vector3d offd(0, 0, 0);             // accumulate matrix off-diagonal  integrals [y*z, x*z, x*y]
@@ -1032,10 +1034,98 @@ void Surface::GetInertia(Matrix3d &inertia, const Point3D &center) const {
 	inertia << 	diag[1] + diag[2], -offd[2], 		  -offd[1],
 				-offd[2], 		   diag[0] + diag[2], -offd[0],
 				-offd[1], 		   -offd[0], 		  diag[0] + diag[1];
+				
+	if (refine) {
+		double mx = inertia.cwiseAbs().maxCoeff();	
+		for (int i = 0; i < inertia.size(); ++i) {
+			double v = inertia.array()(i);
+			if (abs(mx/v) > 1E5)
+				inertia.array()(i) = 0;
+		}
+	}
 }
 
-void Surface::GetHydrostaticStiffness(MatrixXd &c, const Point3D &cb, double rho, 
-					const Point3D &cg, double mass, double g) {
+void Surface::GetInertiaFull(MatrixXd &inertia, const Point3D &center, bool refine) const {
+	inertia = Eigen::MatrixXd::Zero(6,6);	
+	Matrix3d inertia3;
+	GetInertia(inertia3, center, refine);
+	inertia.bottomRightCorner(3, 3) = inertia3;
+	inertia(0, 0) = inertia(1, 1) = inertia(2, 2) = 1;
+	
+	double cx = center.x, 
+		   cy = center.y,
+		   cz = center.z;
+	if (refine) {
+		double mx = max(max(abs(cx), abs(cy)), abs(cz));
+		if (abs(cx) < 1E-10 || abs(mx/cx) > 1E5)
+			cx = 0;
+		if (abs(cy) < 1E-10 || abs(mx/cy) > 1E5)
+			cy = 0;
+		if (abs(cz) < 1E-10 || abs(mx/cz) > 1E5)
+			cz = 0;		
+	} 
+	inertia(1, 5) = inertia(5, 1) =  cx;
+	inertia(2, 4) = inertia(4, 2) = -cx;
+	inertia(0, 5) = inertia(5, 0) = -cy;
+	inertia(2, 3) = inertia(3, 2) =  cy;
+	inertia(0, 4) = inertia(4, 0) =  cz;
+	inertia(1, 3) = inertia(3, 1) = -cz;
+}	
+
+void Surface::GetHydrostaticForce(VectorXd &f, const Point3D &c0, double rho, double g) const {
+	GetHydrostaticForceNormalized(f, c0);	
+	f.array() *= rho*g; 
+}
+
+void Surface::GetHydrostaticForceNormalized(VectorXd &f, const Point3D &c0) const {
+	f.setConstant(6, 0);				
+				
+	for (int ip = 0; ip < panels.GetCount(); ++ip) {	
+		const Panel &panel = panels[ip];
+		
+		Vector3D r, F, M;
+		double p;
+		
+		p = panel.centroid0.z*panel.surface0;
+		F.x = p*panel.normal0.x;
+		F.y = p*panel.normal0.y;
+		F.z = p*panel.normal0.z;
+		
+		r.x = panel.centroid0.x - c0.x;
+		r.y = panel.centroid0.y - c0.y;
+		r.z = panel.centroid0.z - c0.z;
+		
+		M = r%F;
+		
+		f(0) += F.x;
+		f(1) += F.y;
+		f(2) += F.z;
+		f(3) += M.x;
+		f(4) += M.y;
+		f(5) += M.z;
+	
+		p = panel.centroid1.z*panel.surface1;
+		F.x = p*panel.normal1.x;
+		F.y = p*panel.normal1.y;
+		F.z = p*panel.normal1.z;
+		
+		r.x = panel.centroid1.x - c0.x;
+		r.y = panel.centroid1.y - c0.y;
+		r.z = panel.centroid1.z - c0.z;
+		
+		M = r%F;
+		
+		f(0) += F.x;
+		f(1) += F.y;
+		f(2) += F.z;
+		f(3) += M.x;
+		f(4) += M.y;
+		f(5) += M.z;
+	}
+}		
+					
+void Surface::GetHydrostaticStiffness(MatrixXd &c, const Point3D &c0, const Point3D &cg, 
+				const Point3D &cb, double rho, double g, double mass) {
 	c.setConstant(6, 6, 0);
 	
 	if (volume < EPS_XYZ)
@@ -1047,39 +1137,30 @@ void Surface::GetHydrostaticStiffness(MatrixXd &c, const Point3D &cb, double rho
 	for (int ip = 0; ip < panels.GetCount(); ++ip) {	
 		const Panel &panel = panels[ip];
 
-		double momentz0 = panel.normal0.z*panel.surface0;
+		double momentz0 = panel.normal0.z*panel.surface0;	// n3·dS
 		double momentz1 = panel.normal1.z*panel.surface1;
-		double x0 = panel.centroid0.x;
-		double y0 = panel.centroid0.y;
-		double x1 = panel.centroid1.x;
-		double y1 = panel.centroid1.y;
-		c(2, 2) -= (momentz0 + momentz1);
-        c(2, 3) -= (y0*momentz0 + y1*momentz1);
-        c(2, 4) += (x0*momentz0 + x1*momentz1);
-        c(3, 3) -= (y0*y0*momentz0 + y1*y1*momentz1);
-        c(3, 4) += (x0*y0*momentz0 + x1*y1*momentz1);
-        c(4, 4) -= (x0*x0*momentz0 + x1*x1*momentz1);
+		double x0 = panel.centroid0.x - c0.x;				// (x - x0)
+		double y0 = panel.centroid0.y - c0.y;				// (y - y0)
+		double x1 = panel.centroid1.x - c0.x;	
+		double y1 = panel.centroid1.y - c0.y;
+/*33*/	c(2, 2) += (momentz0 + momentz1);
+/*34*/  c(2, 3) += (y0*momentz0 + y1*momentz1);
+/*35*/  c(2, 4) += (x0*momentz0 + x1*momentz1);
+/*44*/  c(3, 3) += (y0*y0*momentz0 + y1*y1*momentz1);
+/*45*/  c(3, 4) += (x0*y0*momentz0 + x1*y1*momentz1);
+/*55*/  c(4, 4) += (x0*x0*momentz0 + x1*x1*momentz1);
 	}
 	double rho_g = rho*g;
 	
-	c(2, 2) = c(2, 2)*rho_g;									
-	c(2, 3) = c(2, 3)*rho_g;
-	c(2, 4) = c(2, 4)*rho_g;
-	c(3, 4) = c(3, 4)*rho_g;
-	
-	c(3, 3) = (c(3, 3) + volumez*cb.z)*rho_g - mass*g*cg.z;
-	c(4, 4) = (c(4, 4) + volumez*cb.z)*rho_g - mass*g*cg.z;
-	
-	if (abs(cb.x) > EPS_XYZ)
-		c(3, 5) -= rho_g*volume*cb.x;
-	if (abs(cg.x) > EPS_XYZ)
-		c(3, 5) += mass*g*cg.x;
-	
-	if (abs(cb.x) > EPS_XYZ)
-		c(4, 5) -= rho_g*volume*cb.y;
-	if (abs(cg.x) > EPS_XYZ)
-		c(4, 5) += mass*g*cg.y;
-			
+/*33*/c(2, 2) = -rho_g*  c(2, 2);									
+/*34*/c(2, 3) = -rho_g*  c(2, 3);
+/*35*/c(2, 4) =  rho_g*  c(2, 4);
+/*44*/c(3, 3) =  rho_g*(-c(3, 3) + volume*(cb.z - c0.z)) - mass*g*(cg.z - c0.z);
+/*45*/c(3, 4) =  rho_g*  c(3, 4);
+/*46*/c(3, 5) = 			-rho_g*volume*(cb.x - c0.x)  + mass*g*(cg.x - c0.x);
+/*55*/c(4, 4) =  rho_g*(-c(4, 4) + volume*(cb.z - c0.z)) - mass*g*(cg.z - c0.z);
+/*56*/c(4, 5) = 			-rho_g*volume*(cb.y - c0.y)  + mass*g*(cg.y - c0.y);
+			 
 	c(3, 2) = c(2, 3);
 	c(4, 2) = c(2, 4);
 	c(4, 3) = c(3, 4);

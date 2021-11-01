@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include <Core/Core.h>
 #include "data.brc"
 
@@ -9,7 +11,7 @@ CONSOLE_APP_MAIN
 {
 	MatFile mat;
 	
-	String fileName = AppendFileName(GetDesktopFolder(), "temp_file_2.mat");
+	String fileName = AppendFileNameX(GetDesktopFolder(), "temp_file_2.mat");
 	
 	if (!FileExists(fileName)) {
 		if (!SaveFile(fileName, String(dataMat, dataMat_length))) {

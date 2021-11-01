@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #ifndef _GLCanvas_surface_h_
 #define _GLCanvas_surface_h_
 
@@ -45,6 +47,7 @@ public:
 	Point3D() {}
 	Point3D(const Nuller&) {SetNull();}
 	Point3D(const Point3D &p) : x(p.x), y(p.y), z(p.z) {}
+	Point3D(const Eigen::Vector3d &p) : x(p[0]), y(p[1]), z(p[2]) {}
 	Point3D(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {}
 	
 	void SetNull() 				{x = Null; y = 0;}
@@ -76,12 +79,15 @@ public:
 	// Dot product or scalar product
 	double dot(const Point3D& a) const {return x*a.x + y*a.y + z*a.z;}
 	
-	// Cross product or vector product
-	friend Point3D operator%(const Point3D& a, const Point3D& b) {return Point3D(a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x);}
+	// Cross product or vector product (or wedge product ∧ in 3D) 
+	inline friend Point3D operator%(const Point3D& a, const Point3D& b) {return Point3D(a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x);}
 	
-	friend Point3D operator+(const Point3D& a, const Point3D& b) {return Point3D(a.x+b.x, a.y+b.y, a.z+b.z);}
-	friend Point3D operator-(const Point3D& a, const Point3D& b) {return Point3D(a.x-b.x, a.y-b.y, a.z-b.z);}
-	friend Point3D operator*(const Point3D& a, double b) 		 {return Point3D(a.x*b, a.y*b, a.z*b);}
+	inline friend Point3D operator+(const Point3D& a, const Point3D& b) {return Point3D(a.x+b.x, a.y+b.y, a.z+b.z);}
+	inline friend Point3D operator-(const Point3D& a, const Point3D& b) {return Point3D(a.x-b.x, a.y-b.y, a.z-b.z);}
+	inline friend Point3D operator*(const Point3D& a, double b) 		{return Point3D(a.x*b, a.y*b, a.z*b);}
+
+	inline void operator+=(const Point3D& a) {x += a.x; y += a.y; z += a.z;}
+	inline void operator-=(const Point3D& a) {x -= a.x; y -= a.y; z -= a.z;}
 
 	double GetLength() const {return sqrt(x*x + y*y + z*z);}
 	Point3D &Normalize() {
@@ -333,8 +339,12 @@ public:
 	double GetAvgLenSegment()	{return avgLenSegment;}
 	void GetVolume();
 	Point3D GetCenterOfBuoyancy() const;
-	void GetInertia(Eigen::Matrix3d &inertia, const Point3D &center) const;
-	void GetHydrostaticStiffness(Eigen::MatrixXd &c, const Point3D &cb, double rho, const Point3D &cg, double mass, double g);
+	void GetInertia(Eigen::Matrix3d &inertia, const Point3D &center, bool refine = false) const;
+	void GetInertiaFull(Eigen::MatrixXd &inertia, const Point3D &center, bool refine) const;
+	void GetHydrostaticForce(Eigen::VectorXd &f, const Point3D &c0, double rho, double g) const;
+	void GetHydrostaticForceNormalized(Eigen::VectorXd &f, const Point3D &c0) const;
+	void GetHydrostaticStiffness(Eigen::MatrixXd &c, const Point3D &c0, const Point3D &cg, 
+				const Point3D &cb, double rho, double g, double mass);
 	static Vector<Point3D> GetClosedPolygons(Vector<Segment3D> &segs);
 	static Array<Pointf> Point3dto2D(const Vector<Point3D> &bound);
 	void AddWaterSurface(Surface &surf, const Surface &under, char c);

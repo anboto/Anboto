@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #ifndef _STEM4U_ShortestPath_h_
 #define _STEM4U_ShortestPath_h_
 

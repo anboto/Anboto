@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include <Core/Core.h>
 #include <Functions4U/Functions4U.h>
 #include <Eigen/Eigen.h>
@@ -11,6 +13,7 @@ using namespace Eigen;
 double SeaWaves::rho = 1024;
 double SeaWaves::g = 9.81;
 
+// From "Direct Solution of Wave Dispersion Equation" (Hunt, 1979), read from "Water Wave Mechanics for Engineers and Scientists" (Dean & Dalrymple)
 double SeaWaves::WaveNumber(double T, double h, bool exact) {
 	double y = 4*M_PI*M_PI*h/g/(T*T);
 	double k1 = 1 + 0.6666666666*y + 0.3555555555*pow(y,2) + 0.1608465608*pow(y,3) 
@@ -91,11 +94,11 @@ bool SeaWaves::Init(double Tp, double Hs, double dirM, double h, int nd, int nf,
 	this->nd = nd; 				
 	this->nf = nf = nf/nd;	
 
-	frecs.resize(nf);
-	k_f.resize(nf);
+	frec.resize(nf);
+	k.resize(nf);
 	dirs.resize(nd);
-	amp_fd.resize(nd, nf);
-	fi_fd.resize(nd, nf);
+	A.resize(nd, nf);
+	ph.resize(nd, nf);
 
 	double fp = 1/Tp;      
 	if (nf > 1) {
@@ -116,8 +119,8 @@ bool SeaWaves::Init(double Tp, double Hs, double dirM, double h, int nd, int nf,
 	
 	for(int f = 0; f < nf; f++) {
 		int n = f + 1;
-	    frecs[f] = fmin + (n - 1)*df;
-	    k_f[f] = WaveNumber(1/frecs[f], h); 
+	    frec[f] = fmin + (n - 1)*df;
+	    k[f] = WaveNumber(1/frec[f], h); 
 	}
         
 	Buffer<double> Sf_f(nf);
@@ -126,13 +129,13 @@ bool SeaWaves::Init(double Tp, double Hs, double dirM, double h, int nd, int nf,
 		double beta = 0.0624/(0.230 + 0.0336*gamma - 0.185*(pow(1.9 + gamma, -1)))*(1.094 - 0.01915*log(gamma));
 		for(int f = 0; f < nf; f++) {
 			double sigma_f;
-			if(frecs[f] <= fp)
+			if(frec[f] <= fp)
 		        sigma_f = 0.07;
 			else
 				sigma_f = 0.09;	     
 	
-			Sf_f[f] = beta*pow(Hs, 2)*pow(Tp,-4)*pow(frecs[f], -5)*exp(-1.25*pow(Tp*frecs[f], -4)) 
-						  *pow(gamma, exp(-pow((Tp*frecs[f]-1), 2)/2/pow(sigma_f, 2)));
+			Sf_f[f] = beta*pow(Hs, 2)*pow(Tp,-4)*pow(frec[f], -5)*exp(-1.25*pow(Tp*frec[f], -4)) 
+						  *pow(gamma, exp(-pow((Tp*frec[f]-1), 2)/2/pow(sigma_f, 2)));
 		}
 	} else 
 		Sf_f[0] = 1/2.*pow(Hs/2., 2);
@@ -156,10 +159,10 @@ bool SeaWaves::Init(double Tp, double Hs, double dirM, double h, int nd, int nf,
 				
 		for (int f = 0; f < nf; f++) { 
 			double s_f;
-		    if (frecs[f] <= fp)
-		        s_f = pow((frecs[f]/fp), 5)*Smax;
+		    if (frec[f] <= fp)
+		        s_f = pow((frec[f]/fp), 5)*Smax;
 		    else
-		        s_f = pow((frecs[f]/fp), -2.5)*Smax;   
+		        s_f = pow((frec[f]/fp), -2.5)*Smax;   
 		    
 		    double G0_f = 0;  
 		    for (int d = 0; d < nd; d++) 
@@ -169,13 +172,13 @@ bool SeaWaves::Init(double Tp, double Hs, double dirM, double h, int nd, int nf,
 	      	for (int d = 0; d < nd; d++) {
 		        double G_fd = G0_f*pow(cos(incdir_d[d]/2.), 2*s_f);
 		        double Sfd_fd = Sf_f[f]*G_fd;
-		        amp_fd(d, f) = sqrt(2*Sfd_fd*df*dd);
+		        A(d, f) = sqrt(2*Sfd_fd*df*dd);
 		    }
 		}
 	} else {
 	    dirs[0] = dirM;
 	    for (int f = 0; f < nf; ++f)
-	        amp_fd(0, f) = sqrt(2*Sf_f[f]*df);
+	        A(0, f) = sqrt(2*Sf_f[f]*df);
 	}
 		
 	if (nf > 1) {
@@ -187,74 +190,74 @@ bool SeaWaves::Init(double Tp, double Hs, double dirM, double h, int nd, int nf,
 		std::uniform_real_distribution<double> random_distribution(-M_PI, M_PI);
 		for (int f = 0; f < nf; f++) 
 		    for (int d = 0; d < nd; d++) 
-				fi_fd(d, f) = random_distribution(random_engine);		
+				ph(d, f) = random_distribution(random_engine);		
 	} else {
 		for (int d = 0; d < nd; d++) 
-			fi_fd(d, 0) = 0;
+			ph(d, 0) = 0;
 	}
 	
 	return true;
 }
 
 void SeaWaves::Calc(double x, double y, double z, double t) {	
-	ASSERT(frecs.size() > 0);
+	ASSERT(frec.size() > 0);
 	
     zSurf = dzSurf = vx = vy = vz = ax = ay = az = 0;
 	
 	p = -rho*g*z;    
 	
-	for (int f = 0; f < nf; f++) {
-    	for (int d = 0; d < nd; d++) {
-    		double frec = frecs[f];
-    		double sindirsd = sin(dirs[d]);
-    		double cosdirsd = cos(dirs[d]);
-    		double aux = k_f[f]*cosdirsd*x + k_f[f]*sindirsd*y - 2*M_PI*frec*t + fi_fd(d, f);
-    		double auxcos = cos(aux);
-    		double auxsin = sin(aux);
+	for (int ifr = 0; ifr < nf; ifr++) {
+    	for (int id = 0; id < nd; id++) {
+    		double f = frec[ifr];
+    		double sindirsd = sin(dirs[id]);
+    		double cosdirsd = cos(dirs[id]);
+    		double aux = k[ifr]*cosdirsd*x + k[ifr]*sindirsd*y - 2*M_PI*f*t + ph(id, ifr);
+    		double cosaux = cos(aux);
+    		double sinaux = sin(aux);
     		
-	        double AUXsl = amp_fd(d, f)*auxcos;         
+	        double AUXsl = A(id, ifr)*cosaux;         
             zSurf += AUXsl;
-            dzSurf += 2*M_PI*frec*amp_fd(d, f)*auxsin;         
+            dzSurf += 2*M_PI*f*A(id, ifr)*sinaux;         
 	        
-	        double kp     = cosh(k_f[f]*(h+z))/cosh(k_f[f]*h);
-	        double kp_sin = sinh(k_f[f]*(h+z))/cosh(k_f[f]*h);
+	        double kp     = cosh(k[ifr]*(h+z))/cosh(k[ifr]*h);
+	        double kp_sin = sinh(k[ifr]*(h+z))/cosh(k[ifr]*h);
 	
-	        double AUXvh = g*amp_fd(d, f)*k_f[f]/(2*M_PI*frec)*kp*auxcos;         
+	        double AUXvh = g*A(id, ifr)*k[ifr]/(2*M_PI*f)*kp*cosaux;         
 	        vx += AUXvh*cosdirsd;
 	        vy += AUXvh*sindirsd;
 	        
-	        vz += g*amp_fd(d, f)*k_f[f]/(2*M_PI*frec)*kp_sin*auxsin;
+	        vz += g*A(id, ifr)*k[ifr]/(2*M_PI*f)*kp_sin*sinaux;
 	        
-	        double AUXah = g*amp_fd(d, f)*pow((k_f[f]),2)/(2*M_PI*frec)*kp*auxsin;
+	        double AUXah = g*A(id, ifr)*pow((k[ifr]),2)/(2*M_PI*f)*kp*sinaux;
 	        ax += AUXah*cosdirsd;
 	        ay += AUXah*sindirsd;
 	    
-	        az += -g*amp_fd(d, f)*pow((k_f[f]),2)/(2*M_PI*frec)*kp_sin*auxcos;         
+	        az += -g*A(id, ifr)*pow((k[ifr]),2)/(2*M_PI*f)*kp_sin*cosaux;         
 	        
 	   		p += rho*g*kp*AUXsl;	
     	}
 	}
 }
 
-double SeaWaves::ZSurf(double x, double y, double z, double t) {
-	ASSERT(frecs.size() > 0);
+double SeaWaves::ZSurf(double x, double y, double t) {
+	ASSERT(frec.size() > 0);
 	
     double zSurf = 0;
 	for (int f = 0; f < nf; f++) 
     	for (int d = 0; d < nd; d++) 
-	        zSurf += amp_fd(d, f)*cos(k_f[f]*cos(dirs[d])*x + k_f[f]*sin(dirs[d])*y 
-	        						  - 2*M_PI*frecs[f]*t + fi_fd(d, f));  
+	        zSurf += A(d, f)*cos(k[f]*cos(dirs[d])*x + k[f]*sin(dirs[d])*y 
+	        						  - 2*M_PI*frec[f]*t + ph(d, f));  
     return zSurf;
 }
 
 double SeaWaves::Pressure(double x, double y, double z, double t) {
-	ASSERT(frecs.size() > 0);
+	ASSERT(frec.size() > 0);
 	
 	double p = -rho*g*z;  
 	for (int f = 0; f < nf; f++) 
     	for (int d = 0 ; d < nd; d++) {
-	        double KP    = cosh(k_f[f]*(h+z))/cosh(k_f[f]*h);	
-    		double AUXsl = amp_fd(d, f)*cos(k_f[f]*cos(dirs[d])*x + k_f[f]*sin(dirs[d])*y - 2*M_PI*frecs[f]*t + fi_fd(d, f));         
+	        double KP    = cosh(k[f]*(h+z))/cosh(k[f]*h);	
+    		double AUXsl = A(d, f)*cos(k[f]*cos(dirs[d])*x + k[f]*sin(dirs[d])*y - 2*M_PI*frec[f]*t + ph(d, f));         
     		p += rho*g*KP*AUXsl;	
     	}
     return p;

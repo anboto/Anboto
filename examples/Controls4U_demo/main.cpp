@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include <CtrlLib/CtrlLib.h>
 #include <Controls4U/Controls4U.h>
 
@@ -262,7 +264,7 @@ PainterCanvas_Demo::PainterCanvas_Demo() {
 	CtrlLayout(*this);
 
 	//imgCtrl.SetImage(Images::ClockImage());
-	//LoadSvg(drawingCanvas, AppendFileName(GetDesktopFolder(), "svg/demo.svg"));
+	//LoadSvg(drawingCanvas, AppendFileNameX(GetDesktopFolder(), "svg/demo.svg"));
 	
 	LineElem &elem = static_cast<LineElem&>(painterCanvas.elemList.elems.Add(new LineElem(100, 100, 200, 200)));
 	elem.style.SetStrokeColor(Green()).SetStrokeWidth(3);

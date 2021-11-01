@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include <Core/Core.h>
 #include <Functions4U/Functions4U.h>
 #include <Eigen/Eigen.h>
@@ -384,8 +386,8 @@ void TestSeaWaves() {
 		double x = 100, y = 100, z = -10, t = 10;
 		waves.Calc(x, y, z, t);
 		UppLog() << "\n" << Format("Sea data for Hs: %.2f m, Tp; %.2f s, at x: %.2f m, y: %.2f m, z: %.2f m, t: %.3f s", Hs, Tp, x, y, z, t);
-		UppLog() << "\n" << Format("Free surface z: %f m = %f m", waves.zSurf, waves.ZSurf(x, y, z, t));
-		VERIFY(abs(waves.zSurf - waves.ZSurf(x, y, z, t)) < 0.000001);
+		UppLog() << "\n" << Format("Free surface z: %f m = %f m", waves.zSurf, waves.ZSurf(x, y, t));
+		VERIFY(abs(waves.zSurf - waves.ZSurf(x, y, t)) < 0.000001);
 		VERIFY(abs(waves.zSurf - 0.13560241) < 0.000001);
 		UppLog() << "\n" << Format("vx: %f m/s, vy: %f m/s, vz: %f m/s", waves.vx, waves.vy, waves.vz);
 		VERIFY(abs(waves.vz + 0.102412178) < 0.000001);

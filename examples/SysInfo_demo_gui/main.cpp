@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include <CtrlLib/CtrlLib.h>
 
 #include <SysInfo/SysInfo.h>
@@ -423,7 +425,7 @@ void ProcessList::ButUpdate_Push() {
 }
 
 void ScreenGrabTab::Fill() {
-	EditFileNameGrab <<= AppendFileName(GetDesktopFolder(), "ScreenGrab.avi");
+	EditFileNameGrab <<= AppendFileNameX(GetDesktopFolder(), "ScreenGrab.avi");
 	EditTime <<= 5;
 	EditFrameRate <<= 1; 
 	OpGrabMouse <<= true;
@@ -443,7 +445,7 @@ void ScreenGrabTab::Fill() {
 	//OpGrabMouse.Enable(false);
 	
 	String extension = "jpg";
-	EditFileNameSnap <<= AppendFileName(GetDesktopFolder(), "ScreenSnap." + extension);
+	EditFileNameSnap <<= AppendFileNameX(GetDesktopFolder(), "ScreenSnap." + extension);
 	ButSnap.WhenPush = THISBACK(ButSnap_Push);
 }
 
@@ -532,7 +534,7 @@ void MouseKeyboard::OnButLock() {
 }
 
 void MouseKeyboard::OnButKey() {
-	String fileTest = AppendFileName(GetDesktopFolder(), "test.txt");
+	String fileTest = AppendFileNameX(GetDesktopFolder(), "test.txt");
 	SaveFile(fileTest, "Please wait a second...");
 	LaunchFile(fileTest);
 	{

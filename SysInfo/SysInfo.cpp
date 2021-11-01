@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include "SysInfo_in.h"
 
 #if defined(PLATFORM_WIN32)
@@ -170,7 +172,7 @@ void GetSystemInfo(String &manufacturer, String &productName, String &version, i
 	if (manufacturer.IsEmpty()) 
 		manufacturer = FromSystemCharset(GetWinRegString("SystemManufacturer", "HARDWARE\\DESCRIPTION\\System\\BIOS", HKEY_LOCAL_MACHINE));
 	if (manufacturer.IsEmpty()) {
-		StringParse fileData = LoadFile(AppendFileName(GetSystemFolder(), "oeminfo.ini"));
+		StringParse fileData = LoadFile(AppendFileNameX(GetSystemFolder(), "oeminfo.ini"));
 		fileData.GoAfter("Manufacturer=");
 		manufacturer = fileData.GetText("\r\n");
 	}

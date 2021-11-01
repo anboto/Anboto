@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #ifdef flagGUI
 #include <CtrlLib/CtrlLib.h>
 #include <PdfDraw/PdfDraw.h>
@@ -71,20 +73,20 @@ struct ScanTopicIterator : RichText::Iterator {
 
 void GatherTpp::GatherRefLinks(const char *upp)
 {
-	for(FindFile pff(AppendFileName(upp, "*.*")); pff; pff.Next()) {
+	for(FindFile pff(AppendFileNameX(upp, "*.*")); pff; pff.Next()) {
 		if(pff.IsFolder()) {
 			String package = pff.GetName();
-			String pdir = AppendFileName(upp, package);
+			String pdir = AppendFileNameX(upp, package);
 			TopicLink tl;
 			tl.package = package;
-			for(FindFile ff(AppendFileName(pdir, "*.tpp")); ff; ff.Next()) {
+			for(FindFile ff(AppendFileNameX(pdir, "*.tpp")); ff; ff.Next()) {
 				if(ff.IsFolder()) {
 					String group = GetFileTitle(ff.GetName()	);
 					tl.group = group;
-					String _dir = AppendFileName(pdir, ff.GetName());
-					for(FindFile ft(AppendFileName(dir, "*.tpp")); ft; ft.Next()) {
+					String _dir = AppendFileNameX(pdir, ff.GetName());
+					for(FindFile ft(AppendFileNameX(dir, "*.tpp")); ft; ft.Next()) {
 						if(ft.IsFile()) {
-							String path = AppendFileName(_dir, ft.GetName());
+							String path = AppendFileNameX(_dir, ft.GetName());
 							tl.topic = GetFileTitle(ft.GetName());
 							String link = TopicLinkString(tl);
 							ScanTopicIterator sti(&reflink);
@@ -248,19 +250,19 @@ void GatherTpp::ExportPage(int i, String htmlFolder, String _keywords)
 	    .BgColor(bg)
 	    .Alink(Red).Link(Black).Vlink(Blue)
 	    / html;
-	SaveFile(AppendFileName(htmlFolder, links[i]), ~content);
+	SaveFile(AppendFileNameX(htmlFolder, links[i]), ~content);
 }
 
 String GatherTpp::TopicFileName(const char *topic)
 {
 	TopicLink tl = ParseTopicLink(topic);
-	String file = AppendFileName(dir, AppendFileName(tl.group + ".tpp", tl.topic + ".tpp"));
+	String file = AppendFileNameX(dir, tl.group + ".tpp", tl.topic + ".tpp");
 	if (FileExists(file))
 		return file;
 		
 	for (int i = 0; i < rootFolders.GetCount(); ++i) {
 		if (rootFolders[i] != dir) {
-			file = AppendFileName(rootFolders[i], AppendFileName(tl.package , AppendFileName(tl.group + ".tpp", tl.topic + ".tpp")));
+			file = AppendFileNameX(rootFolders[i], tl.package, tl.group + ".tpp", tl.topic + ".tpp");
 			if (FileExists(file))
 				return file;		
 		}

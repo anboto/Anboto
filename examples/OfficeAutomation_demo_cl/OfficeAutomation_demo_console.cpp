@@ -1,4 +1,6 @@
- #include <Core/Core.h>
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
+#include <Core/Core.h>
 
 using namespace Upp;
 
@@ -18,7 +20,7 @@ void TestGetchar()
 void Puts(String s)
 {
 	puts(s);
-	String file = AppendFileName(GetDesktopFolder(), "Automation demo.log");
+	String file = AppendFileNameX(GetDesktopFolder(), "Automation demo.log");
 	SaveFile(file, LoadFile(file) + "\n" + s);
 }
 
@@ -26,8 +28,8 @@ void TestSheetDetail(OfficeSheet &sheet)
 {
 	Puts("Spreadsheet automation functions demo");
 
-	String test  = AppendFileName(GetDesktopFolder(), "Test.xls");
-	String test2 = AppendFileName(GetDesktopFolder(), sheet.GetType() == "Open" ? "TestOpen.xls": "TestMicrosoft.xls");
+	String test  = AppendFileNameX(GetDesktopFolder(), "Test.xls");
+	String test2 = AppendFileNameX(GetDesktopFolder(), sheet.GetType() == "Open" ? "TestOpen.xls": "TestMicrosoft.xls");
 	
 	if (!sheet.OpenSheet(test, true)) {
 		puts(test + " does not exist. Adding new");
@@ -149,8 +151,8 @@ void TestDocDetail(OfficeDoc &doc)
 {
 	Puts("Word processor automation functions demo");
 
-	String test  = AppendFileName(GetDesktopFolder(), "Test.doc");
-	String test2 = AppendFileName(GetDesktopFolder(), doc.GetType() == "Open" ? "TestOpen.doc": "TestMicrosoft.doc");
+	String test  = AppendFileNameX(GetDesktopFolder(), "Test.doc");
+	String test2 = AppendFileNameX(GetDesktopFolder(), doc.GetType() == "Open" ? "TestOpen.doc": "TestMicrosoft.doc");
 	
 	if (!doc.OpenDoc(test, true)) {
 		puts(test + " does not exist. Adding new");
@@ -208,7 +210,7 @@ void TestDoc()
 
 CONSOLE_APP_MAIN
 {
-	FileDelete(AppendFileName(GetDesktopFolder(), "Automation demo.log"));
+	FileDelete(AppendFileNameX(GetDesktopFolder(), "Automation demo.log"));
 		
 	Puts("Introduce number of test cycles or just type enter to run it once: ");
 	char str[50];	

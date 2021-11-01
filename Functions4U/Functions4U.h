@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #ifndef _Functions4U_Functions4U_h
 #define _Functions4U_Functions4U_h
 
@@ -170,7 +172,7 @@ public:
 	Vector<String> &GetLastError()	{return errorList;};
 	int Find(String &relFileName, String &fileName, bool isFolder);
 	int Find(FileDataArray &data, int id);
-	String FullFileName(int i)		{return AppendFileName(basePath, fileList[i].fileName);};
+	String FullFileName(int i)		{return AppendFileNameX(basePath, fileList[i].fileName);};
 	bool SaveFile(const char *fileName);
 	bool AppendFile(const char *fileName);
 	bool LoadFile(const char *fileName);
@@ -1008,7 +1010,7 @@ public:
 	void Write(String str) 	{p.Write(str);}
 	int GetStatus()  		{return status;}
 	bool IsRunning() 		{return status > 0;}
-	Gate4<double, String&, bool, bool&> WhenTimer;
+	Function<bool(double, String&, bool, bool&)> WhenTimer;
 	#ifdef PLATFORM_WIN32
 	DWORD GetPid()	{return p.GetPid();}
 	#endif
@@ -1194,7 +1196,8 @@ public:
 			throw Exc(in->Str() + t_("No data available"));
 		if (IsNull(i))
 			i = fields.GetCount()-1;
-		CheckId(i);
+		if (!CheckId_nothrow(i))
+			return Null;
 		String data = fields[i];
 		data.Replace("D", "");
 		return ScanDouble(data);
@@ -1220,8 +1223,11 @@ protected:
 	Upp::Vector<String> fields;
 	FileInLine *in = nullptr;
 	
+	bool CheckId_nothrow(int i) const {
+		return i >= 0 && i < fields.GetCount();
+	}
 	void CheckId(int i) const {
-		if (i >= fields.GetCount() || i < 0)
+		if (!CheckId_nothrow(i))
 			throw Exc(in->Str() + Format(t_("Field #%d not found in line\n'%s'"), i+1, line));
 	}
 	static int defaultIsSeparator(int c) {
@@ -1275,7 +1281,7 @@ bool SetConsoleColor(CONSOLE_COLOR color);
 void ConsoleOutputDisable(bool disable);
 
 String GetPythonDeclaration(const String &include);
-String CleanCFromDeclaration(const String &include);
+String CleanCFromDeclaration(const String &include, bool removeSemicolon = true);
 	
 }
 

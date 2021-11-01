@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include <CtrlLib/CtrlLib.h>
 #include "Controls4U.h"
 
@@ -190,7 +192,7 @@ void SvgGet_Image(GraphElemList &elems, XmlParser &xp, const char *svgFolder) {
 		else if (attr == "xlink:href") {
 			elem.fileName = xp[i];
 			if (!FileExists(elem.fileName))
-				elem.fileName = AppendFileName(svgFolder, elem.fileName);
+				elem.fileName = AppendFileNameX(svgFolder, elem.fileName);
 		} else if (attr == "style") 
 			elem.style.Set(xp[i]);
 		else if (attr == "transform") {

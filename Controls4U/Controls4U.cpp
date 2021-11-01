@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include <CtrlLib/CtrlLib.h>
 #include "Controls4U.h"
 
@@ -151,13 +153,13 @@ void EditFileFolder::DoBrowse() {
 	
 	String s = GetData();
 	if (!s.IsEmpty()) {
-		if (DirectoryExists(AppendFileName(fs.GetBaseDir(), s))) 
+		if (DirectoryExists(AppendFileNameX(fs.GetBaseDir(), s))) 
 			fs.PreSelect(s);
 		else {
 			String folder = GetFileFolder(s);
 			if (folder.IsEmpty() || folder.Find("..") >= 0 || 
-				!DirectoryExists(AppendFileName(fs.GetBaseDir(), folder))) 
-				s = AppendFileName(NormalizePath(folder, fs.GetActiveDir()), GetFileName(s));
+				!DirectoryExists(AppendFileNameX(fs.GetBaseDir(), folder))) 
+				s = AppendFileNameX(NormalizePath(folder, fs.GetActiveDir()), GetFileName(s));
 			fs.PreSelect(s);
 		}
 	}
@@ -1876,7 +1878,7 @@ struct FileNameConvert : public Convert {
 	Value Scan(const Value& text) const {
 		if (values.IsEmpty())
 			values.SetCount(1, String(""));
-		values.Set(0, AppendFileName(GetFileDirectory(String(values[0])), String(text)));
+		values.Set(0, AppendFileNameX(GetFileDirectory(String(values[0])), String(text)));
 		return values;
 	}
 };
@@ -2062,9 +2064,9 @@ void FileBrowser::FilesList(String folderName, bool &thereIsAFolder) {
 }
 
 bool HasSubfolders(String folder, int ) {
-	FindFile ff(AppendFileName(folder, "*.*"));
+	FindFile ff(AppendFileNameX(folder, "*.*"));
 	while(ff) {
-		if (DirectoryExistsX(AppendFileName(folder, ff.GetName())))
+		if (DirectoryExistsX(AppendFileNameX(folder, ff.GetName())))
 			return true;
 		ff.Next();
 	}

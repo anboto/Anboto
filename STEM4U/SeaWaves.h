@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #ifndef _STEM4U_SeaWaves_h_
 #define _STEM4U_SeaWaves_h_
 
@@ -12,20 +14,16 @@ public:
 	SeaWaves() : Tp(-1) {}
 	
 	// Calculation results	
-	double zSurf; 	// Free surface ay x, y
+	double zSurf; 		// Free surface at x, y
 	double dzSurf;
-	double vx; 		// Velocities of a particle at x, y, z (z=0 is free surface)
-	double vy;
-	double vz; 
-	double ax; 		// Accelerations of a particle at x, y, z (z=0 is free surface)
-	double ay;
-	double az;
-	double p;		// Pressure (hydrostatic + dynamic)
+	double vx, vy, vz; 	// Velocities of a particle at x, y, z (z=0 is free surface)
+	double ax, ay, az; 	// Accelerations of a particle at x, y, z (z=0 is free surface)
+	double p;			// Pressure (hydrostatic + dynamic)
 
 	bool Init(double _Tp, double _Hs, double _dirM = 0, double _h = 70, int _nd = 15, int _nf = 600, 
 				double gamma = 3.3, double disp_ang = M_PI/3., int seed = 123456, double fmin = -1, double fmax = -1);
 	void Calc(double x, double y, double z, double t);	
-	double ZSurf(double x, double y, double z, double t);
+	double ZSurf(double x, double y, double t);
 	double Pressure(double x, double y, double z, double t);
 	
 	static double Power(double Te, double Hs, double h);
@@ -53,11 +51,11 @@ private:
 	int nd; 	// Directional components number
 	int nf; 	// Frequential components number	
 
-	Eigen::VectorXd frecs;
-	Eigen::VectorXd k_f; 
-	Eigen::VectorXd dirs;
-	Eigen::MatrixXd amp_fd;
-	Eigen::MatrixXd fi_fd;
+	Eigen::MatrixXd A;			// m	Amplitudes
+	Eigen::VectorXd frec;		// Hz	Frequencies
+	Eigen::MatrixXd ph;			// Hz	Phases
+	Eigen::VectorXd k; 			// m-1	Wave numbers
+	Eigen::VectorXd dirs;		// rad	Directions
 };
 
 

@@ -1,5 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include "ScatterCtrl_Demo.h"
-
 
 double funct1(double )	{return 3;}
 double funct2(double x)	{return (x*x-5);}

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #ifndef _ScatterDraw_DataSource_h_
 #define _ScatterDraw_DataSource_h_
 
@@ -8,8 +10,11 @@ namespace Upp {
 
 #define Membercall(fun)	(this->*fun)
 
-bool IsNum(double n);
-bool IsNum(int n);
+
+inline bool IsNum(double n) {return IsFin(n) && !IsNull(n);}
+inline bool IsNum(float n) 	{return IsFin(n);}
+inline bool IsNum(int n) 	{return !IsNull(n);}
+
 
 enum FFT_WINDOW {NO_WINDOW = 0, HAMMING, COS};
 enum FFT_TYPE   {T_FFT = 0, T_PHASE, T_PSD};

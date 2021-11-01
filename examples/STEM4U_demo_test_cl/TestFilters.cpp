@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include <Core/Core.h>
 #include <ScatterDraw/ScatterDraw.h>
 #include <Eigen/Eigen.h>
@@ -29,9 +31,9 @@ void TestLocalFitting(bool test) {
 			scatter.AddSeries(x, y).Legend("Source").NoPlot();
 			scatter.AddSeries(x, ys).Legend("Filtered").NoMark();
 			
-			String dir = AppendFileName(GetDesktopFolder(), "STEM4U_Demo");
+			String dir = AppendFileNameX(GetDesktopFolder(), "STEM4U_Demo");
 			scatter.ZoomToFit(true, true).SetLeftMargin(80).SetSize(Size(1000, 500));
-			PNGEncoder().SaveFile(AppendFileName(dir, "Lowess1.png"), scatter.GetImage());
+			PNGEncoder().SaveFile(AppendFileNameX(dir, "Lowess1.png"), scatter.GetImage());
 		}
 		
 		Lowess(x, y, 0.25, 0, 3, ys);
@@ -44,9 +46,9 @@ void TestLocalFitting(bool test) {
 			scatter.AddSeries(x, y).Legend("Source").NoPlot();
 			scatter.AddSeries(x, ys).Legend("Filtered").NoMark();
 			
-			String dir = AppendFileName(GetDesktopFolder(), "STEM4U_Demo");
+			String dir = AppendFileNameX(GetDesktopFolder(), "STEM4U_Demo");
 			scatter.ZoomToFit(true, true).SetLeftMargin(80).SetSize(Size(1000, 500));
-			PNGEncoder().SaveFile(AppendFileName(dir, "Lowess2.png"), scatter.GetImage());
+			PNGEncoder().SaveFile(AppendFileNameX(dir, "Lowess2.png"), scatter.GetImage());
 		}
 		
 		Lowess(x, y, 0.25, 2, 0, ys);
@@ -59,9 +61,9 @@ void TestLocalFitting(bool test) {
 			scatter.AddSeries(x, y).Legend("Source").NoPlot();
 			scatter.AddSeries(x, ys).Legend("Filtered").NoMark();
 			
-			String dir = AppendFileName(GetDesktopFolder(), "STEM4U_Demo");
+			String dir = AppendFileNameX(GetDesktopFolder(), "STEM4U_Demo");
 			scatter.ZoomToFit(true, true).SetLeftMargin(80).SetSize(Size(1000, 500));
-			PNGEncoder().SaveFile(AppendFileName(dir, "Lowess3.png"), scatter.GetImage());
+			PNGEncoder().SaveFile(AppendFileNameX(dir, "Lowess3.png"), scatter.GetImage());
 		}
 	}
 
@@ -74,7 +76,7 @@ void TestLocalFitting(bool test) {
 	CleanNANDupXSort(vx, vy, x, y);	    
 	
 	if (!test) {
-		String dir = AppendFileName(GetDesktopFolder(), "STEM4U_Demo");
+		String dir = AppendFileNameX(GetDesktopFolder(), "STEM4U_Demo");
 		RealizeDirectory(dir);
 		for (int i = 2; i < 10; ++i) {
 			LocalFitting(x, y, resx, resy, resdy, resd2y, 2, i, 20, true);
@@ -84,7 +86,7 @@ void TestLocalFitting(bool test) {
 			scatter.AddSeries(resx, resy).Legend("Filtered").NoMark();
 			
 			scatter.ZoomToFit(true, true).SetLeftMargin(80).SetSize(Size(1000, 500));
-			PNGEncoder().SaveFile(AppendFileName(dir, Format("LocalFitting_%d.png", i)), scatter.GetImage());
+			PNGEncoder().SaveFile(AppendFileNameX(dir, Format("LocalFitting_%d.png", i)), scatter.GetImage());
 		}
 	}
 }
@@ -119,10 +121,10 @@ void TestButterworth(bool test) {
 		scatter.AddSeries(y_avg, 0., fps).Legend("Source").NoMark();
 		scatter.AddSeries(ys, 0., fps).Legend("Filtered").NoMark();
 		
-		String dir = AppendFileName(GetDesktopFolder(), "STEM4U_Demo");
+		String dir = AppendFileNameX(GetDesktopFolder(), "STEM4U_Demo");
 		scatter.ZoomToFit(true).SetLeftMargin(80).SetSize(Size(1000, 500))
 			   .SetXYMin(Null, -2).SetRange(Null, 4);
-		PNGEncoder().SaveFile(AppendFileName(dir, "Butterworth.png"), scatter.GetImage());
+		PNGEncoder().SaveFile(AppendFileNameX(dir, "Butterworth.png"), scatter.GetImage());
 	}
 	
 	Butter(2, lowcutoff, highcutoff, num, den);	

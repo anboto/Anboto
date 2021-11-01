@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 - 2021, the Anboto author and contributors
 #include <Core/Core.h>
 #include <ScatterDraw/ScatterDraw.h>
 #include <Eigen/Eigen.h>
@@ -67,7 +69,7 @@ void TestMooring(bool test) {
 	if (!test) {
 		int num = 100;
 		Vector<Vector<double>> xx(5), zz(5);
-		String dir = AppendFileName(GetDesktopFolder(), "STEM4U_Demo");
+		String dir = AppendFileNameX(GetDesktopFolder(), "STEM4U_Demo");
 		RealizeDirectory(dir);
 		ScatterDraw scatter;
 		scatter.SetLabelX("Distance from anchor to vessel [m]").
@@ -87,7 +89,7 @@ void TestMooring(bool test) {
 				scatter.AddSeries(&zz[iz].Top(), 1, xx[iz].Top(), 0).NoSeriesLegend().MarkStyle<CircleMarkPlot>().MarkWidth(15);
 			}
 			scatter.ZoomToFit(true, true);
-			PNGEncoder().SaveFile(AppendFileName(dir, "Moor xanchorvessel.png"), scatter.GetImage());
+			PNGEncoder().SaveFile(AppendFileNameX(dir, "Moor xanchorvessel.png"), scatter.GetImage());
 		}
 		{
 			scatter.RemoveAllSeries().SetTitle("Raising the vessel");
@@ -102,7 +104,7 @@ void TestMooring(bool test) {
 				scatter.AddSeries(&zz[iz].Top(), 1, xx[iz].Top(), 0).NoSeriesLegend().MarkStyle<CircleMarkPlot>().MarkWidth(15);
 			}
 			scatter.ZoomToFit(true, true);
-			PNGEncoder().SaveFile(AppendFileName(dir, "Moor zvessel.png"), scatter.GetImage());
+			PNGEncoder().SaveFile(AppendFileNameX(dir, "Moor zvessel.png"), scatter.GetImage());
 		}
 		{
 			scatter.RemoveAllSeries().SetTitle("Raising the anchor");
@@ -117,7 +119,7 @@ void TestMooring(bool test) {
 				scatter.AddSeries(&zz[iz].Top(), 1, xx[iz].Top(), 0).NoSeriesLegend().MarkStyle<CircleMarkPlot>().MarkWidth(15);
 			}
 			scatter.ZoomToFit(true, true);
-			PNGEncoder().SaveFile(AppendFileName(dir, "Moor zanchor.png"), scatter.GetImage());
+			PNGEncoder().SaveFile(AppendFileNameX(dir, "Moor zanchor.png"), scatter.GetImage());
 		}
 	}
 }
