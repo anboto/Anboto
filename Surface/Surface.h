@@ -338,6 +338,7 @@ public:
 	void GetSegments();
 	double GetAvgLenSegment()	{return avgLenSegment;}
 	void GetVolume();
+	int VolumeMatch(double ratioWarning, double ratioError) const;
 	Point3D GetCenterOfBuoyancy() const;
 	void GetInertia(Eigen::Matrix3d &inertia, const Point3D &center, bool refine = false) const;
 	void GetInertiaFull(Eigen::MatrixXd &inertia, const Point3D &center, bool refine) const;
@@ -348,7 +349,7 @@ public:
 	static Vector<Point3D> GetClosedPolygons(Vector<Segment3D> &segs);
 	static Array<Pointf> Point3dto2D(const Vector<Point3D> &bound);
 	void AddWaterSurface(Surface &surf, const Surface &under, char c);
-	Vector<Segment3D> GetWaterLineSegments(const Surface &orig);
+	static Vector<Segment3D> GetWaterLineSegments(const Surface &orig);
 	bool GetDryPanels(const Surface &surf);
 	char IsWaterPlaneMesh() const; 
 	

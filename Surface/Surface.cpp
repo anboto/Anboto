@@ -963,6 +963,18 @@ void Surface::GetVolume() {
 	}
 	volume = avg(volumex, volumey, volumez);
 }
+
+int Surface::VolumeMatch(double ratioWarning, double ratioError) const {
+	if (!Between(volume/volumex, 1-ratioError, 1+ratioError) ||
+		!Between(volume/volumey, 1-ratioError, 1+ratioError) ||
+		!Between(volume/volumez, 1-ratioError, 1+ratioError))
+		return -2;
+	if (!Between(volume/volumex, 1-ratioWarning, 1+ratioWarning) ||
+		!Between(volume/volumey, 1-ratioWarning, 1+ratioWarning) ||
+		!Between(volume/volumez, 1-ratioWarning, 1+ratioWarning))
+		return -1;
+	return 0;
+}
 	
 Point3D Surface::GetCenterOfBuoyancy() const {
 	double xb = 0, yb = 0, zb = 0;
@@ -1134,7 +1146,7 @@ void Surface::GetHydrostaticStiffness(MatrixXd &c, const Point3D &c0, const Poin
 	if (IsNull(mass))
 		mass = rho*volume;
 		
-	for (int ip = 0; ip < panels.GetCount(); ++ip) {	
+	for (int ip = 0; ip < panels.size(); ++ip) {	
 		const Panel &panel = panels[ip];
 
 		double momentz0 = panel.normal0.z*panel.surface0;	// n3·dS

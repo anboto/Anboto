@@ -199,7 +199,7 @@ fn PaintEllipse(w, left, top, right, bottom, width, color)
 	}
 }
 
-fn DrawCircle(w, cx, cy, R, width, color) {
+fn DrawCircle3(w, cx, cy, R, width, color) {
 	PaintEllipse(w, cx-R-width/2., cy-R-width/2., cx+R+width/2., cy+R+width/2., width, color);
 }
 
@@ -343,7 +343,7 @@ ctrl PieCtrl {
  			circ_y = .SetPieMarginTop + circHeight/2.;
 		
 		FillCircle(w, circ_x, circ_y, circ_r, Color(150, 255, 150));
- 		DrawCircle(w, circ_x, circ_y, circ_r, 2, :SBlack);
+ 		DrawCircle3(w, circ_x, circ_y, circ_r, 2, :SBlack);
 		w.DrawLine(circ_x, circ_y, circ_x + circ_r*cos(-.SetPieAngle + 0.5*Pi()),  circ_y - circ_r*sin(-.SetPieAngle + 0.5*Pi()), 2, :SBlack);
 		w.DrawLine(circ_x, circ_y, circ_x + circ_r*cos(-.SetPieAngle - 0.25*Pi()), circ_y - circ_r*sin(-.SetPieAngle - 0.25*Pi()), 2, :SBlack);
 		w.DrawLine(circ_x, circ_y, circ_x + circ_r*cos(-.SetPieAngle + Pi()), 	   circ_y - circ_r*sin(-.SetPieAngle + Pi()), 2, :SBlack);

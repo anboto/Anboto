@@ -281,6 +281,13 @@ inline T fround(T x, int numdec) {
 	T pow10 = pow(10, numdec);
   	return round(x*pow10)/pow10;
 }
+
+template<class T>
+inline T Nvl(T a, T b) {return IsFin(a) && !IsNull(a) ? a : b;}
+
+template<class T>
+inline T Nvl2(T cond, T a, T b) {return IsFin(cond) && !IsNull(cond) ? a : b;}
+
 template<typename T>
 T fact(T val) {
 	if (val <= 0)
@@ -1184,8 +1191,12 @@ public:
 	}
 	int GetInt(int i) const {
 		int res = GetInt_nothrow(i);
-		if (IsNull(res))
-			throw Exc(in->Str() + Format(t_("Bad %s '%s' in field #%d, line\n'%s'"), "integer", fields[i], i+1, line));
+		if (IsNull(res)) {
+			if (i < fields.size())
+				throw Exc(in->Str() + Format(t_("Bad %s '%s' in field #%d, line\n'%s'"), "integer", fields[i], i+1, line));
+			else
+				throw Exc(in->Str() + Format(t_("Field #%d not found in line\n'%s'"), i+1, line));
+		}
 		return res; 
 	}
 	bool IsInt(int i) const {
@@ -1204,8 +1215,12 @@ public:
 	}
 	double GetDouble(int i) const {
 		double res = GetDouble_nothrow(i);
-		if (IsNull(res))
-			throw Exc(in->Str() + Format(t_("Bad %s '%s' in field #%d, line\n'%s'"), "double", fields[i], i+1, line));
+		if (IsNull(res)) {
+			if (i < fields.size())
+				throw Exc(in->Str() + Format(t_("Bad %s '%s' in field #%d, line\n'%s'"), "double", fields[i], i+1, line));
+			else
+				throw Exc(in->Str() + Format(t_("Field #%d not found in line\n'%s'"), i+1, line));
+		}
 		return res; 
 	}
 	bool IsDouble(int i) const {

@@ -416,19 +416,16 @@ void Filtfilt(const Range &X, const Range &b, const Range &a, Range &Y) {
     A.resize(nfilt, 0);
 
     std::vector<int> rows, cols;
-    //rows = [1:nfilt-1           2:nfilt-1             1:nfilt-2];
     add_index_range(rows, 0, nfilt - 2);
     if (nfilt > 2) {
         add_index_range(rows, 1, nfilt - 2);
         add_index_range(rows, 0, nfilt - 3);
     }
-    //cols = [ones(1,nfilt-1)         2:nfilt-1          2:nfilt-1];
     add_index_const(cols, 0, nfilt - 1);
     if (nfilt > 2) {       
         add_index_range(cols, 1, nfilt - 2);
         add_index_range(cols, 1, nfilt - 2);
     }
-    // data = [1+a(2)         a(3:nfilt)        ones(1,nfilt-2)    -ones(1,nfilt-2)];
 
     auto klen = rows.size();
     std::vector<Scalar> data;
