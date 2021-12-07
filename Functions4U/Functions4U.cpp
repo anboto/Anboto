@@ -77,7 +77,7 @@ bool LaunchFileCreateProcess(const char *file, const char *, const char *directo
 	wexec = Format("\"%s\" \"%s\"", GetExtExecutable(GetFileExt(file)), file).ToWString();
 	WStringBuffer wsbexec(wexec);
 	
-	if (!CreateProcessW(NULL, wsbexec, NULL, NULL, FALSE, 0, NULL, ToSystemCharsetW(directory), &startInfo, &procInfo))  
+	if (!CreateProcessW(NULL, (LPWSTR)wsbexec.Begin(), NULL, NULL, FALSE, 0, NULL, ToSystemCharsetW(directory), &startInfo, &procInfo))  
 		return false;
 
    	WaitForSingleObject(procInfo.hProcess, 0);
@@ -505,14 +505,14 @@ bool DirectoryMove(const char *dir, const char *newPlace) {
 		return true;
 	
 	WString wDir(dir), wNewPlace(newPlace);
-    wDir.Cat() << L'\0';	
-    wNewPlace.Cat() << L'\0';	
+    wDir.Cat(L'\0');	
+    wNewPlace.Cat(L'\0');	
 	
     SHFILEOPSTRUCTW fileOp = {};
   	fileOp.hwnd = NULL;
     fileOp.wFunc = FO_MOVE;
-    fileOp.pFrom = ~wDir;
-    fileOp.pTo = ~wNewPlace;
+    fileOp.pFrom = (PCZZWSTR)~wDir;
+    fileOp.pTo = (PCZZWSTR)~wNewPlace;
     fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT;
  
     int ret = SHFileOperationW(&fileOp);
@@ -524,12 +524,12 @@ bool FileToTrashBin(const char *path) {
         return false;
 	
     WString wpath(path);
-    wpath.Cat() << L'\0';	
+    wpath.Cat(L'\0');	
 		
     SHFILEOPSTRUCTW fileOp = {}; 
     fileOp.hwnd = NULL;
     fileOp.wFunc = FO_DELETE;
-    fileOp.pFrom = ~wpath;
+    fileOp.pFrom = (PCZZWSTR)~wpath;
     fileOp.pTo = NULL;
     fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT;
 
@@ -563,7 +563,7 @@ String LoadFile_Safe(const String fileName)
 #ifdef PLATFORM_POSIX
 	int fid = open(fileName, O_RDONLY);
 #else
-	int fid = _wopen(fileName.ToWString(), O_RDONLY|O_BINARY);
+	int fid = _wopen((const wchar_t *)fileName.ToWString().Begin(), O_RDONLY|O_BINARY);
 #endif
 	if (fid < 0) 
 		return String();
@@ -584,7 +584,7 @@ String LoadFile(const char *fileName, off_t from, size_t len)
 #ifdef PLATFORM_POSIX
 	int fid = open(fileName, O_RDONLY);
 #else
-	int fid = _wopen(String(fileName).ToWString(), O_RDONLY|O_BINARY);
+	int fid = _wopen((const wchar_t *)String(fileName).ToWString().Begin(), O_RDONLY|O_BINARY);
 #endif
 	if (fid < 0) 
 		return String();
@@ -622,7 +622,7 @@ String GetExtExecutable(const String _ext)
 	HINSTANCE ret;
 	WString fileW(file);
 	WCHAR exe[1024];
-	ret = FindExecutableW(fileW, NULL, exe);
+	ret = FindExecutableW((LPCWSTR)fileW.Begin(), NULL, exe);
 	if (reinterpret_cast<uint64>(ret) > 32)
 		exeFile = WString(exe).ToString();
 	DeleteFile(file);
@@ -697,7 +697,7 @@ String GetShellFolder2(int clsid)
 {
 	wchar path[MAX_PATH];
 	if(SHGetFolderPathW(NULL, clsid, NULL, //SHGFP_TYPE_CURRENT
-											0, path) == S_OK)
+											0, (LPWSTR)path) == S_OK)
 		return FromUnicodeBuffer(path);
 	return Null;
 }
@@ -739,7 +739,7 @@ String GetSystemFolder()
 #ifdef PLATFORM_WIN32
 String GetCommonAppDataFolder() { 
 	wchar path[MAX_PATH];
-	if(SHGetFolderPathW(NULL, CSIDL_COMMON_APPDATA, NULL, 0, path) == S_OK)
+	if(SHGetFolderPathW(NULL, CSIDL_COMMON_APPDATA, NULL, 0, (LPWSTR)path) == S_OK)
 		return FromUnicodeBuffer(path);
 	return Null;
 }
@@ -751,7 +751,8 @@ bool SetEnv(const char *id, const char *val)
 #ifdef PLATFORM_POSIX
 	return setenv(id, val, 1) == 0;
 #else
-	return _wputenv(WString(id) + "=" + WString(val)) == 0;
+	WString str = WString(id) + "=" + WString(val);
+	return _wputenv((const wchar_t *)str.Begin()) == 0;
 #endif
 }
 
@@ -1812,7 +1813,7 @@ int64 FindStringInFile(const char *file, const String text, int64 pos0) {
 #ifdef PLATFORM_POSIX
 	FILE *fp = fopen(file, "rb");
 #else
-	FILE *fp = _wfopen(String(file).ToWString(), L"rb");
+	FILE *fp = _wfopen((const wchar_t *)String(file).ToWString().Begin(), L"rb");
 #endif
 	if (fp != NULL) {
 		int64 pos = 0;
@@ -2068,7 +2069,7 @@ int64 FileDataArray::GetFileId(String fileName)
 #ifdef PLATFORM_POSIX
 	FILE *fp = fopen(fileName, "rb");
 #else
-	FILE *fp = _wfopen(fileName.ToWString(), L"rb");
+	FILE *fp = _wfopen((const wchar_t *)fileName.ToWString().Begin(), L"rb");
 #endif
 	if (fp != NULL) {
 		int c;

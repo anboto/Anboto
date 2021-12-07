@@ -5,9 +5,6 @@
 
 namespace Upp {
 
-double R2(const Eigen::VectorXd &serie, const Eigen::VectorXd &serie0, double mean = Null);
-
-
 template <class Range>
 void CleanOutliers(const Range &x, const Range &y, const Range &filtery, Range &rretx, Range &rrety, 
 				   const typename Range::value_type& ratio, const typename Range::value_type& zero = 0) {
@@ -132,6 +129,52 @@ template <typename T>
 T NextPow2(const T& in) {
 	ASSERT(in > 0);
 	return T(ceil(log(in))/log(2));
+}
+
+template <class Range>
+inline typename Range::value_type Avg(const Range &d) {
+	return std::accumulate(d.begin(), d.end(), 0.)/d.size();
+}
+
+template <typename T>
+inline T Avg(const Eigen::Matrix<T, Eigen::Dynamic, 1> &d) {
+	return d.mean();
+}
+
+template <class Range>
+typename Range::value_type R2(const Range &serie, const Range &serie0, typename Range::value_type mean = Null) {
+	using Scalar = typename Range::value_type;
+	
+	if (IsNull(mean))
+		mean = Avg(serie);
+	Scalar sse = 0, sst = 0;
+	auto sz = min(serie.size(), serie0.size());
+	for (auto i = 0; i < sz; ++i) {
+		auto y = serie[i];
+		auto err = y - serie0(i);
+		sse += err*err;
+		auto d = y - mean;
+		sst += d*d;
+	}
+	if (sst < 1E-50 || sse > sst)
+		return 0;
+	return 1 - sse/sst;
+}
+
+template <class Range>
+typename Range::value_type SawTeethRatio(const Range &d) {
+	using Scalar = typename Range::value_type;
+	
+	if (d.size() < 3)
+		return 0;
+	
+	Scalar mean = Avg(d);
+	int numcrosses = 0;
+	for (int i = 1; i < d.size(); ++i) {
+		if (d[i] > mean && d[i-1] <= mean || d[i] < mean && d[i-1] >= mean) 
+			numcrosses++;
+	}
+	return Scalar(numcrosses)/(d.size()-1);
 }
 
 }

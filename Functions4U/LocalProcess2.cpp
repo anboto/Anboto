@@ -151,12 +151,12 @@ bool LocalProcess2::DoStart(const char *_command, const Vector<String> *arg, boo
 	}
 	WString wscmd(ToSystemCharsetW(command));
 	WString wsdir(ToSystemCharsetW(dir));
-	const wchar *wdir;
+	LPCWSTR wdir;
 	if (dir == 0)
 		wdir = 0;
 	else 
-		wdir = wsdir;
-	bool h = CreateProcessW(NULL, WStringBuffer(wscmd), &sa, &sa, TRUE, NORMAL_PRIORITY_CLASS, (void *)envptr, wdir, &si, &pi);
+		wdir = (LPCWSTR)wsdir.Begin();
+	bool h = CreateProcessW(NULL, (LPWSTR)WStringBuffer(wscmd).Begin(), &sa, &sa, TRUE, NORMAL_PRIORITY_CLASS, (void *)envptr, wdir, &si, &pi);
 	LLOG("CreateProcess " << (h ? "succeeded" : "failed"));
 	CloseHandle(hErrorWrite);
 	CloseHandle(hInputRead);

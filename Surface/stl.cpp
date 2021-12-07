@@ -79,19 +79,19 @@ static void LoadStlTxt(String fileName, Surface &surf, bool &isText) {
 }
 			
 static void STLFacetTxtOut(FileOut &out, const Point3D &p0, const Point3D &p1, const Point3D &p2, 
-						const Point3D &p3, const Vector3D &normal) {
+						const Point3D &p3, const Vector3D &normal, double factor) {
 	out << "facet normal " << normal.x << " " << normal.y << " " << normal.z << "\n";
 	out << "   outer loop" << "\n";
-	out << "      vertex " << p0.x << " " << p0.y << " " << p0.z << "\n";
-	out << "      vertex " << p1.x << " " << p1.y << " " << p1.z << "\n";
-	out << "      vertex " << p2.x << " " << p2.y << " " << p2.z << "\n";
+	out << "      vertex " << p0.x*factor << " " << p0.y*factor << " " << p0.z*factor << "\n";
+	out << "      vertex " << p1.x*factor << " " << p1.y*factor << " " << p1.z*factor << "\n";
+	out << "      vertex " << p2.x*factor << " " << p2.y*factor << " " << p2.z*factor << "\n";
 	if (!IsNull(p3))
 		out << "      vertex " << p3.x << " " << p3.y << " " << p3.z << "\n";	
 	out << "   endloop" << "\n";
 	out << "endfacet" << "\n";
 }
 
-void SaveStlTxt(String fileName, const Surface &surf) {
+void SaveStlTxt(String fileName, const Surface &surf, double factor) {
 	FileOut out(fileName);
 	if (!out.IsOpen())
 		throw Exc(Format(t_("Impossible to open '%s'\n"), fileName));	
@@ -101,7 +101,7 @@ void SaveStlTxt(String fileName, const Surface &surf) {
 	
 	bool forceTriangles = true;
 	
-	out << "solid U++ STL mesh export" << "\n";
+	out << "Anboto STL mesh export" << "\n";
 
 	for (int i = 0; i < panels.GetCount(); ++i) {
 		const Panel &panel = panels[i];
@@ -109,17 +109,17 @@ void SaveStlTxt(String fileName, const Surface &surf) {
 		const Point3D &p1 = nodes[panel.id[1]];
 		const Point3D &p2 = nodes[panel.id[2]];
 		if (forceTriangles) {
-			STLFacetTxtOut(out, p0, p1, p2, Null, panel.normal0);
+			STLFacetTxtOut(out, p0, p1, p2, Null, panel.normal0, factor);
 			if (!panel.IsTriangle()) {
 				const Point3D &p3 = nodes[panel.id[3]];
-				STLFacetTxtOut(out, p2, p3, p0, Null, panel.normal1);	
+				STLFacetTxtOut(out, p2, p3, p0, Null, panel.normal1, factor);	
 			}	
 		} else {
 			if (panel.IsTriangle()) 
-				STLFacetTxtOut(out, p0, p1, p2, Null, panel.normalPaint);
+				STLFacetTxtOut(out, p0, p1, p2, Null, panel.normalPaint, factor);
 			else {
 				const Point3D &p3 = nodes[panel.id[3]];
-				STLFacetTxtOut(out, p0, p1, p2, p3, panel.normalPaint);	
+				STLFacetTxtOut(out, p0, p1, p2, p3, panel.normalPaint, factor);	
 			}
 		}
 	}
@@ -177,7 +177,7 @@ static void STLFacetBinNodeOut(FileOutBinary &out, const Point3D &node) {
 	out.Write(float(node.z));	
 }
 
-void SaveStlBin(String fileName, const Surface &surf) {
+void SaveStlBin(String fileName, const Surface &surf, double factor) {
 	FileOutBinary out(fileName);
 	if (!out.IsOpen())
 		throw Exc(Format(t_("Impossible to open '%s'\n"), fileName));	
@@ -194,18 +194,18 @@ void SaveStlBin(String fileName, const Surface &surf) {
 	for (int i = 0; i < panels.GetCount(); ++i) {
 		const Panel &panel = panels[i];
 		
-		out.Write(float(panel.normal0.x));
-		out.Write(float(panel.normal0.y));
-		out.Write(float(panel.normal0.z));
+		out.Write(float(panel.normal0.x*factor));
+		out.Write(float(panel.normal0.y*factor));
+		out.Write(float(panel.normal0.z*factor));
 		STLFacetBinNodeOut(out, nodes[panel.id[0]]);
 		STLFacetBinNodeOut(out, nodes[panel.id[1]]);
 		STLFacetBinNodeOut(out, nodes[panel.id[2]]);
 		out.Write(int16(0));
 		
 		if (!panel.IsTriangle()) {
-			out.Write(float(panel.normal1.x));
-			out.Write(float(panel.normal1.y));
-			out.Write(float(panel.normal1.z));
+			out.Write(float(panel.normal1.x*factor));
+			out.Write(float(panel.normal1.y*factor));
+			out.Write(float(panel.normal1.z*factor));
 			STLFacetBinNodeOut(out, nodes[panel.id[2]]);
 			STLFacetBinNodeOut(out, nodes[panel.id[3]]);
 			STLFacetBinNodeOut(out, nodes[panel.id[0]]);	
@@ -222,6 +222,24 @@ void LoadStl(String file, Surface &surf, bool &isText, String &header) {
 			LoadStlBin(file, surf, header);
 		else
 			throw std::move(e);
+	}
+	double mx = 0;
+	for (int i = 0; i < surf.nodes.size(); ++i) {
+		const auto &p = surf.nodes[i];
+		if (abs(p.x) > mx)
+			mx = abs(p.x);
+		if (abs(p.y) > mx)
+			mx = abs(p.y);
+		if (abs(p.z) > mx)
+			mx = abs(p.z);
+	}
+	if (mx > 500) {		// It's guessed to be in mm. Convert to m
+		for (int i = 0; i < surf.nodes.size(); ++i) {
+			auto &p = surf.nodes[i];
+			p.x /= 1000;
+			p.y /= 1000;
+			p.z /= 1000;
+		}
 	}
 }
 

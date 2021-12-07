@@ -63,7 +63,7 @@ bool GetWMIInfo(String system, Vector <String> &data, Array <Value> *ret[], Stri
 		return false;
 	}
 	
-	BSTR bstrNamespace = SysAllocString(nameSpace.ToWString());
+	BSTR bstrNamespace = SysAllocString((const OLECHAR *)nameSpace.ToWString().Begin());
 	IWbemServices* pWbemServices = NULL;
 	if (pIWbemLocator->ConnectServer(bstrNamespace, NULL, NULL, NULL, 0, NULL, NULL,
 		&pWbemServices) != S_OK) {
@@ -126,7 +126,7 @@ bool GetWMIInfo(String system, Vector <String> &data, Array <Value> *ret[], Stri
 		for (int col = 0; col < data.GetCount(); ++col) {
 			VARIANT vProp;
 			VariantInit(&vProp);
-			BSTR strClassProp = SysAllocString(data[col].ToWString());
+			BSTR strClassProp = SysAllocString((const OLECHAR *)data[col].ToWString().Begin());
 	        hRes = pClassObject->Get(strClassProp, 0, &vProp, 0, 0);
 	        if(hRes != S_OK){
 		        pWbemServices->Release();

@@ -38,8 +38,9 @@ void Sort(T& a, T& b, T& c) {
 		Swap(b, c);
 }
 
-void GetTransform(Eigen::Affine3d &aff, double a_x, double a_y, double a_z, double c_x, double c_y, double c_z);
-	
+void GetTransform(Eigen::Affine3d &aff, double ax, double ay, double az, double cx, double cy, double cz);
+void GetTransform(Eigen::Affine3d &aff, double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz);	
+
 class Point3D : public Moveable<Point3D> {
 public:
 	double x, y, z;
@@ -73,8 +74,9 @@ public:
 	#pragma GCC diagnostic warning "-Wattributes"
 	
 	void Translate(double dx, double dy, double dz);
-	void Rotate(const Eigen::Affine3d &quat);
-	void Rotate(double da_x, double da_y, double da_z, double c_x, double c_y, double c_z);
+	void TransRot(const Eigen::Affine3d &quat);
+	void TransRot(double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz);
+	void Rotate(double ax, double ay, double az, double cx, double cy, double cz);	
 		
 	// Dot product or scalar product
 	double dot(const Point3D& a) const {return x*a.x + y*a.y + z*a.z;}
@@ -186,9 +188,9 @@ public:
 		to.Translate(dx, dy, dz);
 	}
 	
-	void Rotate(const Eigen::Affine3d &quat) {
-		from.Rotate(quat);
-		to.Rotate(quat);
+	void TransRot(const Eigen::Affine3d &quat) {
+		from.TransRot(quat);
+		to.TransRot(quat);
 	}
 };
 
@@ -365,6 +367,7 @@ public:
 		
 	void Translate(double dx, double dy, double dz);
 	void Rotate(double ax, double ay, double az, double _c_x, double _c_y, double _c_z);
+	void TransRot(double dx, double dy, double dz, double ax, double ay, double az, double _c_x, double _c_y, double _c_z);
 	
 	bool healing{false};
 	int numTriangles, numBiQuads, numMonoQuads;
@@ -428,8 +431,8 @@ private:
 
 
 void LoadStl(String fileName, Surface &surf, bool &isText, String &header);
-void SaveStlTxt(String fileName, const Surface &surf);
-void SaveStlBin(String fileName, const Surface &surf);
+void SaveStlTxt(String fileName, const Surface &surf, double factor);
+void SaveStlBin(String fileName, const Surface &surf, double factor);
 
 
 }

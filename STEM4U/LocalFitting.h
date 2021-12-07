@@ -6,7 +6,6 @@
 #include "Utility.h"
 
 namespace Upp {
-using namespace Eigen;
 
 template <class Range1, class Range2>
 void LocalFitting(const Range1 &x, const Range1 &y, const Range2 &resx, Range2 &resy, Range2 &resdy, Range2 &resd2y, 
@@ -20,7 +19,7 @@ void LocalFitting(const Range1 &x, const Range1 &y, const Range2 &resx, Range2 &
 
 	const Scalar minweight = 0.05;
 	Scalar w_2 = windowsize/2;
-	VectorXd coeff, weight;
+	Eigen::VectorXd coeff, weight;
 	for (int i = 0; i < resx.size(); ++i) {
 		int ibegin, iend;
 		const auto &rx = resx[i];
@@ -56,7 +55,7 @@ void LocalFitting(const Range1 &x, const Range1 &y, const Range2 &resx, Range2 &
 				for (int ii = ibegin; ii <= iend; ii++)
 					weight[ii-ibegin] = max(minweight, pow3(1 - pow3(min(1., abs(rx - x[ii])/w_2))));
 			}
-			if (!NonLinearOptimization(coeff, num, [&](const VectorXd &c, VectorXd &residual)->int {
+			if (!NonLinearOptimization(coeff, num, [&](const Eigen::VectorXd &c, Eigen::VectorXd &residual)->int {
 				for (int ii = ibegin; ii <= iend; ii++) {
 					if (deg == 2) 
 						residual[ii-ibegin] = weight[ii-ibegin]*(c(0) + c(1)*x[ii] + c(2)*sqr(x[ii]) - y[ii]);
@@ -260,8 +259,6 @@ void Lowess(const Range1 &x, const Range1 &y, typename Range1::value_type frac, 
 	}
 }
 
-
-}
-		
+}		
 		
 #endif

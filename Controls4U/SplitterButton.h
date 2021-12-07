@@ -68,10 +68,10 @@ public:
 	static const Style& StyleDefault();
 
 private:	
-	virtual void   MouseMove(Point p, dword keyflags) 	{};
-	virtual void   LeftDown(Point p, dword keyflags) 	{};
-	virtual void   LeftUp(Point p, dword keyflags) 		{};
-	virtual Image  CursorImage(Point p, dword keyflags) {return Null;};	
+	virtual void   MouseMove(Point , dword ) 	{};
+	virtual void   LeftDown(Point , dword ) 	{};
+	virtual void   LeftUp(Point , dword ) 		{};
+	virtual Image  CursorImage(Point , dword ) {return Null;};	
 };
 
 }

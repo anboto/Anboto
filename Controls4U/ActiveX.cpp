@@ -120,42 +120,42 @@ void DHCtrlActiveX::DoResize() {
 	if (!oleObj || !status)
 		return;
 	
-	RECT rect;
-	GetClientRect(pClientSite.hwnd, &rect);
+	RECT rct;
+	GetClientRect(pClientSite.hwnd, &rct);
 
 	IOleInPlaceObject *inplace = (IOleInPlaceObject *)QueryInterface(IID_IOleInPlaceObject);
 	if (inplace) {
-		inplace->SetObjectRects(&rect, &rect);
+		inplace->SetObjectRects(&rct, &rct);
 		inplace->Release();
 	}
 }
 
-bool DHCtrlActiveX::Attach(HWND hwnd) {
-	if (hwnd == (HWND)-1 || hwnd == 0 || !status)
+bool DHCtrlActiveX::Attach(HWND hwd) {
+	if (hwd == (HWND)-1 || hwd == 0 || !status)
 		return false;
-	if(pClientSite.hwnd && pClientSite.hwnd != hwnd) 
+	if(pClientSite.hwnd && pClientSite.hwnd != hwd) 
 		Detach();
-	if(!hwnd) 
+	if(!hwd) 
 		return false;
 
-	RECT rect;
+	RECT rct;
 	AXStorage storage;
-	pClientSite.hwnd = hwnd;
+	pClientSite.hwnd = hwd;
  
 	if (OleCreate(clsid, IID_IOleObject, OLERENDER_DRAW, 0, (IOleClientSite *)&pClientSite, &storage, (void**)&oleObj)) 
 		return false;
 	
-	oleObj->SetHostNames(name.ToWString(), 0);
-	GetClientRect(hwnd, &rect);
+	oleObj->SetHostNames((const wchar_t *)name.ToWString().Begin(), 0);
+	GetClientRect(hwd, &rct);
 	if (!OleSetContainedObject((IUnknown *)oleObj, TRUE)) {
-		if (!oleObj->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, (IOleClientSite *)&pClientSite, -1, hwnd, &rect))
+		if (!oleObj->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, (IOleClientSite *)&pClientSite, -1, hwd, &rct))
 			return true;
 	}
 	Detach();
 	return false;
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::QueryInterface(REFIID riid, void __RPC_FAR *__RPC_FAR *ppvObject) {
+HRESULT STDMETHODCALLTYPE AXStorage::QueryInterface(REFIID , void __RPC_FAR *__RPC_FAR *) {
 	throw Exc(t_("Function not implemented"));
 }
 
@@ -167,31 +167,31 @@ ULONG STDMETHODCALLTYPE AXStorage::Release( void) {
 	return 0;
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::CreateStream(const OLECHAR *pwcsName, DWORD grfMode, DWORD reserved1, DWORD reserved2, IStream **ppstm) {
+HRESULT STDMETHODCALLTYPE AXStorage::CreateStream(const OLECHAR *, DWORD , DWORD , DWORD , IStream **) {
 	throw Exc(t_("Function not implemented"));
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::OpenStream(const OLECHAR *pwcsName, void *reserved1, DWORD grfMode, DWORD reserved2, IStream **ppstm) {
+HRESULT STDMETHODCALLTYPE AXStorage::OpenStream(const OLECHAR *, void *, DWORD , DWORD , IStream **) {
 	throw Exc(t_("Function not implemented"));
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::CreateStorage(const OLECHAR *pwcsName, DWORD grfMode, DWORD reserved1, DWORD reserved2, IStorage **ppstg) {
+HRESULT STDMETHODCALLTYPE AXStorage::CreateStorage(const OLECHAR *, DWORD , DWORD , DWORD , IStorage **) {
 	throw Exc(t_("Function not implemented"));
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::OpenStorage(const OLECHAR *pwcsName, IStorage *pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage **ppstg) {
+HRESULT STDMETHODCALLTYPE AXStorage::OpenStorage(const OLECHAR *, IStorage *, DWORD , SNB , DWORD , IStorage **) {
 	throw Exc(t_("Function not implemented"));
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::CopyTo(DWORD ciidExclude, const IID *rgiidExclude, SNB snbExclude, IStorage *pstgDest) {
+HRESULT STDMETHODCALLTYPE AXStorage::CopyTo(DWORD , const IID *, SNB , IStorage *) {
 	throw Exc(t_("Function not implemented"));
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::MoveElementTo(const OLECHAR *pwcsName, IStorage *pstgDest, const OLECHAR *pwcsNewName, DWORD grfFlags) {
+HRESULT STDMETHODCALLTYPE AXStorage::MoveElementTo(const OLECHAR *, IStorage *, const OLECHAR *, DWORD ) {
 	throw Exc(t_("Function not implemented"));
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::Commit(DWORD grfCommitFlags) {
+HRESULT STDMETHODCALLTYPE AXStorage::Commit(DWORD ) {
 	throw Exc(t_("Function not implemented"));
 }
 
@@ -199,19 +199,19 @@ HRESULT STDMETHODCALLTYPE AXStorage::Revert() {
 	throw Exc(t_("Function not implemented"));
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::EnumElements(DWORD reserved1, void *reserved2, DWORD reserved3, IEnumSTATSTG **ppenum) {
+HRESULT STDMETHODCALLTYPE AXStorage::EnumElements(DWORD , void *, DWORD , IEnumSTATSTG **) {
 	throw Exc(t_("Function not implemented"));
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::DestroyElement(const OLECHAR *pwcsName) {
+HRESULT STDMETHODCALLTYPE AXStorage::DestroyElement(const OLECHAR *) {
 	throw Exc(t_("Function not implemented"));
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::RenameElement(const OLECHAR *pwcsOldName, const OLECHAR *pwcsNewName) {
+HRESULT STDMETHODCALLTYPE AXStorage::RenameElement(const OLECHAR *, const OLECHAR *) {
 	throw Exc(t_("Function not implemented"));
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::SetElementTimes(const OLECHAR *pwcsName, const FILETIME *pctime, const FILETIME *patime, const FILETIME *pmtime) {
+HRESULT STDMETHODCALLTYPE AXStorage::SetElementTimes(const OLECHAR *, const FILETIME *, const FILETIME *, const FILETIME *) {
 	throw Exc(t_("Function not implemented"));
 }
 
@@ -219,11 +219,11 @@ HRESULT STDMETHODCALLTYPE AXStorage::SetClass(REFCLSID clsid) {
 	return(S_OK);
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::SetStateBits(DWORD grfStateBits, DWORD grfMask) {
+HRESULT STDMETHODCALLTYPE AXStorage::SetStateBits(DWORD , DWORD ) {
 	throw Exc(t_("Function not implemented"));
 }
 
-HRESULT STDMETHODCALLTYPE AXStorage::Stat(STATSTG *pstatstg, DWORD grfStatFlag) {
+HRESULT STDMETHODCALLTYPE AXStorage::Stat(STATSTG *pstatstg, DWORD ) {
 	throw Exc(t_("Function not implemented"));
 }
 

@@ -6,7 +6,7 @@ uses
 
 file
 	Surface.cpp,
-	Surface.h,
-	stl.cpp;
+	stl.cpp,
+	Surface.h;
 
  spellcheck_comments "EN-GB"

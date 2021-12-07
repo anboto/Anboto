@@ -126,7 +126,7 @@ void PressKeyVK(int keyVK, bool hold = false, bool release = false, bool compati
 void PressKey(wchar key, bool hold = false, bool release = false) {
 	if ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z') || (key >= '0' && key <= '9')) {
 		HKL hKeyboardLayout = ::GetKeyboardLayout(0);
-    	SHORT nVK = VkKeyScanExW(key, hKeyboardLayout);
+    	SHORT nVK = VkKeyScanExW(static_cast<WCHAR>(key), hKeyboardLayout);
     	UINT nScan = MapVirtualKeyExW(nVK, MAPVK_VK_TO_CHAR, hKeyboardLayout);
 		if (!release) 
         	keybd_event(static_cast<BYTE>(nVK), static_cast<BYTE>(nScan), 0, 0);

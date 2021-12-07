@@ -34,8 +34,8 @@ SplitterButton& SplitterButton::Horz(Ctrl &left, Ctrl &right) {
 	return *this;
 }
 
-SplitterButton& SplitterButton::Vert(Ctrl& top, Ctrl& bottom) {
-	splitter.Vert(top, bottom);
+SplitterButton& SplitterButton::Vert(Ctrl& tp, Ctrl& bottom) {
+	splitter.Vert(tp, bottom);
 	
 	SetPositions(0, 5000, 10000);
 	SetInitialPositionId(1);
@@ -55,26 +55,26 @@ SplitterButton &SplitterButton::SetPositions(const Vector<int> &_positions) {
 }
 
 SplitterButton &SplitterButton::SetPositions(int pos1) {
-	Vector<int> pos;
+	Vector<int> ps;
 	
-	pos << pos1;
-	SetPositions(pos);
+	ps << pos1;
+	SetPositions(ps);
 	return *this;
 }
 
 SplitterButton &SplitterButton::SetPositions(int pos1, int pos2) {
-	Vector<int> pos;
+	Vector<int> ps;
 	
-	pos << pos1 << pos2;
-	SetPositions(pos);
+	ps << pos1 << pos2;
+	SetPositions(ps);
 	return *this;
 }
 
 SplitterButton &SplitterButton::SetPositions(int pos1, int pos2, int pos3) {
-	Vector<int> pos;
+	Vector<int> ps;
 	
-	pos << pos1 << pos2 << pos3;
-	SetPositions(pos);
+	ps << pos1 << pos2 << pos3;
+	SetPositions(ps);
 	return *this;
 }
 
@@ -128,13 +128,13 @@ void SplitterButton::OnLayout(int pos) {
 void SplitterButton::SetButton(int id) {
 	ASSERT(positions.GetCount() > 1);
 	
-	int pos = splitter.GetPos();
+	int ps = splitter.GetPos();
 	
 	int closerPositionId = Null;
 	int closerPosition = 10000;
 	for (int i = 0; i < positions.GetCount(); ++i)
-		if (abs(positions[i] - pos) < closerPosition) {
-			closerPosition = abs(positions[i] - pos);
+		if (abs(positions[i] - ps) < closerPosition) {
+			closerPosition = abs(positions[i] - ps);
 			closerPositionId = i;
 		}
 	

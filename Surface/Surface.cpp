@@ -39,13 +39,19 @@ void Point3D::Translate(double dx, double dy, double dz) {
 	z += dz;
 }
 
-void Point3D::Rotate(double da_x, double da_y, double da_z, double c_x, double c_y, double c_z) {
+void Point3D::Rotate(double ax, double ay, double az, double cx, double cy, double cz) {
 	Affine3d aff;
-	GetTransform(aff, da_x, da_y, da_z, c_x, c_y, c_z);
-	Rotate(aff);
+	GetTransform(aff, ax, ay, az, cx, cy, cz);
+	TransRot(aff);
 }
 
-void Point3D::Rotate(const Affine3d &quat) {
+void Point3D::TransRot(double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz) {
+	Affine3d aff;
+	GetTransform(aff, dx, dy, dz, ax, ay, az, cx, cy, cz);
+	TransRot(aff);
+}
+
+void Point3D::TransRot(const Affine3d &quat) {
 	Vector3d pnt0(x, y, z);	
 	Vector3d pnt = quat * pnt0;
 
@@ -54,12 +60,22 @@ void Point3D::Rotate(const Affine3d &quat) {
 	z = pnt[2];
 }
 
-void GetTransform(Affine3d &aff, double a_x, double a_y, double a_z, double c_x, double c_y, double c_z) {
-	Vector3d c(c_x, c_y, c_z);	
+void GetTransform(Affine3d &aff, double ax, double ay, double az, double cx, double cy, double cz) {
+	Vector3d c(cx, cy, cz);	
 	aff =	Translation3d(c) *
-			AngleAxisd(a_x*M_PI/180, Vector3d::UnitX()) *
-		 	AngleAxisd(a_y*M_PI/180, Vector3d::UnitY()) *
-		 	AngleAxisd(a_z*M_PI/180, Vector3d::UnitZ()) *
+			AngleAxisd(ax*M_PI/180, Vector3d::UnitX()) *
+		 	AngleAxisd(ay*M_PI/180, Vector3d::UnitY()) *
+		 	AngleAxisd(az*M_PI/180, Vector3d::UnitZ()) *
+		 	Translation3d(-c);
+}
+
+void GetTransform(Affine3d &aff, double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz) {
+	Vector3d d(dx, dy, dz), c(cx, cy, cz);	
+	aff =	Translation3d(d) *
+			Translation3d(c) *
+			AngleAxisd(ax*M_PI/180, Vector3d::UnitX()) *
+		 	AngleAxisd(ay*M_PI/180, Vector3d::UnitY()) *
+		 	AngleAxisd(az*M_PI/180, Vector3d::UnitZ()) *
 		 	Translation3d(-c);
 }
 
@@ -1103,9 +1119,9 @@ void Surface::GetHydrostaticForceNormalized(VectorXd &f, const Point3D &c0) cons
 		F.y = p*panel.normal0.y;
 		F.z = p*panel.normal0.z;
 		
-		r.x = panel.centroid0.x - c0.x;
-		r.y = panel.centroid0.y - c0.y;
-		r.z = panel.centroid0.z - c0.z;
+		r.x = c0.x - panel.centroid0.x;
+		r.y = c0.y - panel.centroid0.y;
+		r.z = c0.z - panel.centroid0.z;
 		
 		M = r%F;
 		
@@ -1121,9 +1137,9 @@ void Surface::GetHydrostaticForceNormalized(VectorXd &f, const Point3D &c0) cons
 		F.y = p*panel.normal1.y;
 		F.z = p*panel.normal1.z;
 		
-		r.x = panel.centroid1.x - c0.x;
-		r.y = panel.centroid1.y - c0.y;
-		r.z = panel.centroid1.z - c0.z;
+		r.x = c0.x - panel.centroid1.x;
+		r.y = c0.x - panel.centroid1.y;
+		r.z = c0.x - panel.centroid1.z;
 		
 		M = r%F;
 		
@@ -1567,16 +1583,34 @@ void Surface::Rotate(double a_x, double a_y, double a_z, double c_x, double c_y,
 	GetTransform(quat, a_x, a_y, a_z, c_x, c_y, c_z);
 	
 	for (int i = 0; i < nodes.GetCount(); ++i) 
-		nodes[i].Rotate(quat);
+		nodes[i].TransRot(quat);
 
 	for (int i = 0; i < skewed.GetCount(); ++i) 
-		skewed[i].Rotate(quat);
+		skewed[i].TransRot(quat);
 	
 	for (int i = 0; i < segTo1panel.GetCount(); ++i) 
-		segTo1panel[i].Rotate(quat);
+		segTo1panel[i].TransRot(quat);
 	for (int i = 0; i < segTo3panel.GetCount(); ++i) 
-		segTo3panel[i].Rotate(quat);
+		segTo3panel[i].TransRot(quat);
 }
+
+void Surface::TransRot(double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz) {
+	Affine3d quat;
+	GetTransform(quat, dx, dy, dz, ax, ay, az, cx, cy, cz);
+	
+	for (int i = 0; i < nodes.GetCount(); ++i) 
+		nodes[i].TransRot(quat);
+
+	for (int i = 0; i < skewed.GetCount(); ++i) 
+		skewed[i].TransRot(quat);
+	
+	for (int i = 0; i < segTo1panel.GetCount(); ++i) 
+		segTo1panel[i].TransRot(quat);
+	for (int i = 0; i < segTo3panel.GetCount(); ++i) 
+		segTo3panel[i].TransRot(quat);
+}
+	
+
 
 void Surface::DeployXSymmetry() {
 	int nnodes = nodes.GetCount();

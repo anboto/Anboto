@@ -16,6 +16,14 @@ bool IsNum(const MatrixXd& r) {
 	return true;
 }
 
+Vector<double> DataSource::Data(Getdatafun getdata) {
+	Vector<double> ret;
+	ret.SetCount(int(GetCount()));
+	for (int64 i = 0; i < GetCount(); ++i) 
+		ret[int(i)] = Membercall(getdata)(i);
+	return ret;	
+}
+
 double DataSource::Min(Getdatafun getdata, int64& id) {
 	double minVal = std::numeric_limits<double>::max();
 	for (int64 i = 0; i < GetCount(); ++i) {
@@ -662,9 +670,13 @@ double DataSource::PercentileVal(Getdatafun getdata, double rate) {
 Vector<Pointf> DataSource::Derivative(Getdatafun getdataY, Getdatafun getdataX, int orderDer, int orderAcc) {
 	ASSERT(orderDer >= 1 && orderDer <= 2);
 	ASSERT(orderAcc == 2 || orderAcc == 4 || orderAcc == 6 || orderAcc == 8);
+	Vector<Pointf> res;	
 	
 	int numData = int(GetCount());
 
+	if (numData < orderAcc)
+		return res;
+	
     VectorXd xv(numData), yv(numData);
     for (int i = 0; i < numData; ++i) {
         yv[i] = Membercall(getdataY)(i);
@@ -686,8 +698,6 @@ Vector<Pointf> DataSource::Derivative(Getdatafun getdataY, Getdatafun getdataX, 
 		{-1/560., 8/315., -1/5., 8/5., -205/72., 8/5., -1/5., 8/315., -1/560.}};					
 	
 	int idkernel = orderAcc/2-1;
-	
-	Vector<Pointf> res;	
 	
 	double factor;
 	VectorXd kernel;

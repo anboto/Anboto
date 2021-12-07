@@ -1089,9 +1089,9 @@ public:
 		return ret;
 	}
 	
-	void SeekPos(Pos &pos) {
-		FileIn::Seek(pos.byt);
-		line = pos.line;
+	void SeekPos(Pos &ps) {
+		FileIn::Seek(ps.byt);
+		line = ps.line;
 	}
 	
 private:
@@ -1106,7 +1106,7 @@ public:
 	
 	void ReadB(void *data, size_t sz) {
 		int64 len = Get64(data, sz);
-		if (len != sz)
+		if (len != int64(sz))
 			throw Exc(Format(t_("Data not loaded in FileInBinary::Read(%ld)"), int64(sz)));
 	}
 	

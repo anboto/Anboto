@@ -116,9 +116,9 @@ void	SliderCtrlX::DrawTick( Draw &w, MAJORMINOR Type, HOVE Orientation, int nPos
  **********************************************************************************************/
 {
 	Size size = GetSize();
-	int		sz = Orientation == HORZ ? size.cy : size.cx;
-	int		nMajorSize = (int)( m_nMajorTickSize / 100.0f * sz * .5 + 0.5f );
-	int		nMinorSize = (int)( m_nMinorTickSize / 100.0f * sz * .5 + 0.5f );
+	int		siz = Orientation == HORZ ? size.cy : size.cx;
+	int		nMajorSize = (int)( m_nMajorTickSize / 100.0f * siz * .5 + 0.5f );
+	int		nMinorSize = (int)( m_nMinorTickSize / 100.0f * siz * .5 + 0.5f );
 	int		nMajorWidth = 3;
 	int		TickBottomMaj = 0, TickBottomMin = 0, TickTop = 0;
 
@@ -344,7 +344,7 @@ void SliderCtrlX::LeftRepeat(Point p, dword f)
 		LeftDown(p, f);
 }
 
-void SliderCtrlX::LeftUp(Point pos, dword keyflags)
+void SliderCtrlX::LeftUp(Point , dword )
 /***********************************************************************************************
  * virtual - public
  **********************************************************************************************/

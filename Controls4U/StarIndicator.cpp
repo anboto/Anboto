@@ -140,7 +140,7 @@ void StarIndicator::Paint(Draw& w) {
 	w.End();
 }
 
-void StarIndicator::MouseEnter(Point p, dword keyflags)
+void StarIndicator::MouseEnter(Point , dword )
 /***********************************************************************************************
  * Mouse got inside the control
  * virtual - public

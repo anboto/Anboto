@@ -228,7 +228,7 @@ bool Ole::Invoke(int autoType, VARIANT *pvResult, IDispatch *pDisp, String name,
 	WStringBuffer ptName(wname);
 
     // Convert down to ANSI
-    WideCharToMultiByte(CP_ACP, 0, ptName, -1, szName, 256, NULL, NULL);
+    WideCharToMultiByte(CP_ACP, 0, (LPCWCH)wname.Begin(), -1, szName, 256, NULL, NULL);
 
     // Get DISPID for name passed
     hr = pDisp->GetIDsOfNames(IID_NULL, (LPOLESTR *)&ptName, 1, LOCALE_USER_DEFAULT, &dispID);
@@ -265,7 +265,7 @@ bool Ole::Invoke(int autoType, VARIANT *pvResult, IDispatch *pDisp, String name,
 
 ObjectOle Ole::CreateObject(String application) {
 	CLSID clsid;
-	HRESULT hr = CLSIDFromProgID(application.ToWString(), &clsid);	// Get CLSID for our server
+	HRESULT hr = CLSIDFromProgID((LPCOLESTR)application.ToWString().Begin(), &clsid);	// Get CLSID for our server
 	if(FAILED(hr)) {
 		LOG("CLSIDFromProgID() failed");
 		return NULL;

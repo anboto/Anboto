@@ -197,7 +197,7 @@ ProcessingTab::ProcessingTab()
 	
 	tabBestFitRight.coefficients = 0;
 	tabBestFitRight.coefficients.Tip(t_("To show real equation coefficients with different precisions or just in text"));
-	tabBestFitRight.minR2 = 0.6;
+	tabBestFitRight.minR2 = 0.8;
 	tabBestFitRight.minR2.Tip(t_("Min. R2 to plot the equation"));
 	tabBestFitRight.userFormula <<= "c0 + c1*x^2; c0=0; c1=1";
 	tabBestFitRight.userFormula.Tip(t_("User suppled equation. Initial guess values separated with ';'"));

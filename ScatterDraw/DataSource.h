@@ -47,6 +47,7 @@ public:
 
 	template <class Range>
 	void Copy(Getdatafun getdata, Range &out) {
+		ASSERT(!isExplicit);
 		Resize(out, GetCount());
 		int n = 0;		
 		for (int64 i = 0; i < GetCount(); ++i) { 
@@ -57,7 +58,17 @@ public:
 		ResizeConservative(out, n);
 	}
 	template <class Range>
+	void CopyY(Range &d, double from, double to, int num) {
+		ASSERT(to >= from);
+		ASSERT(num > 0);
+		Resize(d, num);
+		double delta = to == from || num == 0 ? 0 : (to - from)/(num-1);
+		for (int i = 0; i < num; ++i) 
+			d[i] = f(from + i*delta);
+	}
+	template <class Range>
 	void Copy(Getdatafun getdata0, Getdatafun getdata1, Range &out0, Range &out1) {
+		ASSERT(!isExplicit);
 		Resize(out0, GetCount());
 		Resize(out1, GetCount());
 		int n = 0;		
@@ -72,6 +83,18 @@ public:
 		}
 		ResizeConservative(out0, n);
 		ResizeConservative(out1, n);
+	}
+	template <class Range>
+	void CopyXY(Range &dx, Range &dy, double from, double to, int num) {
+		ASSERT(to >= from);
+		ASSERT(num > 0);
+		Resize(dx, num);
+		Resize(dy, num);
+		double delta = to == from || num == 0 ? 0 : (to - from)/(num-1);
+		for (int i = 0; i < num; ++i) {
+			dx[i] = from + i*delta;
+			dy[i] = f(from + i*delta);
+		}
 	}
 	template <class Range>
 	void CopyX(Range &out) 			  	  {Copy(&DataSource::x, out);}
@@ -101,7 +124,9 @@ public:
 		ResizeConservative(out1, n);
 		ResizeConservative(out2, n);
 	}
-		
+	
+	Vector<double> X()				{return Data(&DataSource::x);}
+	Vector<double> Y()				{return Data(&DataSource::y);}
 	double MinY(int64& id)  		{return Min(&DataSource::y, id);}
 	double MinY()  					{int64 dummy;	return Min(&DataSource::y, dummy);}
 	double MinX(int64& id)  		{return Min(&DataSource::x, id);}	
@@ -160,7 +185,8 @@ public:
 	Vector<Pointf> DerivativeY(int orderDer, int orderAcc)	  {return Derivative(&DataSource::y, &DataSource::x, orderDer, orderAcc);}
 	Vector<Pointf> SavitzkyGolayY(int deg, int size, int der) {return SavitzkyGolay(&DataSource::y, &DataSource::x, deg, size, der);}
 	Vector<Pointf> FilterFFTY(double fromT, double toT) 	  {return FilterFFT(&DataSource::y, &DataSource::x, fromT, toT);}
-			
+	
+	Vector<double> Data(Getdatafun getdata);		
 	double Min(Getdatafun getdata, int64& id);
 	double Max(Getdatafun getdata, int64& id);
 	double Avg(Getdatafun getdata);
@@ -503,16 +529,16 @@ public:
 	virtual inline int64 GetCount() const		{return yData->size();}
 };
 
-template <class Y>
+template <class T>
 class VectorY : public DataSource {
 private:
-	const Vector<Y> *yData;
+	const Vector<T> *yData;
 	double x0, deltaX;
 
 public:
 	VectorY() : yData(0), x0(0), deltaX(0) {}
-	VectorY(const Vector<Y> &_yData, double _x0 = 0, double _deltaX = 1) {Init(_yData, _x0, _deltaX);}
-	void Init(const Vector<Y> &_yData, double _x0 = 0, double _deltaX = 1) {
+	VectorY(const Vector<T> &_yData, double _x0 = 0, double _deltaX = 1) {Init(_yData, _x0, _deltaX);}
+	void Init(const Vector<T> &_yData, double _x0 = 0, double _deltaX = 1) {
 		this->yData = &_yData;
 		this->x0 = _x0;
 		this->deltaX = _deltaX;
@@ -525,16 +551,16 @@ public:
 	virtual double AvgX() 					{return x0 + ((yData->GetCount() - 1)*deltaX)/2.;}
 };	
 
-template <class Y>
+template <class T>
 class ArrayY : public DataSource {
 private:
-	const Upp::Array<Y> *yData = 0;
+	const Upp::Array<T> *yData = 0;
 	double x0 = 0, deltaX = 0;
 
 public:
 	ArrayY() {}
-	ArrayY(const Upp::Array<Y> &_yData, double _x0 = 0, double _deltaX = 1) {Init(_yData, _x0, _deltaX);}
-	void Init(const Upp::Array<Y> &_yData, double _x0 = 0, double _deltaX = 1) {
+	ArrayY(const Upp::Array<T> &_yData, double _x0 = 0, double _deltaX = 1) {Init(_yData, _x0, _deltaX);}
+	void Init(const Upp::Array<T> &_yData, double _x0 = 0, double _deltaX = 1) {
 		this->yData = &_yData;
 		this->x0 = _x0;
 		this->deltaX = _deltaX;
@@ -547,10 +573,10 @@ public:
 	virtual double AvgX() 					{return (x0 + yData->GetCount()*deltaX)/2.;}
 };
 
-template <class Y>
+template <class T>
 class VectorVectorY : public DataSource {
 private:
-	const Vector<Vector<Y> > *data = 0;
+	const Vector<Vector<T> > *data = 0;
 	bool useRows = true;
 	int idx = 0, idy = 1;
 	Vector<int> idsx, idsy, idsFixed;
@@ -559,12 +585,12 @@ private:
 	
 public:
 	VectorVectorY() {}
-	VectorVectorY(const Vector<Vector<Y> > &_data, int _idx, int _idy, 
+	VectorVectorY(const Vector<Vector<T> > &_data, int _idx, int _idy, 
 				  const Vector<int> &_idsx, const Vector<int> &_idsy, const Vector<int> &_idsFixed, 
 				  bool _useRows = true, int _beginData = 0, int _numData = Null) {
 		Init(_data, _idx, _idy, _idsx, _idsy, _idsFixed, _useRows, _beginData, _numData);
 	}
-	void Init(const Vector<Vector<Y> > &_data, int _idx, int _idy, const Vector<int> &_idsx, const Vector<int> &_idsy, 
+	void Init(const Vector<Vector<T> > &_data, int _idx, int _idy, const Vector<int> &_idsx, const Vector<int> &_idsy, 
 			  const Vector<int> &_idsFixed, bool _useRows = true, int _beginData = 0, int _numData = Null) {
 		this->data = &_data;
 		this->useRows = _useRows;
@@ -586,7 +612,7 @@ public:
 				this->numData = _data.GetCount() - _beginData;
 		}
 	}
-	void Init(const Vector<Vector<Y> > &_data, int _idx, int _idy, bool _useRows = true, int _beginData = 0, int _numData = Null) {
+	void Init(const Vector<Vector<T> > &_data, int _idx, int _idy, bool _useRows = true, int _beginData = 0, int _numData = Null) {
 		static Vector<int> idsVoid;
 		Init(_data, _idx, _idy, idsVoid, idsVoid, idsVoid, _useRows, _beginData, _numData);
 	}
@@ -632,10 +658,15 @@ public:
 
 class VectorXY : public DataSource {
 private:
-	const Vector<double> *xData, *yData;
+	const Vector<double> *xData = nullptr, *yData = nullptr;
 
 public:
-	VectorXY(const Vector<double> &_xData, const Vector<double> &_yData) : xData(&_xData), yData(&_yData) {}
+	VectorXY() {}
+	VectorXY(const Vector<double> &_xData, const Vector<double> &_yData) {Init(_xData,_yData);}
+	void Init(const Vector<double> &_xData, const Vector<double> &_yData) {
+		xData = &_xData;
+		yData = &_yData;
+	}
 	virtual inline double x(int64 id) 		{return (*xData)[int(id)];}
 	virtual inline double y(int64 id) 		{return (*yData)[int(id)];}
 	virtual inline int64 GetCount()	 const	{return min(xData->GetCount(), yData->GetCount());}
@@ -678,25 +709,25 @@ public:
 	virtual inline int64 GetCount() const	{return data->GetCount();}
 };	
 
-template <class X, class Y>
+template <class TX, class TY>
 class VectorMapXY : public DataSource {
 private:
-	const VectorMap<X, Y> *data;
+	const VectorMap<TX, TY> *data;
 
 public:
-	VectorMapXY(const VectorMap<X, Y> &_data) : data(&_data) {}
+	VectorMapXY(const VectorMap<TX, TY> &_data) : data(&_data) {}
 	virtual inline double y(int64 id) 			{return (*data)[int(id)];}
-	virtual inline double x(int64 id) 	 	{return (*data).GetKey(int(id));}
+	virtual inline double x(int64 id) 	 		{return (*data).GetKey(int(id));}
 	virtual inline int64 GetCount() const		{return data->GetCount();}
 };	
 
-template <class X, class Y>
+template <class TX, class TY>
 class ArrayMapXY : public DataSource {
 private:
-	const ArrayMap<X, Y> *data;
+	const ArrayMap<TX, TY> *data;
 
 public:
-	ArrayMapXY(const ArrayMap<X, Y> &_data) : data(&_data) {}
+	ArrayMapXY(const ArrayMap<TX, TY> &_data) : data(&_data) {}
 	virtual inline double y(int64 id) 			{return (*data)[int(id)];}
 	virtual inline double x(int64 id) 		 	{return (*data).GetKey(int(id));}
 	virtual inline int64 GetCount() const		{return data->GetCount();}

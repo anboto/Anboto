@@ -226,7 +226,7 @@ bool BSDiff(String oldfile, String newfile, String patchfile)
 #ifdef PLATFORM_POSIX		
 		((fd = open(oldfile, O_RDONLY, 0)) < 0) ||
 #else
-		((fd = _wsopen(oldfile.ToWString(), O_RDONLY|O_BINARY, _SH_DENYNO, 0)) < 0) ||
+		((fd = _wsopen((const wchar_t *)oldfile.ToWString().Begin(), O_RDONLY|O_BINARY, _SH_DENYNO, 0)) < 0) ||
 #endif		
 		((oldsize=lseek(fd,0,SEEK_END))==-1) ||
 		((old=(u_char *)malloc(oldsize+1))==NULL) ||
@@ -253,7 +253,7 @@ bool BSDiff(String oldfile, String newfile, String patchfile)
 #ifdef PLATFORM_POSIX		
 		((fd = open(newfile, O_RDONLY, 0)) < 0) ||
 #else
-		((fd = _wsopen(newfile.ToWString(), O_RDONLY|O_BINARY, _SH_DENYNO, 0)) < 0) ||
+		((fd = _wsopen((const wchar_t *)newfile.ToWString().Begin(), O_RDONLY|O_BINARY, _SH_DENYNO, 0)) < 0) ||
 #endif			   
 		((newsize=lseek(fd,0,SEEK_END))==-1) ||
 		((nnew=(u_char *)malloc(newsize+1))==NULL) ||
@@ -277,7 +277,7 @@ bool BSDiff(String oldfile, String newfile, String patchfile)
 #ifdef PLATFORM_POSIX			
 	(pf = fopen(patchfile, "w")) == NULL)
 #else
-	(pf = _wfopen(patchfile.ToWString(), L"wb")) == NULL)
+	(pf = _wfopen((const wchar_t *)patchfile.ToWString().Begin(), L"wb")) == NULL)
 #endif
 		return Err(Format(t_("Error opening %s"), patchfile));
 

@@ -130,6 +130,35 @@ T &GetDefinedParent(Ctrl *ths) {
 	throw Exc(t_("Parent does not found in GetDefinedParent()"));
 }
 
+template <class T>
+class WithEvents : public T {
+public:
+	Function<void(Point, dword)> OnMouseEnter;
+	Function<void(Point, dword)> OnMouseMove;
+	Function<void(Point, dword)> OnLeftDown;
+	Function<void(Point, dword)> OnLeftDouble;
+	Function<void(Point, dword)> OnRightDown;
+	Function<void(Point, dword)> OnRightDouble;
+	Function<void(Point, dword)> OnMiddleDown;
+	Function<void(Point, dword)> OnMiddleDouble;
+	Function<void(Point, int, dword)> OnMouseWheel;
+	Function<void()> OnMouseLeave;
+	Function<void()> OnFocus;
+	
+private:
+	virtual void MouseEnter(Point p, dword keyflags)	{OnMouseEnter(p, keyflags);}
+	virtual void MouseMove(Point p, dword keyflags)		{OnMouseMove(p, keyflags);}
+	virtual void LeftDown(Point p, dword keyflags)		{OnLeftDown(p, keyflags);}
+	virtual void LeftDouble(Point p, dword keyflags)	{OnLeftDouble(p, keyflags);}
+	virtual void RightDown(Point p, dword keyflags)		{OnRightDown(p, keyflags);}
+	virtual void RightDouble(Point p, dword keyflags)	{OnRightDouble(p, keyflags);}
+	virtual void MiddleDown(Point p, dword keyflags)	{OnMiddleDown(p, keyflags);}
+	virtual void MiddleDouble(Point p, dword keyflags)	{OnMiddleDouble(p, keyflags);}
+	virtual void MouseWheel(Point p, int zdelta, dword keyflags){OnMouseWheel(p, zdelta, keyflags);}
+	virtual void MouseLeave()							{OnMouseLeave();}
+	virtual void GotFocus() 						  	{OnFocus();}
+};
+
 }
 
 #endif

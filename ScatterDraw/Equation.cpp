@@ -9,6 +9,7 @@ using namespace Eigen;
 struct Equation_functor : NonLinearOptimizationFunctor<double> {
 	DataSource *series;
 	ExplicitEquation *fSource;
+	VectorXd *weight;
 	Equation_functor() {}
 	
 	int operator()(const VectorXd &b, VectorXd &fvec) const {
@@ -16,8 +17,12 @@ struct Equation_functor : NonLinearOptimizationFunctor<double> {
 		ASSERT(fvec.size() == datasetLen);
 		for (int i = 0; i < unknowns; ++i)
 			(*fSource).SetCoeffVal(i, b(i));
-		for(int64 i = 0; i < datasetLen; i++) 
-			fvec(ptrdiff_t(i)) = (*fSource).f((*series).x(i)) - (*series).y(i);
+		for(int64 i = 0; i < datasetLen; i++) {
+			double residual = (*fSource).f((*series).x(i)) - (*series).y(i);
+			if (weight)
+				residual *= (*weight)[i];
+			fvec(ptrdiff_t(i)) = residual;
+		}
 		return 0;
 	}
 };
@@ -34,10 +39,12 @@ ExplicitEquation::FitError ExplicitEquation::Fit(DataSource &serie, double &r2) 
 	if (serie.IsExplicit() || serie.IsParam())
 		return InadequateDataSource;
 	
-	if (serie.GetCount() < coeff.GetCount())
+	if (serie.size() < numcoeff)
 		return SmallDataSource;
 	
-	ptrdiff_t numUnknowns = coeff.GetCount();
+	ptrdiff_t numUnknowns = numcoeff;
+	
+	GuessCoeff(serie);
 	
 	VectorXd x(numUnknowns);
 	for (int i = 0; i < numUnknowns; ++i)
@@ -47,7 +54,10 @@ ExplicitEquation::FitError ExplicitEquation::Fit(DataSource &serie, double &r2) 
 	functor.series = &serie;
 	functor.fSource = this;
 	functor.unknowns = numUnknowns;
-	functor.datasetLen = Eigen::Index(serie.GetCount());
+	functor.datasetLen = Eigen::Index(serie.size());
+	
+	ASSERT(weight.size() == 0 || serie.size() == weight.size());
+	functor.weight = weight.size() > 0 ? &weight : nullptr ;	
 	
 	NumericalDiff<Equation_functor> numDiff(functor);
 	LevenbergMarquardt<NumericalDiff<Equation_functor> > lm(numDiff);
@@ -87,6 +97,16 @@ double ExplicitEquation::R2Y(DataSource &serie, double mean) {
 
 int ExplicitEquation::maxFitFunctionEvaluations = 2000;
 
+double ExplicitEquation::x(double y, double x0) {
+	Eigen::VectorXd x(1);
+	x[0] = x0;
+	if (!SolveNonLinearEquations(x, [&](const Eigen::VectorXd &x, Eigen::VectorXd &residual)->int {
+		residual[0] = y - f(x[0]);
+		return 0;
+	}))
+		return Null;
+	return x[0];
+}
 
 double PolynomialEquation::f(double x) {
 	if (x < 0)
@@ -109,7 +129,33 @@ String PolynomialEquation::GetEquation(int numDigits) {
 	ret.Replace("+ -", "- ");
 	return ret;
 }
-	
+/*
+double PolynomialQuotient::f(double x) {
+	double num = 0, den = 0;
+	for (int i = 0; i < nnum; ++i) 
+		num += coeff[i]*pow(x, i);
+	for (int i = 0; i < nden; ++i) 
+		den += coeff[i+nnum]*pow(x, i);
+	return num/den;
+}
+
+String PolynomialQuotient::GetEquation(int numDigits) {
+	if (coeff.IsEmpty())
+		return String();
+	String ret = FormatCoeff(0, numDigits);
+	ret += Format(" + %s*x", FormatCoeff(1, numDigits));
+	for (int i = 2; i < nnum; ++i) 
+		ret += Format(" + %s*x^%s", FormatCoeff(i, numDigits), FormatInt(i));
+	ret << "/(";
+	ret << FormatCoeff(nnum, numDigits);
+	ret += Format(" + %s*x", FormatCoeff(nnum+1, numDigits));
+	for (int i = 2; i < nden; ++i) 
+		ret += Format(" + %s*x^%s", FormatCoeff(nnum+i, numDigits), FormatInt(i));
+	ret << ")";
+	ret.Replace("+ -", "- ");
+	return ret;
+}
+*/	
 double FourierEquation::f(double x) {
 	double y = coeff[0];
 	double w = coeff[1];
@@ -778,9 +824,6 @@ double Spline::Integral(double from, double to) const {
 
 INITBLOCK {
 	ExplicitEquation::Register<LinearEquation>("LinearEquation");
-	ExplicitEquation::Register<PolynomialEquation2>("PolynomialEquation2");
-	ExplicitEquation::Register<PolynomialEquation3>("PolynomialEquation3");
-	ExplicitEquation::Register<PolynomialEquation4>("PolynomialEquation4");
 	ExplicitEquation::Register<PolynomialEquation5>("PolynomialEquation5");
 	ExplicitEquation::Register<SinEquation>("SinEquation");
 	ExplicitEquation::Register<DampedSinEquation>("DampedSinusoidal");
@@ -788,13 +831,11 @@ INITBLOCK {
 	ExplicitEquation::Register<ExponentialEquation>("ExponentialEquation");
 	ExplicitEquation::Register<RealExponentEquation>("RealExponentEquation");
 	ExplicitEquation::Register<Rational1Equation>("Rational1Equation");
-	ExplicitEquation::Register<FourierEquation1>("FourierEquation1");
-	ExplicitEquation::Register<FourierEquation2>("FourierEquation2");
-	ExplicitEquation::Register<FourierEquation3>("FourierEquation3");
 	ExplicitEquation::Register<FourierEquation4>("FourierEquation4");
 	ExplicitEquation::Register<WeibullEquation>("WeibullEquation");
 	ExplicitEquation::Register<WeibullCumulativeEquation>("WeibullCumulativeEquation");
 	ExplicitEquation::Register<NormalEquation>("NormalEquation");
+	ExplicitEquation::Register<AsymptoticEquation4>("Asymptotic4");
 }
 
 }

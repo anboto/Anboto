@@ -42,7 +42,7 @@ public:
 	void   Paint(Draw& w);
 
 	PopUpInfo& SetFont(Upp::Font font)                 { LabelBase::SetFont(font); return *this; }
-	PopUpInfo& SetInk(Color color)                     { LabelBase::SetInk(color); return *this; }
+	PopUpInfo& SetInk(Color col)                       { LabelBase::SetInk(col); return *this; }
 	PopUpInfo& SetAlign(int align)                     { LabelBase::SetAlign(align); return *this; }
 	PopUpInfo& SetImage(const Image& img, int spc = 0) { LabelBase::SetImage(img, spc); return *this; }
 	PopUpInfo& SetText(const char *text)               { LabelBase::SetText(text); return *this; }
