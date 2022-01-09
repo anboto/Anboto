@@ -1,0 +1,2 @@
+BINARY(Data, "Data.csv" LZ4)
+BINARY(Model, "Model.stl")

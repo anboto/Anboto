@@ -10,7 +10,6 @@ uses
 	plugin/tif,
 	plugin/bmp,
 	plugin/lz4,
-	PdfDraw,
 	Painter,
 	plugin/bz2;
 

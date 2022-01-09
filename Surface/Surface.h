@@ -43,6 +43,8 @@ void GetTransform(Eigen::Affine3d &aff, double dx, double dy, double dz, double 
 
 class Point3D : public Moveable<Point3D> {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	
 	double x, y, z;
 
 	Point3D() {}
@@ -130,6 +132,8 @@ typedef Point3D Vector3D;
 
 class Segment3D : public Moveable<Segment3D> {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	
 	Point3D from, to;
 	
 	Segment3D() {}
@@ -231,6 +235,8 @@ inline T const& minNotNull(T const& a, T const& b) {
 
 class Panel : public MoveableAndDeepCopyOption<Panel> {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	
 	int id[4];
 	Point3D centroid0, centroid1, centroidPaint;
 	Point3D normal0, normal1, normalPaint;
@@ -310,6 +316,8 @@ public:
 
 class Surface : DeepCopyOption<Surface> {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	
 	Surface() {}
 	Surface(const Surface &surf, int);
 		
@@ -352,7 +360,7 @@ public:
 	static Array<Pointf> Point3dto2D(const Vector<Point3D> &bound);
 	void AddWaterSurface(Surface &surf, const Surface &under, char c);
 	static Vector<Segment3D> GetWaterLineSegments(const Surface &orig);
-	bool GetDryPanels(const Surface &surf);
+	bool GetDryPanels(const Surface &surf, bool onlywaterplane);
 	char IsWaterPlaneMesh() const; 
 	
 	void CutX(const Surface &orig, int factor = 1);
@@ -430,11 +438,49 @@ private:
 };
 
 
+class SurfaceX : DeepCopyOption<SurfaceX> {
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	
+	SurfaceX() {}
+	SurfaceX(const SurfaceX &surf, int) {}
+	
+	void Load(const Surface &parent);
+	
+	static double GetVolume(const SurfaceX &surf, double &vx, double &vy, double &vz);
+	static double GetVolume(const SurfaceX &surf);
+	static double GetSurface(const SurfaceX &surf);
+	
+	static double GetSurface(const SurfaceX &surf, bool (*Fun)(double,double,double));
+	static double GetVolume(const SurfaceX &surf, bool (*Fun)(double,double,double));
+	
+	static void TransRot(SurfaceX &surf, const SurfaceX &surf0, const Eigen::Affine3d &quat); 
+	
+	static void GetTransformFast(Eigen::MatrixXd &mat, double dx, double dy, double dz, double ax, double ay, double az);
+	static void TransRotFast(double &x, double &y, double &z, double x0, double y0, double z0, const Eigen::MatrixXd &mat);
+	static void TransRotFast(double &x, double &y, double &z, double x0, double y0, double z0,
+						 	 double dx, double dy, double dz, double ax, double ay, double az);
+	
+	static void GetTransform(Eigen::Affine3d &aff, double dx, double dy, double dz, double ax, double ay, double az);
+	static void TransRot(double &x, double &y, double &z, double x0, double y0, double z0, const Eigen::Affine3d &quat);
+	static void TransRot(double &x, double &y, double &z, double x0, double y0, double z0,
+						 double dx, double dy, double dz, double ax, double ay, double az);
+	
+private:
+	const Surface *parent = nullptr;
+
+public:
+	Eigen::VectorXd surfaces;	// (panels)
+	Eigen::MatrixXd centroids;	// (panels, 3)
+	Eigen::MatrixXd normals;	// (panels, 3)
+};
+
 void LoadStl(String fileName, Surface &surf, bool &isText, String &header);
 void SaveStlTxt(String fileName, const Surface &surf, double factor);
 void SaveStlBin(String fileName, const Surface &surf, double factor);
 
-
+void LoadTDynMsh(String fileName, Surface &surf);
+	
 }
 
 #endif

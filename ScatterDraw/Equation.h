@@ -472,7 +472,7 @@ public:
 	double f(double x) 			{
 		double ret = coeff[0];
 		for (int i = 1; i < numcoeff; ++i)
-			ret += double(coeff[i]/pow(x, double(i)));
+			ret += double(coeff[i]/::pow(x, double(i)));
 		return ret;
 	}
 	virtual String GetName() 	{return t_("Asymptotic");}

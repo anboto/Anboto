@@ -55,6 +55,7 @@ Vector<String> Tokenize(const String &str, const String &token, int pos = 0);
 void Tokenize(const String &str, const String &token, Vector<String> &ret, int pos = 0);
 String Tokenize2(const String &str, const String &token, int &pos);
 String Tokenize2(const String &str, const String &token);
+String GetLine(const String &str, int &pos);
 	
 /////////
 bool DirectoryExistsX(const char *path, EXT_FILE_FLAGS flags = NO_FLAG); 
@@ -241,12 +242,19 @@ String RemoveAccent(wchar c);
 bool IsPunctuation(wchar c);
 String RemovePunctuation(String str);
 
-template<class T>	
-inline T ToRad(T angle)	{return angle*M_PI/180.;}
-template<class T>
-inline T ToDeg(T angle)	{return angle*180./M_PI;}
-template<class T>
+template<typename T>	
+inline T ToRad(T angle)	{
+	static_assert(std::is_floating_point<T>::value, "Type T has to be floating point");
+	return angle*M_PI/180.;
+}
+template<typename T>
+inline T ToDeg(T angle)	{
+	static_assert(std::is_floating_point<T>::value, "Type T has to be floating point");
+	return angle*180./M_PI;
+}
+template<typename T>
 inline T atan2_360(T y, T x) {
+	static_assert(std::is_floating_point<T>::value, "Type T has to be floating point");
 	T ret = ToDeg(atan2(y, x));
 	return ret > 90 ? 450 - ret : 90 - ret; 
 }
@@ -705,7 +713,7 @@ bool EqualRatio(const T& a, const T& b, const T& ratio, const T& zero = 0) {
 template <class T1, class T2>
 bool EqualDecimals(const T1& a, const T2& b, int numdecimals) {
 	String sa = FormatF(a, numdecimals);
-	String sb = FormatF(a, numdecimals);
+	String sb = FormatF(b, numdecimals);
 	return sa == sb;
 }
 
@@ -926,10 +934,9 @@ class LocalProcessX
  {
 typedef LocalProcessX CLASSNAME;
 public:
-	//LocalProcessX() {}
 	virtual ~LocalProcessX() 		{Stop();}
 	enum ProcessStatus {RUNNING = 1, STOP_OK = 0, STOP_TIMEOUT = -1, STOP_USER = -2, STOP_NORESPONSE = -3};
-	bool Start(const char *cmd, const char *envptr = 0, const char *dir = 0, double _refreshTime = -1, 
+	bool Start(const char *cmd, const char *envptr = nullptr, const char *dir = nullptr, double _refreshTime = -1, 
 		double _maxTimeWithoutOutput = -1, double _maxRunTime = -1, bool convertcharset = true) {
 		status = STOP_OK;
 		p.ConvertCharset(convertcharset);
@@ -1022,7 +1029,11 @@ public:
 	DWORD GetPid()	{return p.GetPid();}
 	#endif
 	
+	virtual void  SetData(const Value& v)	{value = v;}
+	virtual Value GetData() const       	{return value;}
+
 private:
+	Value value;
 	LocalProcess2 p;
 	RealTimeStop timeElapsed, timeWithoutOutput;
 	ProcessStatus status = STOP_OK;
@@ -1069,9 +1080,12 @@ public:
 		line++;	
 		return FileIn::GetLine();
 	}
-	void GetLine(int num) {
-		for (int i = 0; i < num; ++i)
+	String GetLine(int num) {
+		if (num == 0)
+			return String();
+		for (int i = 0; i < num-1; ++i)
 			GetLine();
+		return GetLine();;
 	}
 	int GetLineNumber()	const 	{return line;}
 	String Str() const 			{return Format(t_("[File: '%s', line: %d]: "), fileName, line);}
@@ -1161,10 +1175,10 @@ public:
 		fields << line.Mid(from);
 		return *this;
 	}
-	FieldSplit& LoadLine() {
+	String& GetLine(int num = 1) {
 		ASSERT(in);
-		Load(in->GetLine());
-		return *this;
+		Load(in->GetLine(num));
+		return line;
 	}
 	bool IsEof() {
 		ASSERT(in);

@@ -10,12 +10,6 @@
 namespace Upp {
 using namespace Eigen;
 
-static int IsTabSpace(int c) {
-	if (c == '\t' || c == ' ' || c == '!')
-		return true;
-	return false;
-}
-
 static void LoadStlTxt(String fileName, Surface &surf, bool &isText) {
 	isText = false;
 	
@@ -25,7 +19,7 @@ static void LoadStlTxt(String fileName, Surface &surf, bool &isText) {
 	
 	String line;
 	FieldSplit f(in);	
-	f.IsSeparator = IsTabSpace;
+	f.IsSeparator = [](int c)->int {return c == '\t' || c == ' ' || c == '!';};
 	
 	line = ToLower(TrimBoth(in.GetLine()));
 	if (!line.StartsWith("solid"))

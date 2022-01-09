@@ -144,7 +144,7 @@ frFR("")
 
 // Functions4U.h
 
-T_("[File: '%s', line: %d]:")
+T_("[File: '%s', line: %d]: ")
 caES("")
 esES("")
 euES("")
@@ -414,5 +414,14 @@ frFR("")
 T_("Impossible to open %s")
 caES("")
 esES("Imposible abrir %s")
+euES("")
+frFR("")
+
+
+// Obsolete
+
+T_("[File: '%s', line: %d]:")
+caES("")
+esES("")
 euES("")
 frFR("")

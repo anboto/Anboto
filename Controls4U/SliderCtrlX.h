@@ -60,7 +60,8 @@ private:
 	int				Max()	const	{ return Upp::max( m_nMin, m_nMax ); };
 	int				Min()	const	{ return Upp::min( m_nMin, m_nMax ); };
 	int				SliderToClient(int value) const;
-
+	Font			fnt;
+	
 protected:
 
 	void			DrawTick( Draw &w, MAJORMINOR Type, HOVE Orientation, int nPos, int nVal );
@@ -99,20 +100,21 @@ public:
 	SliderCtrlX&	Range(int max)                  	{ return MinMax(0, max); }
 	SliderCtrlX&	SetCustomThumb( Image i, int nIndex = 0 ) { m_vThumbImgs.At( nIndex ) = i; m_vThumbImgsFocus.At( nIndex ) = i; return *this; };
 	virtual void	SetData(const Value& value);
-	SliderCtrlX&	SetInverted(bool b)					{ m_bInverted = b; return *this; };
-	SliderCtrlX&	SetMajorTicks( int n )				{ m_nMajorTicks = n; return *this; };
-	SliderCtrlX&	SetMajorTicksSize( int n )			{ m_nMajorTickSize = n; return *this; };
-	SliderCtrlX&	SetMaxi( int n=100 )				{ m_nMax = n; return *this; };
-	SliderCtrlX&	SetMini( int n=0 )					{ m_nMin = n; return *this; };
-	SliderCtrlX&	SetMinorTicks( int n )				{ m_nMinorTicks = n; return *this; };
-	SliderCtrlX&	SetMinorTicksSize( int n )			{ m_nMinorTickSize = n; return *this; };
-	SliderCtrlX&	SetSliderType(int n=0)				{ m_nSliderType = n; return *this;};
-	SliderCtrlX&	SetThickness( int n = 2 )			{ m_nThickness = n; border2 = m_nThickness * BORDER_SIZE; return *this; };
-	SliderCtrlX&	SetTickPosition(int n )				{ m_nTickPosition = n; return *this; };
+	SliderCtrlX&	SetInverted(bool b = true)			{ m_bInverted = b; return *this; }
+	SliderCtrlX&	SetMajorTicks( int n )				{ m_nMajorTicks = n; return *this; }
+	SliderCtrlX&	SetMajorTicksSize( int n )			{ m_nMajorTickSize = n; return *this; }
+	SliderCtrlX&	SetMaxi( int n=100 )				{ m_nMax = n; return *this; }
+	SliderCtrlX&	SetMini( int n=0 )					{ m_nMin = n; return *this; }
+	SliderCtrlX&	SetMinorTicks( int n )				{ m_nMinorTicks = n; return *this; }
+	SliderCtrlX&	SetMinorTicksSize( int n )			{ m_nMinorTickSize = n; return *this; }
+	SliderCtrlX&	SetSliderType(int n=0)				{ m_nSliderType = n; return *this;}
+	SliderCtrlX&	SetThickness( int n = 2 )			{ m_nThickness = n; border2 = m_nThickness * BORDER_SIZE; return *this; }
+	SliderCtrlX&	SetTickPosition(int n )				{ m_nTickPosition = n; return *this; }
 	Value			SetValue( const Value& v, int nIndex = 0 );
 	SliderCtrlX&	Step(int _step, bool _r = true) 	{ m_nStep = _step; m_bRound_step = _r; return *this; }
 	SliderCtrlX&	SetThumbType(int n=0);
-	SliderCtrlX&	UseCustomThumbs( bool b = true )	{ m_bUseCustomThumbs = b; return *this; };
+	SliderCtrlX&	UseCustomThumbs( bool b = true )	{ m_bUseCustomThumbs = b; return *this; }
+	SliderCtrlX&	SetFont(Font font)					{ fnt = font;	return *this;}
 };
 
 }

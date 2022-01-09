@@ -3,6 +3,7 @@
 #include <Core/Core.h>
 #include "LocalProcess2.h"
 
+namespace Upp {
 
 #ifdef PLATFORM_WIN32
 #include <TlHelp32.h>
@@ -14,8 +15,6 @@
 #include <sys/wait.h>
 #endif
 
-namespace Upp {
-	
 #define LLOG(x) // DLOG(x)
 
 void LocalProcess2::Init() {
@@ -73,11 +72,34 @@ static void sNoBlock(int fd)
 }
 #endif
 
-bool LocalProcess2::DoStart(const char *_command, const Vector<String> *arg, bool spliterr, const char *envptr, const char *dir)
+#ifdef PLATFORM_WIN32
+bool Win32CreateProcess2(const char *command, const char *envptr, STARTUPINFOW& si, PROCESS_INFORMATION& pi, const char *cd)
+{ // provides conversion of charset for cmdline and envptr
+	Vector<WCHAR> cmd = ToSystemCharsetW(command);
+	cmd.Add(0);
+#if 0 // unicode environment not necessary for now
+	wchar wenvptr = NULL;
+	Buffer<WCHAR> env(n);
+	if(envptr) {
+		int len = 0;
+		while(envptr[len] || envptr[len + 1])
+			len++;
+		WString wenv(envptr, len + 1);
+		env.Alloc(len + 2);
+		memcpy(env, wenv, (len + 2) * sizeof(wchar));
+	}
+#endif
+	return CreateProcessW(NULL, cmd, NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, (void *)envptr,
+	                      cd ? ToSystemCharsetW(cd).begin() : NULL, &si, &pi);
+}
+#endif
+
+bool LocalProcess2::DoStart(const char *_command, const Vector<String> *arg, bool spliterr, const char *envptr, const char *cd)
 {
 	LLOG("LocalProcess2::Start(\"" << command << "\")");
 
 	Kill();
+	exit_code = Null;
 
 	String command = TrimBoth(_command);
 
@@ -86,13 +108,14 @@ bool LocalProcess2::DoStart(const char *_command, const Vector<String> *arg, boo
 	HANDLE hOutputReadTmp, hOutputWrite;
 	HANDLE hInputWriteTmp, hInputRead;
 	HANDLE hErrorReadTmp, hErrorWrite;
+
+	HANDLE hp = GetCurrentProcess();
+
 	SECURITY_ATTRIBUTES sa;
 
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 	sa.lpSecurityDescriptor = NULL;
 	sa.bInheritHandle = TRUE;
-
-	HANDLE hp = GetCurrentProcess();
 
 	CreatePipe(&hInputRead, &hInputWriteTmp, &sa, 0);
 	DuplicateHandle(hp, hInputWriteTmp, hp, &hInputWrite, 0, FALSE, DUPLICATE_SAME_ACCESS);
@@ -111,21 +134,23 @@ bool LocalProcess2::DoStart(const char *_command, const Vector<String> *arg, boo
 
 	PROCESS_INFORMATION pi;
 	STARTUPINFOW si;
-	ZeroMemory(&si, sizeof(STARTUPINFO));
+	ZeroMemory(&si, sizeof(STARTUPINFOW));
 	si.cb = sizeof(STARTUPINFO);
 	si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
 	si.wShowWindow = SW_HIDE;
 	si.hStdInput  = hInputRead;
 	si.hStdOutput = hOutputWrite;
 	si.hStdError  = hErrorWrite;
+	String cmdh;
 	if(arg) {
+		cmdh = command;
 		for(int i = 0; i < arg->GetCount(); i++) {
-			command << ' ';
+			cmdh << ' ';
 			String argument = (*arg)[i];
 			if(argument.GetCount() && argument.FindFirstOf(" \t\n\v\"") < 0)
-	    		command << argument;
+				cmdh << argument;
 			else {
-				command << '\"';
+				cmdh << '\"';
 				const char *s = argument;
 				for(;;) {
 					int num_backslashes = 0;
@@ -134,29 +159,26 @@ bool LocalProcess2::DoStart(const char *_command, const Vector<String> *arg, boo
 						num_backslashes++;
 					}
 					if(*s == '\0') {
-						command.Cat('\\', 2 * num_backslashes);
+						cmdh.Cat('\\', 2 * num_backslashes);
 						break;
-					} else if(*s == '\"') {
-						command.Cat('\\', 2 * num_backslashes + 1);
-						command << '\"';
-					} else {
-						command.Cat('\\', num_backslashes);
-						command.Cat(*s);
+					}
+					else
+					if(*s == '\"') {
+						cmdh.Cat('\\', 2 * num_backslashes + 1);
+						cmdh << '\"';
+					}
+					else {
+						cmdh.Cat('\\', num_backslashes);
+						cmdh.Cat(*s);
 					}
 					s++;
 				}
-				command << '\"';
+				cmdh << '\"';
 			}
 	    }
+		command = cmdh;
 	}
-	WString wscmd(ToSystemCharsetW(command));
-	WString wsdir(ToSystemCharsetW(dir));
-	LPCWSTR wdir;
-	if (dir == 0)
-		wdir = 0;
-	else 
-		wdir = (LPCWSTR)wsdir.Begin();
-	bool h = CreateProcessW(NULL, (LPWSTR)WStringBuffer(wscmd).Begin(), &sa, &sa, TRUE, NORMAL_PRIORITY_CLASS, (void *)envptr, wdir, &si, &pi);
+	bool h = Win32CreateProcess2(command, envptr, si, pi, cd);
 	LLOG("CreateProcess " << (h ? "succeeded" : "failed"));
 	CloseHandle(hErrorWrite);
 	CloseHandle(hInputRead);
@@ -314,7 +336,10 @@ bool LocalProcess2::DoStart(const char *_command, const Vector<String> *arg, boo
 	LLOG(args.GetCount() << "arguments:");
 	for(int a = 0; a < args.GetCount(); a++)
 		LLOG("[" << a << "]: <" << (args[a] ? args[a] : "NULL") << ">");
-#endif//DO_LLOG
+#endif
+
+	if(cd)
+		(void)!chdir(cd); // that (void)! strange thing is to silence GCC warning
 
 	LLOG("running execve, app = " << app << ", #args = " << args.GetCount());
 	if(envptr) {
@@ -659,10 +684,19 @@ int LocalProcess2::Finish(String& out)
 {
 	out.Clear();
 	while(IsRunning()) {
-		out.Cat(Get());
-		Sleep(1); // p.Wait would be much better here!
+		String h = Get();
+		if(IsNull(h))
+			Sleep(1); // p.Wait would be much better here!
+		else
+			out.Cat(h);
 	}
-	out.Cat(Get());
+	LLOG("Finish: About to read the rest of output");
+	for(;;) {
+		String h = Get();
+		if(h.IsVoid())
+			break;
+		out.Cat(h);
+	}
 	return GetExitCode();
 }
 

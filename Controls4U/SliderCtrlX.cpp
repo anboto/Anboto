@@ -41,6 +41,7 @@ SliderCtrlX::SliderCtrlX()
 , m_nThickness( 2 )
 , m_nSliderType( 0 )
 , m_nThumbNumber( 1 )
+, fnt(StdFont())
 /***********************************************************************************************
  * Constructor
  * public
@@ -156,7 +157,7 @@ void	SliderCtrlX::DrawTick( Draw &w, MAJORMINOR Type, HOVE Orientation, int nPos
 				(int)(size.cy * .5 + TickBottomMaj), 
 				nMajorWidth );
 			
-			Size sz = GetTextSize( txt, StdFont() );
+			Size sz = GetTextSize( txt, fnt );
 			int nTextPos = nPos - (int)( sz.cx / 2.0f + 0.5f );
 			nTextPos = min( max( 0, nTextPos ), size.cx - sz.cx );
 			w.DrawText( nTextPos, 0, txt );
@@ -176,7 +177,7 @@ void	SliderCtrlX::DrawTick( Draw &w, MAJORMINOR Type, HOVE Orientation, int nPos
 				max( nPos, nMajorWidth >> 1 ), 
 				nMajorWidth );
 			
-			Size sz = GetTextSize( txt, StdFont() );
+			Size sz = GetTextSize( txt, fnt );
 			int nTextPos = nPos - (int)( sz.cy / 2.0f + 0.5f );
 			nTextPos = min( max( 0, nTextPos ), size.cy - sz.cy );
 			w.DrawText( 0, nTextPos, txt );
@@ -469,7 +470,7 @@ void SliderCtrlX::Paint(Draw& w)
 		for( int i = m_vValues.GetCount() - 1 ; i >= 0 ; i-- ) {
 			if(!IsNull(m_vValues[i])) {
 				w.DrawImage(SliderToClient(m_vValues[i]) - ( m_ThumbSize.cx >> 1 ),
-					m_nThickness + ((size.cy - m_ThumbSize.cy) >> 1),
+					/*m_nThickness +*/ ((size.cy - m_ThumbSize.cy) >> 1),
 					HasCapture() || HasFocus() ? (m_bUseCustomThumbs ? m_vThumbImgsFocus[i] : m_ThumbFImg) : (m_bUseCustomThumbs ? m_vThumbImgs[i] : m_ThumbImg));
 			}
 		}

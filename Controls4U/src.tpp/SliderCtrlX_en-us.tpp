@@ -1,5 +1,4 @@
 topic "SliderCtrlX";
-[2 $$0,0#00000000000000000000000000000000:Default]
 [i448;a25;kKO9;2 $$1,0#37138531426314131252341829483380:class]
 [l288;2 $$2,2#27521748481378242620020725143825:desc]
 [0 $$3,0#96390100711032703541132217272105:end]
@@ -9,6 +8,7 @@ topic "SliderCtrlX";
 [l288;i1121;b17;O9;~~~.1408;2 $$7,0#10431211400427159095818037425705:param]
 [i448;b42;O9;2 $$8,8#61672508125594000341940100500538:tparam]
 [b42;2 $$9,9#13035079074754324216151401829390:normal]
+[2 $$0,0#00000000000000000000000000000000:Default]
 [{_}%EN-US 
 [ {{10000@(113.42.0) [s0; [*@7;4 SliderCtrlX]]}}&]
 [s3; &]
@@ -16,7 +16,7 @@ topic "SliderCtrlX";
 ][*@3;3 Ctrl]&]
 [s0;i448;a25;kKO9;@(0.0.255) &]
 [s9; [/ Derived from ][/^topic`:`/`/CtrlCore`/src`/Ctrl`$en`-us`#Ctrl`:`:class^ Ctrl][/ . 
-Part of ][/^topic`:`/`/Controls4U`/src`/Controls4U`$en`-us^ Control4U][/  
+Part of ][/^topic`:`/`/Controls4U`/src`/Controls4U`$en`-us^ Controls4U][/  
 library.]&]
 [s9; &]
 [s9; SliderCtrlX is a widget that allows entering an integer value 
@@ -33,7 +33,7 @@ thumb,&]
 [s9;i150;O0; The scale can be inverted,&]
 [s9;i150;O0; Possibility to position directly the thumb by a mouse 
 click,&]
-[s9;i150;O0; Multiple units for scale, like hours/mn/s alowing it 
+[s9;i150;O0; Multiple units for scale, like hours/mn/s allowing it 
 to be used as video progress counter.&]
 [s9; &]
 [s9; As seen in layout designer :&]
@@ -187,10 +187,27 @@ repainted.&]
 [s7;i1120;a17; [%-*@3 v]-|New value.&]
 [s2;*@3%- &]
 [s4;%- &]
+[s5;:Upp`:`:SliderCtrlX`:`:SetMajorTicks`(int`):%- [_^Upp`:`:SliderCtrlX^ SliderCtrlX][@(0.0.255) `&
+]_[* SetMajorTicks](_[@(0.0.255) int]_[*@3 n]_)&]
+[s2; Sets the space [%-*@3 n] between the numbers with the values shown 
+of the major ticks.&]
+[s3; &]
+[s4;%- &]
+[s5;:Upp`:`:SliderCtrlX`:`:SetMajorTicksSize`(int`):%- [_^Upp`:`:SliderCtrlX^ SliderCtr
+lX][@(0.0.255) `&]_[* SetMajorTicksSize](_[@(0.0.255) int]_[*@3 n]_)&]
+[s2; Sets the length [%-*@3 n] of the marks where the major ticks are 
+painted.&]
+[s3; &]
+[s4;%- &]
+[s5;:Upp`:`:SliderCtrlX`:`:SetThickness`(int`):%- [_^Upp`:`:SliderCtrlX^ SliderCtrlX][@(0.0.255) `&
+]_[* SetThickness](_[@(0.0.255) int]_[*@3 n]_`=_[@3 2]_)&]
+[s2; Sets the thickness [%-*@3 n] of the line where the thumb moves.&]
+[s3; &]
+[s4;%- &]
 [s5;:SliderCtrlX`:`:SetThumbType`(int`):%- [_^SliderCtrlX^ SliderCtrlX][@(0.0.255) `&]_[* S
 etThumbType]([@(0.0.255) int]_[*@3 n][@(0.0.255) `=][@3 0])&]
-[s2; Selects the thumb according to the choosen type&]
-[s7;i1120;a17; [%-*@3 n]-|Choosen type index.&]
+[s2; Selects the thumb according to the chosen type&]
+[s7;i1120;a17; [%-*@3 n]-|Chosen type index.&]
 [s0; -|0 : 
 @@image:81&75
 (BA0ADAAAAAAAAAAAAHiclY1BCgAwCMP8/7v8VwcDD3O2VKEnExJBD/xF+ZrtZObGQXMc7/I1wwFxlPfwRutrGK2RFy3aEC3JDy1sdwC727HZ)

@@ -1226,9 +1226,11 @@ void Surface::CutZ(const Surface &orig, int factor) {
 		CheckAddSegZero(segWaterlevel, p0, p1, p2, p3);
 
 		if ((p0.z)*factor <= EPS_XYZ && (p1.z)*factor <= EPS_XYZ && 
-				 (p2.z)*factor <= EPS_XYZ && (p3.z)*factor <= EPS_XYZ) 
-			panels << Panel(orig.panels[ip]);			// Gets the panels that comply
-		else if ((p0.z)*factor >= -EPS_XYZ && (p1.z)*factor >= -EPS_XYZ && 
+				 (p2.z)*factor <= EPS_XYZ && (p3.z)*factor <= EPS_XYZ) {
+			if (!((p0.z)*factor >= -EPS_XYZ && (p1.z)*factor >= -EPS_XYZ && // Rejects waterplane
+				(p2.z)*factor >= -EPS_XYZ && (p3.z)*factor >= -EPS_XYZ))		     
+				panels << Panel(orig.panels[ip]);			// Gets the panels that comply
+		} else if ((p0.z)*factor >= -EPS_XYZ && (p1.z)*factor >= -EPS_XYZ && 
 			(p2.z)*factor >= -EPS_XYZ && (p3.z)*factor >= -EPS_XYZ) 
 			;											// Refuses the panels that don't
 		else {											// Process the intermediate
@@ -2134,7 +2136,7 @@ void DeleteDuplicatedSegments(Vector<Segment3D> &segs) {
 	}
 }
 
-bool Surface::GetDryPanels(const Surface &orig) {
+bool Surface::GetDryPanels(const Surface &orig, bool onlywaterplane) {
 	nodes = clone(orig.nodes);
 	panels.Clear();
 	
@@ -2148,8 +2150,10 @@ bool Surface::GetDryPanels(const Surface &orig) {
 		const Point3D &p2 = nodes[id2];
 		const Point3D &p3 = nodes[id3];	
 		
-		if (p0.z >= -EPS_XYZ && p1.z >= -EPS_XYZ && p2.z >= -EPS_XYZ && p3.z >= -EPS_XYZ) 
-			panels << clone(pan);
+		if (p0.z >= -EPS_XYZ && p1.z >= -EPS_XYZ && p2.z >= -EPS_XYZ && p3.z >= -EPS_XYZ) { 
+			if (!onlywaterplane || (p0.z <= EPS_XYZ && p1.z <= EPS_XYZ && p2.z <= EPS_XYZ && p3.z <= EPS_XYZ))
+				panels << clone(pan);
+		}
 	}
 	Heal(true);	
 	
@@ -2204,11 +2208,16 @@ void Surface::AddWaterSurface(Surface &surf, const Surface &under, char c) {
 	} else if (c == 'r') {		// Copies only the underwater side
 		if (under.panels.IsEmpty())
 			throw Exc(t_("There is no submerged mesh"));
+		
 		panels = clone(under.panels);
 		nodes = clone(under.nodes);
-	} else if (c == 'e') 		// Copies only the dry and waterline side
-		if (!GetDryPanels(surf))
+	} else if (c == 'e') { 		// Copies only the dry and waterline side
+		if (!GetDryPanels(surf, false))
 			throw Exc(t_("There is no mesh in and above the water surface"));		
+	} else if (c == 'w') { 		// Copies only the waterline side
+		if (!GetDryPanels(surf, true))
+			throw Exc(t_("There is no mesh in the water surface"));		
+	}
 }
 
 char Surface::IsWaterPlaneMesh() const {
