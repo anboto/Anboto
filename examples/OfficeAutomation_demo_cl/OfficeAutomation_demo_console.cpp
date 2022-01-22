@@ -28,8 +28,8 @@ void TestSheetDetail(OfficeSheet &sheet)
 {
 	Puts("Spreadsheet automation functions demo");
 
-	String test  = AppendFileNameX(GetDesktopFolder(), "Test.xls");
-	String test2 = AppendFileNameX(GetDesktopFolder(), sheet.GetType() == "Open" ? "TestOpen.xls": "TestMicrosoft.xls");
+	String test  = AppendFileNameX(GetDesktopFolder(), "Test.xlsx");
+	String test2 = AppendFileNameX(GetDesktopFolder(), sheet.GetType() == "Open" ? "TestOpen.xlsx": "TestMicrosoft.xlsx");
 	
 	if (!sheet.OpenSheet(test, true)) {
 		puts(test + " does not exist. Adding new");
@@ -123,7 +123,7 @@ void TestSheetDetail(OfficeSheet &sheet)
 	
 	Puts("\nPress enter to end TestSheet...");	TestGetchar();
 	
-	sheet.SaveAs(test2, "xls");
+	sheet.SaveAs(test2, "xlsx");
 	sheet.Quit();  	
 }
 
@@ -151,8 +151,8 @@ void TestDocDetail(OfficeDoc &doc)
 {
 	Puts("Word processor automation functions demo");
 
-	String test  = AppendFileNameX(GetDesktopFolder(), "Test.doc");
-	String test2 = AppendFileNameX(GetDesktopFolder(), doc.GetType() == "Open" ? "TestOpen.doc": "TestMicrosoft.doc");
+	String test  = AppendFileNameX(GetDesktopFolder(), "Test.docx");
+	String test2 = AppendFileNameX(GetDesktopFolder(), doc.GetType() == "Open" ? "TestOpen.docx": "TestMicrosoft.docx");
 	
 	if (!doc.OpenDoc(test, true)) {
 		puts(test + " does not exist. Adding new");
@@ -183,7 +183,7 @@ void TestDocDetail(OfficeDoc &doc)
 	
 	Puts("\nPress enter to end TestDoc...");	TestGetchar();
 
-	doc.SaveAs(test2, "doc");
+	doc.SaveAs(test2, "docx");
 	doc.Quit();  	
 }
 

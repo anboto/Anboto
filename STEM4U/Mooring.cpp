@@ -13,7 +13,7 @@ MooringStatus Catenary(double rho_m, double rho_m3, double rho_water, double moo
 			  double xanchorvessel, double zanchor, double zvessel, 
 			  double &Fhanchorvessel, double &Fvanchor, double &Fvvessel, 
 			  double &xonfloor, Vector<double> &x, Vector<double> &z, int num) {
-	if (zanchor < 0 && zvessel < 0)
+	if (zanchor < 0 || zvessel < 0)
 		throw Exc("Catenary. Anchor and vessel z positions have to be positive");
 	if (xanchorvessel < 0)
 		throw Exc("Catenary. x distance between anchor and vessel has to be positive");

@@ -881,15 +881,19 @@ void Surface::GetPanelParams() {
 
 void Surface::GetSurface() {
 	surface = 0;
-	for (int ip = 0; ip < panels.GetCount(); ++ip) 
+	if (panels.size() == 0) {
+		avgFacetSideLen = 0;
+		return;
+	}
+	for (int ip = 0; ip < panels.size(); ++ip) 
 		surface += panels[ip].surface0 + panels[ip].surface1;
-	avgFacetSideLen  = sqrt(surface/panels.GetCount());
+	avgFacetSideLen = sqrt(surface/panels.size());
 }
 
 double Surface::GetSurfaceXProjection(bool positive, bool negative) const {
 	double area = 0;
 	
-	for (int ip = 0; ip < panels.GetCount(); ++ip) {
+	for (int ip = 0; ip < panels.size(); ++ip) {
 		const Panel &panel = panels[ip];
 		
 		bool add0;
@@ -981,9 +985,11 @@ void Surface::GetVolume() {
 }
 
 int Surface::VolumeMatch(double ratioWarning, double ratioError) const {
-	if (!Between(volume/volumex, 1-ratioError, 1+ratioError) ||
-		!Between(volume/volumey, 1-ratioError, 1+ratioError) ||
-		!Between(volume/volumez, 1-ratioError, 1+ratioError))
+	if (volumex == 0 && volumey == 0 && volumez == 0)
+		return 0;
+	if ((volumex == 0 && !Between(volume/volumex, 1-ratioError, 1+ratioError)) ||
+		(volumey == 0 && !Between(volume/volumey, 1-ratioError, 1+ratioError)) ||
+		(volumez == 0 && !Between(volume/volumez, 1-ratioError, 1+ratioError)))
 		return -2;
 	if (!Between(volume/volumex, 1-ratioWarning, 1+ratioWarning) ||
 		!Between(volume/volumey, 1-ratioWarning, 1+ratioWarning) ||
@@ -993,9 +999,12 @@ int Surface::VolumeMatch(double ratioWarning, double ratioError) const {
 }
 	
 Point3D Surface::GetCenterOfBuoyancy() const {
+	if (panels.size() == 0)
+		return Null;
+	
 	double xb = 0, yb = 0, zb = 0;
 	
-	for (int ip = 0; ip < panels.GetCount(); ++ip) {
+	for (int ip = 0; ip < panels.size(); ++ip) {
 		const Panel &panel = panels[ip];
 		
 		xb += panel.surface0*panel.normal0.x*sqr(panel.centroid0.x);
@@ -1329,6 +1338,8 @@ void Surface::CutZ(const Surface &orig, int factor) {
 	}
 	DeleteVoidSegments(segWaterlevel);
 	DeleteDuplicatedSegments(segWaterlevel);
+	for (Point3D &node : nodes) 
+		node.z = min(node.z, 0.);	// No tolerance -> max z is 0
 }
 
 void Surface::CutX(const Surface &orig, int factor) {

@@ -208,7 +208,7 @@ bool Ole::Close() {	// Uninitialize COM for this thread
 }
 
 // Automation helper function
-bool Ole::Invoke(int autoType, VARIANT *pvResult, IDispatch *pDisp, String name, int cArgs, ...) {
+bool Ole::Invoke(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPCOLESTR name, int cArgs, ...) {
     // Begin variable-argument list
     va_list marker;
     va_start(marker, cArgs);
@@ -222,16 +222,15 @@ bool Ole::Invoke(int autoType, VARIANT *pvResult, IDispatch *pDisp, String name,
     DISPID dispidNamed = DISPID_PROPERTYPUT;
     DISPID dispID;
     HRESULT hr;
+
     char buf[200];
     char szName[200];
-    WString wname = name.ToWString();
-	WStringBuffer ptName(wname);
 
     // Convert down to ANSI
-    WideCharToMultiByte(CP_ACP, 0, (LPCWCH)wname.Begin(), -1, szName, 256, NULL, NULL);
+    WideCharToMultiByte(CP_ACP, 0, name, -1, szName, 256, NULL, NULL);
 
     // Get DISPID for name passed
-    hr = pDisp->GetIDsOfNames(IID_NULL, (LPOLESTR *)&ptName, 1, LOCALE_USER_DEFAULT, &dispID);
+    hr = pDisp->GetIDsOfNames(IID_NULL, (LPOLESTR *)&name, 1, LOCALE_USER_DEFAULT, &dispID);
     if(FAILED(hr)) {
         sprintf(buf, "Ole::Invoke(\"%s\") not found for object or problem when running it", szName);
         LOG(buf);
@@ -265,7 +264,7 @@ bool Ole::Invoke(int autoType, VARIANT *pvResult, IDispatch *pDisp, String name,
 
 ObjectOle Ole::CreateObject(String application) {
 	CLSID clsid;
-	HRESULT hr = CLSIDFromProgID((LPCOLESTR)application.ToWString().Begin(), &clsid);	// Get CLSID for our server
+	HRESULT hr = CLSIDFromProgIDEx((LPCOLESTR)ToSystemCharsetW(application).begin(), &clsid);	// Get CLSID for our server
 	if(FAILED(hr)) {
 		LOG("CLSIDFromProgID() failed");
 		return NULL;
@@ -280,7 +279,7 @@ ObjectOle Ole::CreateObject(String application) {
 	return app;
 }
 
-ObjectOle Ole::GetObject(ObjectOle from, String which) {
+ObjectOle Ole::GetObject(ObjectOle from, LPCOLESTR which) {
 	VARIANT result;
 	VariantInit(&result);
 	if(!Ole::Invoke(DISPATCH_PROPERTYGET, &result, from, which, 0))
@@ -289,7 +288,7 @@ ObjectOle Ole::GetObject(ObjectOle from, String which) {
 		return result.pdispVal;
 }
 
-ObjectOle Ole::GetObject(ObjectOle from, String which, VariantOle &value) {
+ObjectOle Ole::GetObject(ObjectOle from, LPCOLESTR which, VariantOle &value) {
 	VARIANT result;
 	VariantInit(&result);
 	if(!Ole::Invoke(DISPATCH_PROPERTYGET, &result, from, which, 1, value.var))
@@ -298,7 +297,7 @@ ObjectOle Ole::GetObject(ObjectOle from, String which, VariantOle &value) {
 		return result.pdispVal;
 }
 
-ObjectOle Ole::GetObject(ObjectOle from, String which, VariantOle &value, VariantOle &value2) {
+ObjectOle Ole::GetObject(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2) {
 	VARIANT result;
 	VariantInit(&result);
 	if(!Ole::Invoke(DISPATCH_PROPERTYGET, &result, from, which, 2, value.var, value2.var))
@@ -307,7 +306,7 @@ ObjectOle Ole::GetObject(ObjectOle from, String which, VariantOle &value, Varian
 		return result.pdispVal;
 }
 
-Value Ole::GetValue(ObjectOle from, String which) {
+Value Ole::GetValue(ObjectOle from, LPCOLESTR which) {
 	VARIANT result;
 	VariantInit(&result);	
 	if(!Ole::Invoke(DISPATCH_PROPERTYGET|DISPATCH_METHOD, &result, from, which, 0))
@@ -316,86 +315,86 @@ Value Ole::GetValue(ObjectOle from, String which) {
 	return GetVARIANT(result);
 }
 
-bool Ole::SetValue(ObjectOle from, String which, VariantOle &value) {
+bool Ole::SetValue(ObjectOle from, LPCOLESTR which, VariantOle &value) {
 	return Ole::Invoke(DISPATCH_PROPERTYPUT, NULL, from, which, 1, value.var);
 }
 
-bool Ole::SetValue(ObjectOle from, String which, VariantOle &value, VariantOle &value2) {
+bool Ole::SetValue(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2) {
 	return Ole::Invoke(DISPATCH_PROPERTYPUT, NULL, from, which, 2, value.var, value2.var);
 }
 
-bool Ole::SetValue(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3) {
+bool Ole::SetValue(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2, VariantOle &value3) {
 	return Ole::Invoke(DISPATCH_PROPERTYPUT, NULL, from, which, 3, value.var, value2.var, value3.var);
 }
 
 // result var is not used but OpenOffice automation requires it (I do not why)
-bool Ole::Method(ObjectOle from, String which) {
+bool Ole::Method(ObjectOle from, LPCOLESTR which) {
 	VARIANT result;
 	VariantInit(&result);
 	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 0);
 }
 
-bool Ole::Method(ObjectOle from, String which, VariantOle &value) {
+bool Ole::Method(ObjectOle from, LPCOLESTR which, VariantOle &value) {
 	VARIANT result;
 	VariantInit(&result);
 	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 1, value.var);
 }
 
-bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2) {
+bool Ole::Method(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2) {
 	VARIANT result;
 	VariantInit(&result);
 	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 2, value.var, value2.var);
 }
 
-bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3) {
+bool Ole::Method(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2, VariantOle &value3) {
 	VARIANT result;
 	VariantInit(&result);
 	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 3, value.var, value2.var, value3.var);
 }
 
-bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4) {
+bool Ole::Method(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4) {
 	VARIANT result;
 	VariantInit(&result);
 	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 4, value.var, value2.var, value3.var, value4.var);
 }
 
-bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5) {
+bool Ole::Method(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5) {
 	VARIANT result;
 	VariantInit(&result);
 	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 5, value.var, value2.var, value3.var, value4.var, value5.var);
 }
 
-bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6) {
+bool Ole::Method(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6) {
 	VARIANT result;
 	VariantInit(&result);
 	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 6, value.var, value2.var, value3.var, value4.var, value5.var, value6.var);
 }
 
-bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7) {
+bool Ole::Method(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7) {
 	VARIANT result;
 	VariantInit(&result);
 	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 7, value.var, value2.var, value3.var, value4.var, value5.var, value6.var, value7.var);
 }
 
-bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7, VariantOle &value8) {
+bool Ole::Method(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7, VariantOle &value8) {
 	VARIANT result;
 	VariantInit(&result);
 	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 8, value.var, value2.var, value3.var, value4.var, value5.var, value6.var, value7.var, value8.var);
 }
 
-bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7, VariantOle &value8, VariantOle &value9) {
+bool Ole::Method(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7, VariantOle &value8, VariantOle &value9) {
 	VARIANT result;
 	VariantInit(&result);
 	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 9, value.var, value2.var, value3.var, value4.var, value5.var, value6.var, value7.var, value8.var, value9.var);
 }
 
-bool Ole::Method(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7, VariantOle &value8, VariantOle &value9, VariantOle &value10, VariantOle &value11) {
+bool Ole::Method(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5, VariantOle &value6, VariantOle &value7, VariantOle &value8, VariantOle &value9, VariantOle &value10, VariantOle &value11) {
 	VARIANT result;
 	VariantInit(&result);
 	return Ole::Invoke(DISPATCH_METHOD, &result, from, which, 11, value.var, value2.var, value3.var, value4.var, value5.var, value6.var, value7.var, value8.var, value9.var, value10.var, value11.var);
 }
 
-ObjectOle Ole::MethodGet(ObjectOle from, String which) {
+ObjectOle Ole::MethodGet(ObjectOle from, LPCOLESTR which) {
 	VARIANT result;
 	VariantInit(&result);
 	if(!Ole::Invoke(DISPATCH_METHOD, &result, from, which, 0))
@@ -404,7 +403,7 @@ ObjectOle Ole::MethodGet(ObjectOle from, String which) {
 		return result.pdispVal;
 }
 
-ObjectOle Ole::MethodGet(ObjectOle from, String which, VariantOle &value) {
+ObjectOle Ole::MethodGet(ObjectOle from, LPCOLESTR which, VariantOle &value) {
 	VARIANT result;
 	VariantInit(&result);
 	if(!Ole::Invoke(DISPATCH_METHOD, &result, from, which, 1, value.var))
@@ -413,7 +412,7 @@ ObjectOle Ole::MethodGet(ObjectOle from, String which, VariantOle &value) {
 		return result.pdispVal;
 }
 
-ObjectOle Ole::MethodGet(ObjectOle from, String which, VariantOle &value, VariantOle &value2) {
+ObjectOle Ole::MethodGet(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2) {
 	VARIANT result;
 	VariantInit(&result);
 	if(!Ole::Invoke(DISPATCH_METHOD, &result, from, which, 2, value.var, value2.var))
@@ -422,7 +421,7 @@ ObjectOle Ole::MethodGet(ObjectOle from, String which, VariantOle &value, Varian
 		return result.pdispVal;
 }
 
-ObjectOle Ole::MethodGet(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3) {
+ObjectOle Ole::MethodGet(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2, VariantOle &value3) {
 	VARIANT result;
 	VariantInit(&result);
 	if(!Ole::Invoke(DISPATCH_METHOD, &result, from, which, 3, value.var, value2.var, value3.var))
@@ -431,7 +430,7 @@ ObjectOle Ole::MethodGet(ObjectOle from, String which, VariantOle &value, Varian
 		return result.pdispVal;
 }
 
-ObjectOle Ole::MethodGet(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4) {
+ObjectOle Ole::MethodGet(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4) {
 	VARIANT result;
 	VariantInit(&result);
 	if(!Ole::Invoke(DISPATCH_METHOD, &result, from, which, 4, value.var, value2.var, value3.var, value4.var))
@@ -440,7 +439,7 @@ ObjectOle Ole::MethodGet(ObjectOle from, String which, VariantOle &value, Varian
 		return result.pdispVal;
 }
 
-ObjectOle Ole::MethodGet(ObjectOle from, String which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5) {
+ObjectOle Ole::MethodGet(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2, VariantOle &value3, VariantOle &value4, VariantOle &value5) {
 	VARIANT result;
 	VariantInit(&result);
 	if(!Ole::Invoke(DISPATCH_METHOD, &result, from, which, 4, value.var, value2.var, value3.var, value4.var, value5.var))
@@ -460,7 +459,7 @@ MSSheet::MSSheet() {
 	quit = false;
 
 	App = Ole::CreateObject("Excel.Application");
-	if (!(Books = Ole::GetObject(App, "Workbooks"))) {
+	if (!(Books = Ole::GetObject(App, L"Workbooks"))) {
 		LOG("Excel workbooks not loaded properly");
 		return;
 	}
@@ -503,7 +502,7 @@ bool MSSheet::IsAvailable() {
 	if (!app) 
 		return false;
 	else {
-		Ole::Method(app, "Quit");
+		Ole::Method(app, L"Quit");
 		app->Release();
 		return true;
 	}
@@ -515,7 +514,7 @@ bool MSSheet::SetVisible(bool visible) {
 
 	VariantOle vVisible;
 	vVisible.Int4(visible? 1: 0);
-	return Ole::SetValue(App, "Visible", vVisible);
+	return Ole::SetValue(App, L"Visible", vVisible);
 }
 
 bool MSSheet::SetSaved(bool saved) {
@@ -526,14 +525,14 @@ bool MSSheet::SetSaved(bool saved) {
    // to save when we tell Excel to quit...
 	VariantOle vSaved;
 	vSaved.Int4(saved? 1: 0);
-	return Ole::SetValue(Book, "Saved", vSaved);
+	return Ole::SetValue(Book, L"Saved", vSaved);
 }
 
 bool MSSheet::Quit()
 {
 	if (!quit) {
 		quit = true;
-		return Ole::Method(App, "Quit");
+		return Ole::Method(App, L"Quit");
 	}
 	return true;
 }
@@ -543,9 +542,9 @@ bool MSSheet::AddSheet(bool visible) {
 	if (!Books)
 		return false;
 	
-	if (!(Book = Ole::GetObject(Books, "Add")))
+	if (!(Book = Ole::GetObject(Books, L"Add")))
 		return false;
-	if (!(Sheet = Ole::GetObject(App, "ActiveSheet")))
+	if (!(Sheet = Ole::GetObject(App, L"ActiveSheet")))
 		return false;
 
 	SetVisible(visible);
@@ -559,9 +558,9 @@ bool MSSheet::OpenSheet(String fileName, bool visible) {
 
 	VariantOle vFileName;
 	vFileName.BString(fileName);	
-	if (!(Book = Ole::GetObject(Books, "Open", vFileName)))
+	if (!(Book = Ole::GetObject(Books, L"Open", vFileName)))
 		return false;
-	if (!(Sheet = Ole::GetObject(App, "ActiveSheet")))
+	if (!(Sheet = Ole::GetObject(App, L"ActiveSheet")))
 		return false;
 
 	SetVisible(visible);
@@ -572,7 +571,7 @@ bool MSSheet::Select(String range) {
 	VariantOle vRange;
 	vRange.BString(range);
 	
-	if (!(Range = Ole::GetObject(Sheet, "Range", vRange)))
+	if (!(Range = Ole::GetObject(Sheet, L"Range", vRange)))
 		return false;	
 	return true;
 }
@@ -582,25 +581,25 @@ bool MSSheet::Select(int fromX, int fromY, int toX, int toY) {
 	VariantOle vRange;
 	vRange.BString(range);
 	
-	if (!(Range = Ole::GetObject(Sheet, "Range", vRange)))
+	if (!(Range = Ole::GetObject(Sheet, L"Range", vRange)))
 		return false;	
 	return true;
 }
 
 bool MSSheet::Select() {
-	if (!(Range = Ole::GetObject(Sheet, "Cells")))		// ActiveSheet.Cells.Select
+	if (!(Range = Ole::GetObject(Sheet, L"Cells")))		// ActiveSheet.Cells.Select
 		return false;
-	return Ole::Method(Range, "Select");
+	return Ole::Method(Range, L"Select");
 }
 
 bool MSSheet::EnableCommandVars(bool enable) {
 	ObjectOle commandBars;
-	if(!(commandBars = Ole::GetObject(App, "CommandBars")))
+	if(!(commandBars = Ole::GetObject(App, L"CommandBars")))
 		return false;	
 
 	VariantOle vEnabled;
 	vEnabled.Int4(enable? 1: 0);
-	return Ole::SetValue(App, "Enabled", vEnabled);
+	return Ole::SetValue(App, L"Enabled", vEnabled);
 }
 
 bool MSSheet::MatrixAllocate(int width, int height) {
@@ -619,7 +618,7 @@ bool MSSheet::MatrixSetSelection() {
 	if (!Range)
 		return false;
 
-	bool ret = Ole::Invoke(DISPATCH_PROPERTYPUT, NULL, Range, "Value", 1, VARIANT(Matrix.var));
+	bool ret = Ole::Invoke(DISPATCH_PROPERTYPUT, NULL, Range, L"Value", 1, VARIANT(Matrix.var));
 
 	return ret;
 }
@@ -704,7 +703,7 @@ bool MSSheet::SetValue(int col, int row, Value value) {
 	y.Int4(row);
 	val.Value(value);
 		
-	return Ole::SetValue(Sheet, "Cells", val, x, y);
+	return Ole::SetValue(Sheet, L"Cells", val, x, y);
 }
 
 bool MSSheet::SetValue(Value value) {
@@ -717,7 +716,7 @@ bool MSSheet::SetValue(Value value) {
 	VariantOle val;
 	val.Value(value);
 	
-	return Ole::SetValue(Range, "Value", val);
+	return Ole::SetValue(Range, L"Value", val);
 }
 
 bool MSSheet::Replace(Value search, Value replace) {
@@ -725,14 +724,14 @@ bool MSSheet::Replace(Value search, Value replace) {
 		return false;
 
 	ObjectOle selection;								// Call Application.Selection.Replace(search, replace)
-	if (!(selection = Ole::GetObject(App, "Selection")))	
+	if (!(selection = Ole::GetObject(App, L"Selection")))	
 		return false;	
 	
 	VariantOle vSearch, vReplace;
 	vSearch.Value(search);
 	vReplace.Value(replace);
 		
-	bool ret = Ole::Method(selection, "Replace", vReplace, vSearch);
+	bool ret = Ole::Method(selection, L"Replace", vReplace, vSearch);
 	selection->Release();
 	return ret;
 }
@@ -745,7 +744,7 @@ Value MSSheet::GetValue(int col, int row) {
 	x.Int4(col);
 	y.Int4(row);
 	
-	return Ole::GetValue(Ole::GetObject(Sheet, "Cells", x, y), "value");
+	return Ole::GetValue(Ole::GetObject(Sheet, L"Cells", x, y), L"value");
 }
 
 Value MSSheet::GetText(int col, int row) {
@@ -756,7 +755,7 @@ Value MSSheet::GetText(int col, int row) {
 	x.Int4(col);
 	y.Int4(row);
 	
-	return Ole::GetValue(Ole::GetObject(Sheet, "Cells", x, y), "text");
+	return Ole::GetValue(Ole::GetObject(Sheet, L"Cells", x, y), L"text");
 }
 
 Value MSSheet::GetValue(String cell) {
@@ -798,7 +797,7 @@ bool MSSheet::SetHyperlink(String address, String value) {
 	if (!Range)
 		return false;
 
-	ObjectOle hyperlinks = Ole::GetObject(Sheet, "Hyperlinks");
+	ObjectOle hyperlinks = Ole::GetObject(Sheet, L"Hyperlinks");
 	
 	VariantOle textToDisplay, screenTip, subAddress, saddress, range;
 	textToDisplay.BString(value);
@@ -807,7 +806,7 @@ bool MSSheet::SetHyperlink(String address, String value) {
 	saddress.BString(address);
 	range.ObjectOle(Range);
 	
-	bool ret = Ole::MethodGet(hyperlinks, "Add", textToDisplay, screenTip, subAddress, saddress, range);
+	bool ret = Ole::MethodGet(hyperlinks, L"Add", textToDisplay, screenTip, subAddress, saddress, range);
 	hyperlinks->Release();
 	return ret;
 }
@@ -843,9 +842,9 @@ bool MSSheet::SaveAs(String fileName, String type) {
 	} 
 	int ret;
 	if (opened)
-		ret = Ole::Method(Book, "Save");
+		ret = Ole::Method(Book, L"Save");
 	else
-		ret = Ole::Method(Book, "SaveAs", vType, vFileName);
+		ret = Ole::Method(Book, L"SaveAs", vType, vFileName);
 
 	return (bool)ret;
 }
@@ -869,7 +868,7 @@ bool MSSheet::ExportAsFixedFormat(int type, String filename, int quality, bool i
 		vTo.Int4(to);
 	vOpenAfterPublish.Int4(openafterpublish ? 1 : 0);
 
-	return Ole::Method(Book, "ExportAsFixedFormat", vOpenAfterPublish, 
+	return Ole::Method(Book, L"ExportAsFixedFormat", vOpenAfterPublish, 
 							vTo, 
 							vFrom, 
 							vIgnorePrintAreas, 
@@ -883,27 +882,27 @@ bool MSSheet::SetDisplayAlerts(bool display)
 {
 	VariantOle vDisplayAlerts;
 	vDisplayAlerts.Int4(display ? 1: 0);
-	return Ole::SetValue(App, "DisplayAlerts", vDisplayAlerts);
+	return Ole::SetValue(App, L"DisplayAlerts", vDisplayAlerts);
 }
 
 bool MSSheet::SetLargeOperationCellThousandCount(int count)
 {
 	VariantOle vCount;
 	vCount.Int4(count);
-	return Ole::SetValue(App, "LargeOperationCellThousandCount", vCount);
+	return Ole::SetValue(App, L"LargeOperationCellThousandCount", vCount);
 }
 
 bool MSSheet::SetFormat(String format) {
 	VariantOle vFormat;
 	vFormat.BString(format);
-	return Ole::SetValue(Range, "NumberFormat", vFormat);
+	return Ole::SetValue(Range, L"NumberFormat", vFormat);
 }
 
 bool MSSheet::Close() {
 	if (!Books)
 		return false;
 
-	return (bool)Ole::Method(Book, "Close");
+	return (bool)Ole::Method(Book, L"Close");
 }
 
 
@@ -923,7 +922,7 @@ bool MSSheet::SetBold(int col, int row, bool bold) {
 	
 	VariantOle val;
 	val.Bool(bold);	
-	return Ole::SetValue(Ole::GetObject(Ole::GetObject(Sheet, "Cells", x, y), "Font"), "Bold", val);
+	return Ole::SetValue(Ole::GetObject(Ole::GetObject(Sheet, L"Cells", x, y), L"Font"), L"Bold", val);
 }
 
 bool MSSheet::SetBold(bool bold) {
@@ -932,7 +931,7 @@ bool MSSheet::SetBold(bool bold) {
 
 	VariantOle val;
 	val.Bool(bold);	
-	return Ole::SetValue(Ole::GetObject(Range, "Font"), "Bold", val);
+	return Ole::SetValue(Ole::GetObject(Range, L"Font"), L"Bold", val);
 }
 
 bool MSSheet::SetItalic(String cell, bool italic) {
@@ -951,7 +950,7 @@ bool MSSheet::SetItalic(int col, int row, bool italic) {
 	
 	VariantOle val;
 	val.Bool(italic);	
-	return Ole::SetValue(Ole::GetObject(Ole::GetObject(Sheet, "Cells", x, y), "Font"), "Italic", val);
+	return Ole::SetValue(Ole::GetObject(Ole::GetObject(Sheet, L"Cells", x, y), L"Font"), L"Italic", val);
 }
 
 bool MSSheet::SetItalic(bool italic) {
@@ -960,7 +959,7 @@ bool MSSheet::SetItalic(bool italic) {
 
 	VariantOle val;
 	val.Bool(italic);	
-	return Ole::SetValue(Ole::GetObject(Range, "Font"), "Italic", val);
+	return Ole::SetValue(Ole::GetObject(Range, L"Font"), L"Italic", val);
 }
 
 bool MSSheet::SetUnderline(String cell, bool underline) {
@@ -979,7 +978,7 @@ bool MSSheet::SetUnderline(int col, int row, bool underline) {
 	
 	VariantOle val;
 	val.Bool(underline);	
-	return Ole::SetValue(Ole::GetObject(Ole::GetObject(Sheet, "Cells", x, y), "Font"), "Underline", val);
+	return Ole::SetValue(Ole::GetObject(Ole::GetObject(Sheet, L"Cells", x, y), L"Font"), L"Underline", val);
 }
 
 bool MSSheet::SetUnderline(bool underline) {
@@ -988,7 +987,7 @@ bool MSSheet::SetUnderline(bool underline) {
 
 	VariantOle val;
 	val.Bool(underline);	
-	return Ole::SetValue(Ole::GetObject(Range, "Font"), "Underline", val);
+	return Ole::SetValue(Ole::GetObject(Range, L"Font"), L"Underline", val);
 }
 
 bool MSSheet::SetHorizAlignment(String cell, int alignment) {
@@ -1011,7 +1010,7 @@ bool MSSheet::SetHorizAlignment(int col, int row, int alignment) {
 		
 	VariantOle cvalue;
 	cvalue.Int(justifyConst[alignment]);
-	return Ole::SetValue(Ole::GetObject(Sheet, "Cells", x, y), "HorizontalAlignment", cvalue);
+	return Ole::SetValue(Ole::GetObject(Sheet, L"Cells", x, y), L"HorizontalAlignment", cvalue);
 }
 
 bool MSSheet::SetVertAlignment(String cell, int alignment) {
@@ -1034,14 +1033,14 @@ bool MSSheet::SetVertAlignment(int col, int row, int alignment) {
 
 	VariantOle cvalue;
 	cvalue.Int(justifyConst[alignment]);
-	return Ole::SetValue(Ole::GetObject(Sheet, "Cells", x, y), "VerticalAlignment", cvalue);
+	return Ole::SetValue(Ole::GetObject(Sheet, L"Cells", x, y), L"VerticalAlignment", cvalue);
 }
 
 bool MSSheet::SetBorder(int borderIndx, int lineStyle, int weight, Color color) {
 	if (!Range)
 		return false;
 
-	ObjectOle borders = Ole::GetObject(Range, "Borders");
+	ObjectOle borders = Ole::GetObject(Range, L"Borders");
 	if (!borders)
 		return false;	
 	
@@ -1058,7 +1057,7 @@ bool MSSheet::SetBorder(int col, int row, int borderIndx, int lineStyle, int wei
 	x.Int4(col);
 	y.Int4(row);
 	
-	ObjectOle borders = Ole::GetObject(Ole::GetObject(Sheet, "Cells", x, y), "Borders");
+	ObjectOle borders = Ole::GetObject(Ole::GetObject(Sheet, L"Cells", x, y), L"Borders");
 	if (!borders)
 		return false;
 
@@ -1071,24 +1070,24 @@ bool MSSheet::SetBorder(ObjectOle &borders, int borderIndx, int lineStyle, int w
 	int borderIndxConst[] = {5, 6, 7, 8, 9, 10};
 	VariantOle item;
 	item.Int4(borderIndxConst[borderIndx]);
-	ObjectOle border = Ole::GetObject(borders, "Item", item);
+	ObjectOle border = Ole::GetObject(borders, L"Item", item);
 	if (!border)
 		return false;
 	
 	int lineStyles[] = {-4142, 1, -4115, 4, -4118};	
 	VariantOle val;
 	val.Int4(lineStyles[lineStyle]);	
-	if(!Ole::SetValue(border, "LineStyle", val))
+	if(!Ole::SetValue(border, L"LineStyle", val))
 		return false;
 
 	int weights[] = {1, -4138, 2, 4};	
 	val.Int4(weights[weight]);	
-	if(!Ole::SetValue(border, "Weight", val))
+	if(!Ole::SetValue(border, L"Weight", val))
 		return false;	
 	
 	VariantOle cvalue;
 	cvalue.Int4(RGB(color.GetR(), color.GetG(), color.GetB()));
-	return Ole::SetValue(border, "Color", cvalue);
+	return Ole::SetValue(border, L"Color", cvalue);
 }
 
 bool MSSheet::SetFont(String cell, String name, int size)
@@ -1106,17 +1105,17 @@ bool MSSheet::SetFont(int col, int row, String name, int size) {
 	x.Int4(col);
 	y.Int4(row);
 	
-	ObjectOle font = Ole::GetObject(Ole::GetObject(Sheet, "Cells", x, y), "Font");
+	ObjectOle font = Ole::GetObject(Ole::GetObject(Sheet, L"Cells", x, y), L"Font");
 	if (!font)
 		return false;
 
 	VariantOle vName;
 	vName.BString(name);	
-	if(!Ole::SetValue(font, "Name", vName))
+	if(!Ole::SetValue(font, L"Name", vName))
 		return false;
 	VariantOle vSize;
 	vSize.Int(size);	
-	bool ret = Ole::SetValue(font, "Size", vSize);
+	bool ret = Ole::SetValue(font, L"Size", vSize);
 	font->Release();
 	return ret;
 }
@@ -1125,17 +1124,17 @@ bool MSSheet::SetFont(String name, int size) {
 	if (!Range)
 		return false;
 
-	ObjectOle font = Ole::GetObject(Range, "Font");
+	ObjectOle font = Ole::GetObject(Range, L"Font");
 	if (!font)
 		return false;
 
 	VariantOle vName;
 	vName.BString(name);	
-	if(!Ole::SetValue(font, "Name", vName))
+	if(!Ole::SetValue(font, L"Name", vName))
 		return false;
 	VariantOle vSize;
 	vSize.Int(size);	
-	bool ret = Ole::SetValue(font, "Size", vSize);
+	bool ret = Ole::SetValue(font, L"Size", vSize);
 	font->Release();
 	return ret;
 }
@@ -1144,7 +1143,7 @@ bool MSSheet::Print() {
 	if (!Sheet)
 		return false;
 	
-	bool ret = Ole::Method(Sheet, "PrintOut");
+	bool ret = Ole::Method(Sheet, L"PrintOut");
 	
 	return ret;
 }
@@ -1155,11 +1154,11 @@ bool MSSheet::InsertTab(String name) {	// Insert tab after the last
 	if (!App)
 		return false;
 	
-	if (!(Sheet = Ole::GetObject(Ole::GetObject(App, "Sheets"), "Add")))
+	if (!(Sheet = Ole::GetObject(Ole::GetObject(App, L"Sheets"), L"Add")))
 		return false;
 	VariantOle vName;
 	vName.BString(name);	
-	if(!Ole::SetValue(Sheet, "Name", vName))
+	if(!Ole::SetValue(Sheet, L"Name", vName))
 		return false;
 	//return true;
 
@@ -1169,12 +1168,12 @@ bool MSSheet::InsertTab(String name) {	// Insert tab after the last
 	ObjectOle lastSheet;
 	VariantOle vId;
 	vId.Int(GetNumTabs());	
-	if (!(lastSheet = Ole::GetObject(App, "Sheets", vId)))
+	if (!(lastSheet = Ole::GetObject(App, L"Sheets", vId)))
 		return false;
 	VariantOle vAfter;
 	vAfter.ObjectOle(lastSheet);
 	
-	bool ret =  Ole::Method(Sheet, "Move", vAfter, vOptional);	// Apending tab after last tab
+	bool ret =  Ole::Method(Sheet, L"Move", vAfter, vOptional);	// Apending tab after last tab
 	lastSheet->Release();
 	return ret;
 }
@@ -1195,7 +1194,7 @@ bool MSSheet::SetColor(int col, int row, Color color) {
 	
 	VariantOle cvalue;
 	cvalue.Int4(RGB(color.GetR(), color.GetG(), color.GetB()));
-	return Ole::SetValue(Ole::GetObject(Ole::GetObject(Sheet, "Cells", x, y), "Font"), "Color", cvalue);
+	return Ole::SetValue(Ole::GetObject(Ole::GetObject(Sheet, L"Cells", x, y), L"Font"), L"Color", cvalue);
 }
 
 bool MSSheet::SetColor(Color color) {
@@ -1204,7 +1203,7 @@ bool MSSheet::SetColor(Color color) {
 
 	VariantOle cvalue;
 	cvalue.Int4(RGB(color.GetR(), color.GetG(), color.GetB()));
-	return Ole::SetValue(Ole::GetObject(Range, "Font"), "Color", cvalue);
+	return Ole::SetValue(Ole::GetObject(Range, L"Font"), L"Color", cvalue);
 }
 
 double MmToPointsWidth(double mm) {
@@ -1225,7 +1224,7 @@ bool MSSheet::SetRowHeight(int row, double height) {
 	
 	VariantOle cvalue;
 	cvalue.Int(int(MmToPointsHeight(height)));
-	return Ole::SetValue(Ole::GetObject(Sheet, "Cells", x, y), "RowHeight", cvalue);
+	return Ole::SetValue(Ole::GetObject(Sheet, L"Cells", x, y), L"RowHeight", cvalue);
 }
 
 bool MSSheet::SetColWidth(int col, double width) {
@@ -1238,7 +1237,7 @@ bool MSSheet::SetColWidth(int col, double width) {
 	
 	VariantOle cvalue;
 	cvalue.Int(int(MmToPointsWidth(width)));
-	return Ole::SetValue(Ole::GetObject(Sheet, "Cells", x, y), "ColumnWidth", cvalue);
+	return Ole::SetValue(Ole::GetObject(Sheet, L"Cells", x, y), L"ColumnWidth", cvalue);
 }
 
 bool MSSheet::SetBackColor(String cell, Color color) {
@@ -1257,7 +1256,7 @@ bool MSSheet::SetBackColor(int col, int row, Color color) {
 	
 	VariantOle cvalue;
 	cvalue.Int4(RGB(color.GetR(), color.GetG(), color.GetB()));
-	return Ole::SetValue(Ole::GetObject(Ole::GetObject(Sheet, "Cells", x, y), "Interior"), "Color", cvalue);
+	return Ole::SetValue(Ole::GetObject(Ole::GetObject(Sheet, L"Cells", x, y), L"Interior"), L"Color", cvalue);
 }
 
 bool MSSheet::SetBackColor(Color color) {
@@ -1266,7 +1265,7 @@ bool MSSheet::SetBackColor(Color color) {
 
 	VariantOle cvalue;
 	cvalue.Int4(RGB(color.GetR(), color.GetG(), color.GetB()));
-	return Ole::SetValue(Ole::GetObject(Range, "Interior"), "Color", cvalue);
+	return Ole::SetValue(Ole::GetObject(Range, L"Interior"), L"Color", cvalue);
 }
 
 bool MSSheet::ChooseTab(String name) {
@@ -1275,10 +1274,10 @@ bool MSSheet::ChooseTab(String name) {
 
     VariantOle vName;
 	vName.BString(name);
-	if (!(Sheet = Ole::GetObject(App, "Sheets", vName)))
+	if (!(Sheet = Ole::GetObject(App, L"Sheets", vName)))
 		return false;
 	
-	return Ole::Method(Sheet, "select");	
+	return Ole::Method(Sheet, L"select");	
 }
 
 bool MSSheet::ChooseTab(int index) {
@@ -1287,10 +1286,10 @@ bool MSSheet::ChooseTab(int index) {
 	
     VariantOle vId;
 	vId.Int(index+1);	
-	if (!(Sheet = Ole::GetObject(App, "Sheets", vId)))
+	if (!(Sheet = Ole::GetObject(App, L"Sheets", vId)))
 		return false;
 	
-	return Ole::Method(Sheet, "select");
+	return Ole::Method(Sheet, L"select");
 }
 
 bool MSSheet::RemoveTab(String name) {
@@ -1300,10 +1299,10 @@ bool MSSheet::RemoveTab(String name) {
 	ObjectOle DelSheet;
     VariantOle vName;
 	vName.BString(name);
-	if (!(DelSheet = Ole::GetObject(App, "Sheets", vName)))
+	if (!(DelSheet = Ole::GetObject(App, L"Sheets", vName)))
 		return false;
 	
-	bool ret = Ole::Method(DelSheet, "delete");	
+	bool ret = Ole::Method(DelSheet, L"delete");	
 	DelSheet->Release();
 	return ret;
 }
@@ -1315,10 +1314,10 @@ bool MSSheet::RemoveTab(int index) {
 	ObjectOle DelSheet;
     VariantOle vId;
 	vId.Int(index+1);	
-	if (!(DelSheet = Ole::GetObject(App, "Sheets", vId)))
+	if (!(DelSheet = Ole::GetObject(App, L"Sheets", vId)))
 		return false;
 	
-	bool ret = Ole::Method(DelSheet, "delete");
+	bool ret = Ole::Method(DelSheet, L"delete");
 	DelSheet->Release();
 	return ret;
 }
@@ -1327,7 +1326,7 @@ int MSSheet::GetNumTabs() {
 	if (!App)
 		return -1;
 
-	return Ole::GetValue(Ole::GetObject(App, "Sheets"), "count");
+	return Ole::GetValue(Ole::GetObject(App, L"Sheets"), L"count");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1341,7 +1340,7 @@ MSDoc::MSDoc() {
 	quit = false;
 	
 	App = Ole::CreateObject("Word.Application");
-	if (!(Docs = Ole::GetObject(App, "Documents"))) {
+	if (!(Docs = Ole::GetObject(App, L"Documents"))) {
 		LOG("Word document not loaded properly");
 		return;
 	}
@@ -1369,7 +1368,7 @@ bool MSDoc::SetVisible(bool visible) {
 
 	VariantOle vVisible;
 	vVisible.Int4(visible? 1: 0);
-	return Ole::SetValue(App, "Visible", vVisible);
+	return Ole::SetValue(App, L"Visible", vVisible);
 }
 
 bool MSDoc::IsAvailable() {
@@ -1378,7 +1377,7 @@ bool MSDoc::IsAvailable() {
 	if (!app) 
 		return false;
 	else {
-		Ole::Method(app, "Quit");
+		Ole::Method(app, L"Quit");
 		app->Release();
 		return true;
 	}
@@ -1390,17 +1389,17 @@ bool MSDoc::SetSaved(bool saved) {
 
 	VariantOle vSaved;
 	vSaved.Int4(saved? 1: 0);
-	return Ole::SetValue(Doc, "Saved", vSaved);
+	return Ole::SetValue(Doc, L"Saved", vSaved);
 }
 
 bool MSDoc::Close() {
-	return Ole::Method(Doc, "Close"); 
+	return Ole::Method(Doc, L"Close"); 
 }
 
 bool MSDoc::Quit() {
 	if (!quit) {
 		quit = true;
-		return Ole::Method(App, "Quit");
+		return Ole::Method(App, L"Quit");
 	}
 	return true;
 }
@@ -1409,10 +1408,10 @@ bool MSDoc::AddDoc(bool visible) {
 	if (!Docs)
 		return false;
 	
-	if (!(Doc = Ole::MethodGet(Docs, "Add")))
+	if (!(Doc = Ole::MethodGet(Docs, L"Add")))
 		return false;
 
-	if(!(Selection = Ole::GetObject(App, "Selection")))
+	if(!(Selection = Ole::GetObject(App, L"Selection")))
 		return false;
 	
 	SetVisible(visible);
@@ -1425,10 +1424,10 @@ bool MSDoc::OpenDoc(String fileName, bool visible) {
 
 	VariantOle vFileName;
 	vFileName.BString(fileName);	
-	if (!(Doc = Ole::MethodGet(Docs, "Open", vFileName)))
+	if (!(Doc = Ole::MethodGet(Docs, L"Open", vFileName)))
 		return false;
 		
-	if(!(Selection = Ole::GetObject(App, "Selection")))
+	if(!(Selection = Ole::GetObject(App, L"Selection")))
 		return false;	
 	
 	SetVisible(visible);
@@ -1437,12 +1436,12 @@ bool MSDoc::OpenDoc(String fileName, bool visible) {
 
 bool MSDoc::EnableCommandVars(bool enable) {
 	ObjectOle commandBars;
-	if(!(commandBars = Ole::GetObject(App, "CommandBars")))
+	if(!(commandBars = Ole::GetObject(App, L"CommandBars")))
 		return false;	
 
 	VariantOle vEnabled;
 	vEnabled.Int4(enable? 1: 0);
-	return Ole::SetValue(App, "Enabled", vEnabled);
+	return Ole::SetValue(App, L"Enabled", vEnabled);
 }
 
 
@@ -1468,7 +1467,7 @@ bool MSDoc::SaveAs(String fileName, String type) {
 	else				// doc
 		vType.Int(0);
 
-	int ret = Ole::Method(Doc, "SaveAs", vType, vFileName);
+	int ret = Ole::Method(Doc, L"SaveAs", vType, vFileName);
 
 	return (bool)ret;
 }
@@ -1479,22 +1478,22 @@ bool MSDoc::WriteText(String value) {
 	
 	VariantOle val;
 	val.BString(value);	
-	return Ole::Method(Selection, "TypeText", val);
+	return Ole::Method(Selection, L"TypeText", val);
 }
 
 bool MSDoc::SetFont(String type, int size) {
 	ObjectOle font;
 	
-	if(!(font = Ole::GetObject(Selection, "Font")))
+	if(!(font = Ole::GetObject(Selection, L"Font")))
 		return false;
 	
 	VariantOle vType;
 	vType.BString(type);	
-	if(!Ole::SetValue(font, "Name", vType))
+	if(!Ole::SetValue(font, L"Name", vType))
 		return false;
 	VariantOle vSize;
 	vSize.Int(size);	
-	if(!Ole::SetValue(font, "Size", vSize))
+	if(!Ole::SetValue(font, L"Size", vSize))
 		return false;
 
 	return true;	
@@ -1503,7 +1502,7 @@ bool MSDoc::SetFont(String type, int size) {
 bool MSDoc::SetBold(bool bold) {
 	VariantOle vBold;
 	vBold.Bool(bold);	
-	if(!Ole::SetValue(Ole::GetObject(Selection, "Font"), "Bold", vBold))
+	if(!Ole::SetValue(Ole::GetObject(Selection, L"Font"), L"Bold", vBold))
 		return false;
 	
 	return true;	
@@ -1512,7 +1511,7 @@ bool MSDoc::SetBold(bool bold) {
 bool MSDoc::SetItalic(bool italic) {
 	VariantOle vItalic;
 	vItalic.Bool(italic);	
-	if(!Ole::SetValue(Ole::GetObject(Selection, "Font"), "Italic", vItalic))
+	if(!Ole::SetValue(Ole::GetObject(Selection, L"Font"), L"Italic", vItalic))
 		return false;
 	
 	return true;	
@@ -1522,13 +1521,13 @@ bool MSDoc::Print() {
 	if (!Docs && !Doc)
 		return false;
 	
-	bool ret = Ole::Method(Doc, "PrintOut");
+	bool ret = Ole::Method(Doc, L"PrintOut");
 	
 	return ret;
 }
 
 bool MSDoc::Select() {
-	return Ole::Method(Selection, "WholeStory");		
+	return Ole::Method(Selection, L"WholeStory");		
 }
 
 // Some tricks as Ole Replace does not work properly for texts to replace longer than 
@@ -1565,10 +1564,10 @@ String MSDoc::CleanString(String str) {	// Clean chars in String
 
 bool MSDoc::ReplaceSubset(String search, String replace) {
 	ObjectOle find;
-	if (!(find = Ole::GetObject(Selection, "Find")))
+	if (!(find = Ole::GetObject(Selection, L"Find")))
 		return false;
 	
-	if(!Ole::Method(find, "ClearFormatting"))		// Selection.Find.ClearFormatting
+	if(!Ole::Method(find, L"ClearFormatting"))		// Selection.Find.ClearFormatting
 		return false;
 	
 	VariantOle vFindText;
@@ -1604,7 +1603,7 @@ bool MSDoc::ReplaceSubset(String search, String replace) {
 	VariantOle vReplace;
 	vReplace.Int(wdReplaceAll);
 	
-	return Ole::Method(find, "Execute", vReplace, vReplaceWith, vFormat, vWrap, vForward, vMatchAllWordForms, vMatchSoundsLike, vMatchWildcards, vMatchWholeWord, vMatchCase, vFindText);
+	return Ole::Method(find, L"Execute", vReplace, vReplaceWith, vFormat, vWrap, vForward, vMatchAllWordForms, vMatchSoundsLike, vMatchWildcards, vMatchWholeWord, vMatchCase, vFindText);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1618,15 +1617,15 @@ public:
 		ObjectOle Struct;
 		VariantOle vstr;
 		vstr.BString("com.sun.star.beans.PropertyValue");
-		if (!(Struct = Ole::MethodGet(ServiceManager, "Bridge_GetStruct", vstr)))
+		if (!(Struct = Ole::MethodGet(ServiceManager, L"Bridge_GetStruct", vstr)))
     		return NULL;
 		
 		VariantOle vname, vvalue;
 		vname.BString(name);
-		if (!Ole::SetValue(Struct, "Name", vname))
+		if (!Ole::SetValue(Struct, L"Name", vname))
 			return NULL;
 		vvalue.Value(value);
-		if (!Ole::SetValue(Struct, "Value", vvalue))
+		if (!Ole::SetValue(Struct, L"Value", vvalue))
 			return NULL;
 		return Struct;		
 	}
@@ -1638,15 +1637,15 @@ public:
 		ObjectOle Struct;
 		VariantOle vstr;
 		vstr.BString("com.sun.star.beans.PropertyValue");
-		if (!(Struct = Ole::MethodGet(ServiceManager, "Bridge_GetStruct", vstr)))
+		if (!(Struct = Ole::MethodGet(ServiceManager, L"Bridge_GetStruct", vstr)))
     		return NULL;
 		
 		VariantOle vname/*, vvalue*/;
 		vname.BString(name);
-		if (!Ole::SetValue(Struct, "Name", vname))
+		if (!Ole::SetValue(Struct, L"Name", vname))
 			return NULL;
 		//vvalue.Value(value);
-		if (!Ole::SetValue(Struct, "Value", vvalue))
+		if (!Ole::SetValue(Struct, L"Value", vvalue))
 			return NULL;
 		return Struct;		
 	}	
@@ -1682,7 +1681,7 @@ public:
     	
     	VariantOle vService;
     	vService.BString(strServiceName);
-    	return Ole::MethodGet(ServiceManager, "createInstance", vService);    	
+    	return Ole::MethodGet(ServiceManager, L"createInstance", vService);    	
 	}
 };
 
@@ -1707,13 +1706,13 @@ OPENSheet::OPENSheet() {
 	ObjectOle CoreReflection;
 	VariantOle vInstance;
 	vInstance.BString("com.sun.star.reflection.CoreReflection");	
-	if (!(CoreReflection = Ole::MethodGet(ServiceManager, "createInstance", vInstance)))
+	if (!(CoreReflection = Ole::MethodGet(ServiceManager, L"createInstance", vInstance)))
 		return;
 
 	// Create the Desktop
 	VariantOle vDesktop;
 	vDesktop.BString("com.sun.star.frame.Desktop");	
-	if (!(Desktop = Ole::MethodGet(ServiceManager, "createInstance", vDesktop)))
+	if (!(Desktop = Ole::MethodGet(ServiceManager, L"createInstance", vDesktop)))
 		return;
 }
 
@@ -1751,7 +1750,7 @@ bool OPENSheet::IsAvailable() {
 bool OPENSheet::SetSaved(bool saved) {
 	VariantOle vval;
 	vval.Bool(!saved);	// Modified is the opposite to saved
-	return Ole::Method(Document, "setModified", vval);
+	return Ole::Method(Document, L"setModified", vval);
 }
 
 bool OPENSheet::Quit() {
@@ -1759,7 +1758,7 @@ bool OPENSheet::Quit() {
 		quit = true;
 		if (Desktop) {
 			//Ole::Method(Desktop, "Dispose");				Commented 12/2014
-			return Ole::Method(Desktop, "Terminate");
+			return Ole::Method(Desktop, L"Terminate");
 		}
 	}
 	return true;
@@ -1770,7 +1769,7 @@ bool OPENSheet::InsertTab(String name) {
 		return false;
 	VariantOle vStr;
 	vStr.BString("com.sun.star.sheet.Spreadsheet");
-	if (!(Sheet = Ole::MethodGet(Document, "createInstance", vStr)))
+	if (!(Sheet = Ole::MethodGet(Document, L"createInstance", vStr)))
 		return false;
 	
 	vStr.BString(name);
@@ -1778,17 +1777,17 @@ bool OPENSheet::InsertTab(String name) {
 	VariantOle vsheet;
 	vsheet.ObjectOle(Sheet);
 	
-	if (!(Ole::Method(Sheets, "insertByName", vsheet, vStr)))
+	if (!(Ole::Method(Sheets, L"insertByName", vsheet, vStr)))
 		return false;		
 	
 	// Set tab as active
 	ObjectOle View;
-	if (!(View = Ole::MethodGet(Document, "getCurrentController")))
+	if (!(View = Ole::MethodGet(Document, L"getCurrentController")))
 		return false;
 	
 	VariantOle vSheet;
 	vSheet.ObjectOle(Sheet);
-	return Ole::SetValue(View, "ActiveSheet", vSheet); 	
+	return Ole::SetValue(View, L"ActiveSheet", vSheet); 	
 }
 
 bool OPENSheet::ChooseTab(String name) {
@@ -1796,17 +1795,17 @@ bool OPENSheet::ChooseTab(String name) {
 		return false;
 	VariantOle vStr;
 	vStr.BString(name);
-	if (!(Sheet = Ole::MethodGet(Sheets, "getByName", vStr)))
+	if (!(Sheet = Ole::MethodGet(Sheets, L"getByName", vStr)))
 		return false;
 	
 	// Set tab as active
 	ObjectOle View;
-	if (!(View = Ole::MethodGet(Document, "getCurrentController")))
+	if (!(View = Ole::MethodGet(Document, L"getCurrentController")))
 		return false;
 	
 	VariantOle vSheet;
 	vSheet.ObjectOle(Sheet);
-	return Ole::SetValue(View, "ActiveSheet", vSheet); 	
+	return Ole::SetValue(View, L"ActiveSheet", vSheet); 	
 }
 
 bool OPENSheet::ChooseTab(int index) {
@@ -1814,17 +1813,17 @@ bool OPENSheet::ChooseTab(int index) {
 		return false;
 	VariantOle vId;
 	vId.Int(index);
-	if (!(Sheet = Ole::MethodGet(Sheets, "getByIndex", vId)))
+	if (!(Sheet = Ole::MethodGet(Sheets, L"getByIndex", vId)))
 		return false;	
 	
 	// Set tab as active
 	ObjectOle View;
-	if (!(View = Ole::MethodGet(Document, "getCurrentController")))
+	if (!(View = Ole::MethodGet(Document, L"getCurrentController")))
 		return false;
 	
 	VariantOle vSheet;
 	vSheet.ObjectOle(Sheet);
-	return Ole::SetValue(View, "ActiveSheet", vSheet); 
+	return Ole::SetValue(View, L"ActiveSheet", vSheet); 
 }
 
 bool OPENSheet::RemoveTab(String name) {
@@ -1832,7 +1831,7 @@ bool OPENSheet::RemoveTab(String name) {
 		return false;
 	VariantOle vStr;
 	vStr.BString(name);
-	if (!Ole::Method(Sheets, "removeByName", vStr))
+	if (!Ole::Method(Sheets, L"removeByName", vStr))
 		return false;
 	return true;
 }
@@ -1842,7 +1841,7 @@ bool OPENSheet::RemoveTab(int index) {
 		return false;
 	VariantOle vId;
 	vId.Int(index);
-	if (!Ole::Method(Sheets, "removeByIndex", vId))
+	if (!Ole::Method(Sheets, L"removeByIndex", vId))
 		return false;	
 	return true;
 }
@@ -1851,7 +1850,7 @@ int OPENSheet::GetNumTabs() {
 	if (!Sheets)
 		return -1;
 	Value count;
-	count = Ole::GetValue(Sheets, "getCount");
+	count = Ole::GetValue(Sheets, L"getCount");
 	return count; 
 }
 
@@ -1871,10 +1870,10 @@ bool OPENSheet::AddSheet(bool visible) {
 	vSize.Int4(0);	
 	VariantOle vDocument;
 	vDocument.BString("private:factory/scalc");	
-	if (!(Document = Ole::MethodGet(Desktop, "loadComponentFromURL", vArray, vSize, vFile, vDocument)))
+	if (!(Document = Ole::MethodGet(Desktop, L"loadComponentFromURL", vArray, vSize, vFile, vDocument)))
 		return false;
 
-	if (!(Sheets = Ole::MethodGet(Document, "getSheets")))
+	if (!(Sheets = Ole::MethodGet(Document, L"getSheets")))
 		return false;
 	
 	if (!visible)
@@ -1895,10 +1894,10 @@ bool OPENSheet::OpenSheet(String fileName, bool visible) {
 	vSize.Int4(0);	
 	VariantOle vDocument;
 	vDocument.BString(OOo::ConvertToUrl(fileName));	
-	if (!(Document = Ole::MethodGet(Desktop, "loadComponentFromURL", vArray, vSize, vFile, vDocument))) 
+	if (!(Document = Ole::MethodGet(Desktop, L"loadComponentFromURL", vArray, vSize, vFile, vDocument))) 
 		return false;
 
-	if (!(Sheets = Ole::MethodGet(Document, "getSheets")))
+	if (!(Sheets = Ole::MethodGet(Document, L"getSheets")))
 		return false;
 
 	if (!visible)
@@ -1911,18 +1910,18 @@ bool OPENSheet::SetVisible(bool visible) {
 	if (!Document)
 		return false;
 	ObjectOle DocCtrl;
-	if (!(DocCtrl = Ole::MethodGet(Document, "getCurrentController")))
+	if (!(DocCtrl = Ole::MethodGet(Document, L"getCurrentController")))
 		return false;
 	ObjectOle DocFrame;
-	if (!(DocFrame = Ole::MethodGet(DocCtrl, "getFrame")))
+	if (!(DocFrame = Ole::MethodGet(DocCtrl, L"getFrame")))
 		return false;
 	ObjectOle DocWindow;
-	if (!(DocWindow = Ole::MethodGet(DocFrame, "getContainerWindow")))
+	if (!(DocWindow = Ole::MethodGet(DocFrame, L"getContainerWindow")))
 		return false;
 
 	VariantOle vvisible;
 	vvisible.Bool(visible);   
-	return Ole::Method(DocWindow, "setVisible", vvisible); 
+	return Ole::Method(DocWindow, L"setVisible", vvisible); 
 }
 
 bool OPENSheet::Select(String range) {
@@ -1930,7 +1929,7 @@ bool OPENSheet::Select(String range) {
 		return false;
 	VariantOle vrange;
 	vrange.BString(range);	
-	if (!(Range = Ole::MethodGet(Sheet, "getCellRangeByName", vrange)))
+	if (!(Range = Ole::MethodGet(Sheet, L"getCellRangeByName", vrange)))
 		return false;
 	return true;
 }
@@ -1943,7 +1942,7 @@ bool OPENSheet::Select(int fromX, int fromY, int toX, int toY) {
 	vY1.Int(fromY-1);	
 	vX2.Int(toX-1);	// Comienza en 0
 	vY2.Int(toY-1);	
-	if (!(Range = Ole::MethodGet(Sheet, "getCellRangeByPosition", vY2, vX2, vY1, vX1)))
+	if (!(Range = Ole::MethodGet(Sheet, L"getCellRangeByPosition", vY2, vX2, vY1, vX1)))
 		return false;
 	selectedAll = false;
 	return true;
@@ -2009,13 +2008,13 @@ bool OPENSheet::Replace(Value search, Value replace) {
 	if (!Sheet)
 		return false;
 	ObjectOle Search;
-	if (!(Search = Ole::MethodGet(Sheet, "createReplaceDescriptor")))
+	if (!(Search = Ole::MethodGet(Sheet, L"createReplaceDescriptor")))
 		return false;		
 	VariantOle vsearch, vreplace;
 	vsearch.BString(search);
-	Ole::Method(Search, "setSearchString", vsearch);
+	Ole::Method(Search, L"setSearchString", vsearch);
 	vreplace.BString(replace);
-	Ole::Method(Search, "setReplaceString", vreplace);
+	Ole::Method(Search, L"setReplaceString", vreplace);
 	VariantOle vsrep;
 	vsrep.ObjectOle(Search);
 	
@@ -2029,7 +2028,7 @@ bool OPENSheet::Replace(Value search, Value replace) {
 			return false;
 		data = &Range;
 	}
-	if (!Ole::Method(*data, "replaceAll", vsrep))
+	if (!Ole::Method(*data, L"replaceAll", vsrep))
 		return false;
 	return true;
 }
@@ -2037,13 +2036,13 @@ bool OPENSheet::Replace(Value search, Value replace) {
 Value OPENSheet::GetValue(int col, int row) {
 	if (!SelCell(col, row))
 		return false;
-	return Ole::GetValue(Cell, "getFormula");	// Also valid getValue and getString
+	return Ole::GetValue(Cell, L"getFormula");	// Also valid getValue and getString
 }
 
 Value OPENSheet::GetText(int col, int row) {
 	if (!SelCell(col, row))
 		return false;
-	return Ole::GetValue(Cell, "getString");	// Also valid getValue and getString
+	return Ole::GetValue(Cell, L"getString");	// Also valid getValue and getString
 }
 
 Value OPENSheet::GetValue(String cell) {
@@ -2090,13 +2089,13 @@ bool OPENSheet::SaveAs(String fileName, String type) {
 	bool ret;
 	if (filter.IsEmpty()) {
 		vArraySave.ArrayDim(0);
-		ret = Ole::Method(Document, "storeToURL", vArraySave, vFileName);
+		ret = Ole::Method(Document, L"storeToURL", vArraySave, vFileName);
 	} else {	
 		VariantOle vArg;
 		vArg.ObjectOle(OOo::MakePropertyValue("FilterName", filter));
 		vArraySave.ArrayDim(1);
 		vArraySave.ArraySetVariant(1, vArg);
-		ret = Ole::Method(Document, "storeToURL", vArraySave, vFileName);	
+		ret = Ole::Method(Document, L"storeToURL", vArraySave, vFileName);	
 	}
 	if (ret)
 		SetSaved(true);
@@ -2110,7 +2109,7 @@ bool OPENSheet::SelCell(int x, int y)
 	VariantOle vX, vY;
 	vX.Int(x-1);	// Comienza en 0
 	vY.Int(y-1);	
-	if (!(Cell = Ole::MethodGet(Sheet, "getCellByPosition", vY, vX)))
+	if (!(Cell = Ole::MethodGet(Sheet, L"getCellByPosition", vY, vX)))
 		return false;
 	return true;
 }
@@ -2127,9 +2126,9 @@ bool OPENSheet::SetValue(int col, int row, Value value) {
 	VariantOle vText;
 	vText.Value(value); 
 	if (value.Is<String>() || value.Is<Date>() || value.Is<Time>())
-		return Ole::Method(Cell, "setFormula", vText);		
+		return Ole::Method(Cell, L"setFormula", vText);		
 	else
-		return Ole::Method(Cell, "setValue", vText);		
+		return Ole::Method(Cell, L"setValue", vText);		
 }
 
 bool OPENSheet::SetValue(Value value) {
@@ -2138,9 +2137,9 @@ bool OPENSheet::SetValue(Value value) {
 	VariantOle vText;
 	vText.Value(value); 
 	if (value.Is<String>() || value.Is<Date>() || value.Is<Time>())
-		return Ole::Method(Range, "setFormula", vText);		
+		return Ole::Method(Range, L"setFormula", vText);		
 	else
-		return Ole::Method(Range, "setValue", vText);		
+		return Ole::Method(Range, L"setValue", vText);		
 }
 
 bool OPENSheet::SetHyperlink(String cell, String address, String text) {	// cell in textual format like "B14" 
@@ -2195,7 +2194,7 @@ bool OPENSheet::SetItalic(int col, int row, bool italic) {
 		vvalue.Int(2);	
 	else
 		vvalue.Int(0);	
-	return Ole::SetValue(Cell, "setPropertyValue", vvalue, vproperty);
+	return Ole::SetValue(Cell, L"setPropertyValue", vvalue, vproperty);
 }
 
 bool OPENSheet::SetItalic(bool italic) {
@@ -2204,7 +2203,7 @@ bool OPENSheet::SetItalic(bool italic) {
 		vvalue.Int(2);	
 	else
 		vvalue.Int(0);	
-	return Ole::SetValue(Range, "CharPosture", vvalue);
+	return Ole::SetValue(Range, L"CharPosture", vvalue);
 }
 
 bool OPENSheet::SetBold(String cell, bool bold) {
@@ -2219,7 +2218,7 @@ bool OPENSheet::SetBold(int col, int row, bool bold) {
 	VariantOle vproperty, vvalue;
 	vproperty.BString("CharBold");
 	vvalue.Bool(bold);	
-	return Ole::SetValue(Cell, "setPropertyValue", vvalue, vproperty);
+	return Ole::SetValue(Cell, L"setPropertyValue", vvalue, vproperty);
 }
 
 bool OPENSheet::SetBold(bool bold)  {
@@ -2228,7 +2227,7 @@ bool OPENSheet::SetBold(bool bold)  {
 		vvalue.Int(150);	
 	else
 		vvalue.Int(100);	
-	return Ole::SetValue(Range, "CharWeight", vvalue);
+	return Ole::SetValue(Range, L"CharWeight", vvalue);
 }
 
 bool OPENSheet::SetUnderline(String cell, bool underline) {
@@ -2243,7 +2242,7 @@ bool OPENSheet::SetUnderline(int col, int row, bool underline) {
 	VariantOle vproperty, vvalue;
 	vproperty.BString("CharUnderline");
 	vvalue.Bool(underline);	
-	return Ole::SetValue(Cell, "setPropertyValue", vvalue, vproperty);
+	return Ole::SetValue(Cell, L"setPropertyValue", vvalue, vproperty);
 }
 
 bool OPENSheet::SetUnderline(bool underline) {
@@ -2252,7 +2251,7 @@ bool OPENSheet::SetUnderline(bool underline) {
 		vvalue.Int(1);	// 2 is doble underline
 	else
 		vvalue.Int(0);	
-	return Ole::SetValue(Range, "CharUnderline", vvalue);
+	return Ole::SetValue(Range, L"CharUnderline", vvalue);
 }
 	
 bool OPENSheet::SetHorizAlignment(String cell, int alignment) {
@@ -2271,7 +2270,7 @@ bool OPENSheet::SetHorizAlignment(int col, int row, int alignment) {
 	
 	VariantOle vvalue;
 	vvalue.Int(justifyConst[alignment]);	
-	return Ole::SetValue(Cell, "HoriJustify", vvalue);
+	return Ole::SetValue(Cell, L"HoriJustify", vvalue);
 }
 
 bool OPENSheet::SetVertAlignment(String cell, int alignment) {
@@ -2290,7 +2289,7 @@ bool OPENSheet::SetVertAlignment(int col, int row, int alignment) {
 	
 	VariantOle vvalue;
 	vvalue.Int(justifyConst[alignment]);	
-	return Ole::SetValue(Cell, "VertJustify", vvalue);
+	return Ole::SetValue(Cell, L"VertJustify", vvalue);
 }
 
 bool OPENSheet::SetBorder(int borderIndx, int lineStyle, int weight, Color color) {
@@ -2362,19 +2361,19 @@ bool OPENSheet::SetFont(int col, int row, String name, int size) {
 	VariantOle vproperty, vvalue;
 	vproperty.BString("CharFontName");
 	vvalue.BString(name);
-	Ole::Method(Cell, "setPropertyValue", vvalue, vproperty);
+	Ole::Method(Cell, L"setPropertyValue", vvalue, vproperty);
 	
 	vproperty.BString("CharHeight");
 	vvalue.Int(size);
-	return Ole::Method(Cell, "setPropertyValue", vvalue, vproperty);
+	return Ole::Method(Cell, L"setPropertyValue", vvalue, vproperty);
 }
 
 bool OPENSheet::SetFont(String name, int size) {
 	VariantOle vvalue;
 	vvalue.BString(name);
-	Ole::SetValue(Range, "CharFontName", vvalue);
+	Ole::SetValue(Range, L"CharFontName", vvalue);
 	vvalue.Int(size);
-	return Ole::SetValue(Range, "CharHeight", vvalue);
+	return Ole::SetValue(Range, L"CharHeight", vvalue);
 }
 
 bool OPENSheet::SetColor(String cell, Color color) {	// 2 Centered 
@@ -2393,7 +2392,7 @@ bool OPENSheet::SetColor(Color color) {
 	VariantOle vproperty, vvalue;
 	vproperty.BString("CellColor");
 	vvalue.Int4(RGB(color.GetR(), color.GetG(), color.GetB()));
-	return Ole::SetValue(Cell, "setPropertyValue", vvalue, vproperty);	
+	return Ole::SetValue(Cell, L"setPropertyValue", vvalue, vproperty);	
 }
 
 bool OPENSheet::SetBackColor(String cell, Color color) {	// 2 Centered 
@@ -2412,7 +2411,7 @@ bool OPENSheet::SetBackColor(Color color) {
 	VariantOle vproperty, vvalue;
 	vproperty.BString("CellBackColor");
 	vvalue.Int4(RGB(color.GetR(), color.GetG(), color.GetB()));
-	return Ole::SetValue(Cell, "setPropertyValue", vvalue, vproperty);
+	return Ole::SetValue(Cell, L"setPropertyValue", vvalue, vproperty);
 }
 
 bool OPENSheet::SetFormat(String format) {
@@ -2433,33 +2432,33 @@ bool OPENSheet::SetFormat(String format) {
 	
 	VariantOle vvalue;
 	vvalue.Int(value);
-	return Ole::SetValue(Range, "NumberFormat", vvalue);	
+	return Ole::SetValue(Range, L"NumberFormat", vvalue);	
 }
 
 bool OPENSheet::SetColWidth(int col, double width) {
     ObjectOle Columns;
-    if (!(Columns = Ole::MethodGet(Sheet, "getColumns")))
+    if (!(Columns = Ole::MethodGet(Sheet, L"getColumns")))
 		return false;
     ObjectOle Column;
     VariantOle vvalue;
     vvalue.Int(col);
-    if (!(Column = Ole::MethodGet(Columns, "getByIndex", vvalue)))
+    if (!(Column = Ole::MethodGet(Columns, L"getByIndex", vvalue)))
 		return false;
     vvalue.Int(int(width*100));
-    return Ole::SetValue(Column, "Width", vvalue);    	
+    return Ole::SetValue(Column, L"Width", vvalue);    	
 }
 	
 bool OPENSheet::SetRowHeight(int row, double height) {
     ObjectOle Rows;
-    if (!(Rows = Ole::MethodGet(Sheet, "getRows")))
+    if (!(Rows = Ole::MethodGet(Sheet, L"getRows")))
 		return false;
     ObjectOle Row;
     VariantOle vvalue;
     vvalue.Int(row);
-    if (!(Row = Ole::MethodGet(Rows, "getByIndex", vvalue)))
+    if (!(Row = Ole::MethodGet(Rows, L"getByIndex", vvalue)))
 		return false;
     vvalue.Int(int(height*100));
-    return Ole::SetValue(Row, "Height", vvalue); 
+    return Ole::SetValue(Row, L"Height", vvalue); 
 }
 
 bool OPENSheet::Print() {
@@ -2469,7 +2468,7 @@ bool OPENSheet::Print() {
 	vArg.ObjectOle(OOo::MakePropertyValue("CopyCount", 1));	
 	vArrayPrint.ArraySetVariant(1, vArg);
 
-	return Ole::Method(Document, "print", vArrayPrint);
+	return Ole::Method(Document, L"print", vArrayPrint);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2492,13 +2491,13 @@ OPENDoc::OPENDoc() {
 	ObjectOle CoreReflection;
 	VariantOle vInstance;
 	vInstance.BString("com.sun.star.reflection.CoreReflection");	
-	if (!(CoreReflection = Ole::MethodGet(ServiceManager, "createInstance", vInstance)))
+	if (!(CoreReflection = Ole::MethodGet(ServiceManager, L"createInstance", vInstance)))
 		return;
 
 	// Create the Desktop
 	VariantOle vDesktop;
 	vDesktop.BString("com.sun.star.frame.Desktop");	
-	if (!(Desktop = Ole::MethodGet(ServiceManager, "createInstance", vDesktop)))
+	if (!(Desktop = Ole::MethodGet(ServiceManager, L"createInstance", vDesktop)))
 		return;	
 }
 
@@ -2545,18 +2544,18 @@ bool OPENDoc::AddDoc(bool visible) {
 	vSize.Int4(0);	
 	VariantOle vDocument;
 	vDocument.BString("private:factory/swriter");	
-	if (!(Document = Ole::MethodGet(Desktop, "loadComponentFromURL", vArray, vSize, vFile, vDocument)))
+	if (!(Document = Ole::MethodGet(Desktop, L"loadComponentFromURL", vArray, vSize, vFile, vDocument)))
 		return false;
 	
 	if (!visible)
 		SetVisible(visible);
 
 	// Create a text object
-	if (!(Text = Ole::MethodGet(Document, "getText")))
+	if (!(Text = Ole::MethodGet(Document, L"getText")))
 		return false;
 	
 	// Create a cursor object
-	if (!(Cursor = Ole::MethodGet(Text, "createTextCursor")))
+	if (!(Cursor = Ole::MethodGet(Text, L"createTextCursor")))
 		return false;
 	return true;
 }
@@ -2577,18 +2576,18 @@ bool OPENDoc::OpenDoc(String fileName, bool visible) {
 	vSize.Int4(0);	
 	VariantOle vDocument;
 	vDocument.BString(OOo::ConvertToUrl(fileName));	
-	if (!(Document = Ole::MethodGet(Desktop, "loadComponentFromURL", vArray, vSize, vFile, vDocument))) 
+	if (!(Document = Ole::MethodGet(Desktop, L"loadComponentFromURL", vArray, vSize, vFile, vDocument))) 
 		return false;
 
 	if (!visible)
 		SetVisible(visible);	
 
 	// Create a text object
-	if (!(Text = Ole::MethodGet(Document, "getText")))
+	if (!(Text = Ole::MethodGet(Document, L"getText")))
 		return false;
 	
 	// Create a cursor object
-	if (!(Cursor = Ole::MethodGet(Text, "createTextCursor")))
+	if (!(Cursor = Ole::MethodGet(Text, L"createTextCursor")))
 		return false;
 	return true;
 }
@@ -2597,18 +2596,18 @@ bool OPENDoc::SetVisible(bool visible) {
 	if (!Document)
 		return false;
 	ObjectOle DocCtrl;
-	if (!(DocCtrl = Ole::MethodGet(Document, "getCurrentController")))
+	if (!(DocCtrl = Ole::MethodGet(Document, L"getCurrentController")))
 		return false;
 	ObjectOle DocFrame;
-	if (!(DocFrame = Ole::MethodGet(DocCtrl, "getFrame")))
+	if (!(DocFrame = Ole::MethodGet(DocCtrl, L"getFrame")))
 		return false;
 	ObjectOle DocWindow;
-	if (!(DocWindow = Ole::MethodGet(DocFrame, "getContainerWindow")))
+	if (!(DocWindow = Ole::MethodGet(DocFrame, L"getContainerWindow")))
 		return false;
 
 	VariantOle vvisible;
 	vvisible.Bool(visible);   
-	return Ole::Method(DocWindow, "setVisible", vvisible); 
+	return Ole::Method(DocWindow, L"setVisible", vvisible); 
 }
 
 /*bool OPENDoc::SetColor(Color col) {
@@ -2624,11 +2623,11 @@ bool OPENDoc::SetFont(String font, int size) {
 	vFont.BString("CharFontName");
 	VariantOle vValue;
 	vValue.BString(font);
-	Ole::Method(Cursor, "setPropertyValue", vValue, vFont);
+	Ole::Method(Cursor, L"setPropertyValue", vValue, vFont);
 	VariantOle vHeight;
 	vHeight.BString("CharHeight");
 	vValue.Int(size);
-	return Ole::Method(Cursor, "setPropertyValue", vValue, vHeight);
+	return Ole::Method(Cursor, L"setPropertyValue", vValue, vHeight);
 }
 
 bool OPENDoc::SetBold(bool bold) {
@@ -2637,7 +2636,7 @@ bool OPENDoc::SetBold(bool bold) {
 		vvalue.Int(150);	
 	else
 		vvalue.Int(100);	
-	return Ole::SetValue(Cursor, "CharWeight", vvalue);
+	return Ole::SetValue(Cursor, L"CharWeight", vvalue);
 }
 
 bool OPENDoc::SetItalic(bool italic) {
@@ -2646,7 +2645,7 @@ bool OPENDoc::SetItalic(bool italic) {
 		vvalue.Int(2);	
 	else
 		vvalue.Int(0);	
-	return Ole::SetValue(Cursor, "CharPosture", vvalue);
+	return Ole::SetValue(Cursor, L"CharPosture", vvalue);
 }
 
 bool OPENDoc::WriteText(String str) {
@@ -2656,7 +2655,7 @@ bool OPENDoc::WriteText(String str) {
 	vText.BString(str);
 	VariantOle vCursor;
 	vCursor.ObjectOle(Cursor);
-	return Ole::Method(Text, "insertString", vFalse, vText, vCursor);
+	return Ole::Method(Text, L"insertString", vFalse, vText, vCursor);
 }
 	
 bool OPENDoc::Select() {	// Not used here 
@@ -2666,18 +2665,18 @@ bool OPENDoc::Select() {	// Not used here
 bool OPENDoc::Replace(String search, String replace)
 {
 	ObjectOle Search;
-	if (!(Search = Ole::MethodGet(Document, "createReplaceDescriptor")))
+	if (!(Search = Ole::MethodGet(Document, L"createReplaceDescriptor")))
 		return false;		
 	VariantOle vsearch;
 	vsearch.BString(search);
-	Ole::Method(Search, "setSearchString", vsearch);
+	Ole::Method(Search, L"setSearchString", vsearch);
 	VariantOle vreplace;
 	vreplace.BString(replace);
-	Ole::Method(Search, "setReplaceString", vreplace);
+	Ole::Method(Search, L"setReplaceString", vreplace);
 	
 	VariantOle vsrep;
 	vsrep.ObjectOle(Search);
-	return Ole::Method(Document, "replaceAll", vsrep);
+	return Ole::Method(Document, L"replaceAll", vsrep);
 }
 	
 bool OPENDoc::Print() {
@@ -2704,7 +2703,7 @@ bool OPENDoc::Print() {
 	// vArg.ObjectOle(OOo::MakePropertyValue("Pages", "2"));	// Pages "1-15; 18"
 	// vArrayPrint.ArraySetVariant(2, vArg);
 
-	return Ole::Method(Document, "print", vArrayPrint);
+	return Ole::Method(Document, L"print", vArrayPrint);
 }
 
 bool OPENDoc::EnableCommandVars(bool enable) {
@@ -2715,7 +2714,7 @@ bool OPENDoc::EnableCommandVars(bool enable) {
 bool OPENDoc::SetSaved(bool saved) {
 	VariantOle vval;
 	vval.Bool(!saved);	// Modified is the opposite to saved
-	return Ole::Method(Document, "setModified", vval);
+	return Ole::Method(Document, L"setModified", vval);
 }
 
 bool OPENDoc::SaveAs(String fileName, String type) {
@@ -2755,15 +2754,15 @@ bool OPENDoc::SaveAs(String fileName, String type) {
 		vArraySave.ArrayDim(1);
 		vArraySave.ArraySetVariant(1, vArg);
 	}	
-	return Ole::Method(Document, "storeToURL", vArraySave, vFileName);
+	return Ole::Method(Document, L"storeToURL", vArraySave, vFileName);
 }
 
 bool OPENDoc::Quit() {
 	if (!quit) {
 		quit = true;
 		if (Document) {
-			Ole::Method(Document, "Dispose");
-			return Ole::Method(Document, "Terminate");
+			Ole::Method(Document, L"Dispose");
+			return Ole::Method(Document, L"Terminate");
 		}
 	}
 	return true;

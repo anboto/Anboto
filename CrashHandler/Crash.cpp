@@ -20,12 +20,13 @@
 namespace Upp {
 
 
-#if defined(PLATFORM_WIN32)
+#if defined (flagDEBUG) && defined(PLATFORM_WIN32)
 #pragma float_control(except, on)
 #endif
 
-//static CrashHandler crash;
-
+#if defined (flagDEBUG)
+static CrashHandler crash;
+#endif
 
 static void PanicMessage(const char *title, const char *text) {
 	printf("\n>>>>>>>%s %s", title, text);

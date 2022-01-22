@@ -9,7 +9,6 @@ namespace Upp {
 #include <TlHelp32.h>
 #endif
 #ifdef PLATFORM_POSIX
-//#BLITZ_APPROVE
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>

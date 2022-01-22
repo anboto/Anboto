@@ -685,7 +685,7 @@ onst]&]
 [s5;:ScatterDraw`:`:ZoomToFitZ`(`):%- [_^ScatterDraw^ ScatterDraw][@(0.0.255) `&]_[* ZoomTo
 FitZ]()&]
 [s3; Calculates the minimum and maximum 2D surface Z values and sets 
-them as minimum ans maximum values to be plotted.&]
+them as minimum and maximum values to be plotted.&]
 [s1;%- &]
 [s6;%- &]
 [s5;:ScatterDraw`:`:ShowRainbowPalette`(bool`):%- [_^ScatterDraw^ ScatterDraw][@(0.0.255) `&
