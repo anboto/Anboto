@@ -315,6 +315,12 @@ Value Ole::GetValue(ObjectOle from, LPCOLESTR which) {
 	return GetVARIANT(result);
 }
 
+bool Ole::GetVariant(VariantOle &v, ObjectOle from, LPCOLESTR which) {
+	if(!Ole::Invoke(DISPATCH_PROPERTYGET|DISPATCH_METHOD, &v.var, from, which, 0))
+		return false;
+	return true;
+}
+
 bool Ole::SetValue(ObjectOle from, LPCOLESTR which, VariantOle &value) {
 	return Ole::Invoke(DISPATCH_PROPERTYPUT, NULL, from, which, 1, value.var);
 }
@@ -606,6 +612,10 @@ bool MSSheet::MatrixAllocate(int width, int height) {
 	return Matrix.ArrayDim(width, height);
 }
 
+bool MSSheet::MatrixGet() {
+	return Ole::GetVariant(Matrix, Range, L"value");
+}
+
 bool MSSheet::MatrixDelete() {
 	return Matrix.ArrayDestroy();
 }
@@ -631,13 +641,17 @@ bool MSSheet::MatrixSet(int fromX, int fromY, Vector<Vector<Value> > &data, bool
 		int width = data[0].GetCount();
 		int toX = fromX + width - 1;	
 		int toY = fromY + height - 1;
-		if (!Select(fromX, fromY, toX, toY)) return false;
-		if (!MatrixAllocate(width, height)) return false;
+		if (!Select(fromX, fromY, toX, toY)) 
+			return false;
+		if (!MatrixAllocate(width, height)) 
+			return false;
 		try {
 			for (int row = 0; row < height; ++row)
 				for (int col = 0; col < width; ++col)
-					if (!MatrixSetValue(col + 1, row + 1, data[row][col]))  throw;
-			if (!MatrixSetSelection()) throw;
+					if (!MatrixSetValue(col + 1, row + 1, data[row][col]))  
+						throw;
+			if (!MatrixSetSelection()) 
+				throw;
 		} catch (...) {
 			MatrixDelete();
 			return false;
@@ -647,13 +661,17 @@ bool MSSheet::MatrixSet(int fromX, int fromY, Vector<Vector<Value> > &data, bool
 		int width = data.GetCount();
 		int toX = fromX + width - 1;	
 		int toY = fromY + height - 1;
-		if (!Select(fromX, fromY, toX, toY)) return false;
-		if (!MatrixAllocate(width, height)) return false;
+		if (!Select(fromX, fromY, toX, toY)) 
+			return false;
+		if (!MatrixAllocate(width, height)) 
+			return false;
 		try {
 			for (int row = 0; row < height; ++row)
 				for (int col = 0; col < width; ++col)
-					if (!MatrixSetValue(col + 1, row + 1, data[col][row]))  throw;
-			if (!MatrixSetSelection()) throw;
+					if (!MatrixSetValue(col + 1, row + 1, data[col][row]))  
+						throw;
+			if (!MatrixSetSelection())
+				throw;
 		} catch (...) {
 			MatrixDelete();
 			return false;
@@ -672,13 +690,15 @@ bool MSSheet::MatrixGet(int fromX, int fromY, int width, int height, Vector<Vect
 		data[i].SetCount(width);
 	int toX = fromX + width - 1;	
 	int toY = fromY + height - 1;
-	if (!Select(fromX, fromY, toX, toY)) return false;
-	if (!MatrixAllocate(width, height)) return false;
+	if (!Select(fromX, fromY, toX, toY)) 
+		return false;
+	if (!MatrixGet()) 
+		return false;
 	try {
 		for (int row = 0; row < height; ++row)
 			for (int col = 0; col < width; ++col)
-				if (!MatrixGetValue(col + 1, row + 1, data[row][col]))  throw;
-		if (!MatrixSetSelection()) throw;
+				if (!MatrixGetValue(col + 1, row + 1, data[row][col]))  
+					throw;
 	} catch (...) {
 		MatrixDelete();
 		return false;
@@ -1938,9 +1958,9 @@ bool OPENSheet::Select(int fromX, int fromY, int toX, int toY) {
 	if (!Sheet)
 		return false;
 	VariantOle vX1, vY1, vX2, vY2;
-	vX1.Int(fromX-1);	// Comienza en 0
+	vX1.Int(fromX-1);	// Begins from 0
 	vY1.Int(fromY-1);	
-	vX2.Int(toX-1);	// Comienza en 0
+	vX2.Int(toX-1);		
 	vY2.Int(toY-1);	
 	if (!(Range = Ole::MethodGet(Sheet, L"getCellRangeByPosition", vY2, vX2, vY1, vX1)))
 		return false;
@@ -2296,50 +2316,7 @@ bool OPENSheet::SetBorder(int borderIndx, int lineStyle, int weight, Color color
 	if (!Range)
 		return false;
 
-	return false;		// Not implemented yet :(
-	
-/*	This is an unsuccesful test
-	VariantOle vBorder;
-	vBorder.ArrayDim(4);
-	vBorder.ArraySetValue(0, 0);
-	vBorder.ArraySetValue(1, 0);
-	vBorder.ArraySetValue(2, 80);
-	vBorder.ArraySetValue(3, 0);
-
-	VariantOle vNoBorder;
-	vNoBorder.ArrayDim(4);
-	vNoBorder.ArraySetValue(0, 0);
-	vNoBorder.ArraySetValue(1, 0);
-	vNoBorder.ArraySetValue(2, 0);
-	vNoBorder.ArraySetValue(3, 0);
-	
-	VariantOle vArg;
-	VariantOle vArraySave;
-	vArraySave.ArrayDim(8);
-	
-	vArg.ObjectOle(OOo::MakePropertyValue("BorderOuter.LeftBorder", vBorder));
-	vArraySave.ArraySetVariant(1, vArg);
-	vArg.ObjectOle(OOo::MakePropertyValue("BorderOuter.LeftDistance", 0));
-	vArraySave.ArraySetVariant(2, vArg);
-
-	vArg.ObjectOle(OOo::MakePropertyValue("BorderOuter.RightBorder", vBorder));
-	vArraySave.ArraySetVariant(3, vArg);
-	vArg.ObjectOle(OOo::MakePropertyValue("BorderOuter.RightDistance", 0));
-	vArraySave.ArraySetVariant(4, vArg);
-	
-	vArg.ObjectOle(OOo::MakePropertyValue("BorderOuter.TopBorder", vBorder));
-	vArraySave.ArraySetVariant(5, vArg);
-	vArg.ObjectOle(OOo::MakePropertyValue("BorderOuter.TopDistance", 0));
-	vArraySave.ArraySetVariant(6, vArg);
-	
-	vArg.ObjectOle(OOo::MakePropertyValue("BorderOuter.BottomBorder", vBorder));
-	vArraySave.ArraySetVariant(7, vArg);
-	vArg.ObjectOle(OOo::MakePropertyValue("BorderOuter.BottomDistance", 0));
-	vArraySave.ArraySetVariant(8, vArg);
-	
-	if (!Ole::Method(Range, "BorderOuter", vArraySave))
-		return false;
-*/	
+	return false;		// Not implemented yet :(	
 }
 
 bool OPENSheet::SetBorder(int col, int row, int borderIndx, int lineStyle, int weight, Color color) {

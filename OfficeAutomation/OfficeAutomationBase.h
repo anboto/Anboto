@@ -72,6 +72,8 @@ private:
 	
 	bool SetBorder(ObjectOle &borders, int borderIndx, int lineStyle, int weight, Color color);
 	
+	bool MatrixGet();
+	     
 	bool killProcess;
 };
 
@@ -169,6 +171,7 @@ public:
 	static Value GetValue(ObjectOle from, LPCOLESTR which);
 	static Value GetValue(ObjectOle from, LPCOLESTR which, VariantOle &value);
 	static Value GetValue(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2);
+	static bool GetVariant(VariantOle &v, ObjectOle from, LPCOLESTR which);
 	static bool Method(ObjectOle from, LPCOLESTR which);
 	static bool Method(ObjectOle from, LPCOLESTR which, VariantOle &value);
 	static bool Method(ObjectOle from, LPCOLESTR which, VariantOle &value, VariantOle &value2);

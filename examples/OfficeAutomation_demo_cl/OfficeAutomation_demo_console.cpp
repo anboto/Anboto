@@ -100,6 +100,7 @@ void TestSheetDetail(OfficeSheet &sheet)
 	
 	data.Clear();
 	sheet.MatrixGet(1, 11, 10, 10, data);
+	Puts(Format("Retrieved data from cell 1, 11: %s", AsString(data[0][0])));
 	Puts(Format("Retrieved data from cell 5, 16: %s", AsString(data[5][5])));
 		
 	sheet.SetValue(2, 2, "=A7*B5");
