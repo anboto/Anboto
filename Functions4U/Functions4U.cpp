@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #include <Core/Core.h>
 #include "Functions4U.h"
 
@@ -2907,19 +2907,53 @@ void ConsoleOutputDisable(bool disable) {
 #endif
 }
 
-String GetPythonDeclaration(const String &include) {
+static void ListArgsCFunction(const String &strargs, const Vector <String> &ctypes, 
+						Vector<int> &argTypeId, Vector<String> &argVars) {
+	Vector<String> args = Split(strargs, ",");
+	argTypeId.Clear();
+	argVars.Clear();
+	for (auto &arg : args) {
+		arg = Trim(arg);
+		int j;
+		for (j = 0; j < ctypes.size(); ++j) {
+			if (arg.StartsWith(ctypes[j])) 
+				break;
+		}
+		if (j >= ctypes.size())
+			throw Exc(Format("Type in argument '%s' not found", arg));
+		argTypeId << j;
+		argVars   << Trim(arg.Mid(ctypes[j].GetCount()));
+	}
+}
+
+static String ToArgs(const Vector<String> &args) {
+	String ret;
+	for (int i = 0; i < args.size(); ++i) {
+		if (i > 0)
+			ret << ", ";
+		ret << args[i];
+	}
+	return ret;	
+}
+
+String GetPythonDeclaration(const String &name, const String &include) {
 	static String str;
-	const Vector<String> ctypes = {"int",   "double", 	"const char *", "bool"}; 
-	const Vector<String> ptypes = {"c_int", "c_double", "c_char_p", "c_bool"}; 
-		
-	str << "# LIBRARY DECLARATION\n"
-		   "libc = ctypes.CDLL(dll)\n\n";
+	const Vector<String> ctypes = {"double **", 									  "int *", 						 "int",    "double",   "const char *", "bool",   "const double *"}; 
+	const Vector<String> ptypes = {"ctypes.POINTER(ctypes.POINTER(ctypes.c_double))", "ctypes.POINTER(ctypes.c_int)", "c_int", "c_double", "c_char_p", 	   "c_bool", "np.ctypeslib.ndpointer(dtype=np.float64)"}; 
+	const Vector<bool> isPy_C   = {false, 											  false, 						 false,    false, 	   false,          false, 	 true};
+	const Vector<bool> isC_Py   = {true, 											  false, 						 false,    false, 	   false,          false, 	 false};
+	
+	str << "# " << name << " python functions list\n\n"
+		   "class " << name << ":\n"
+		   "    def __init__(self, path_dll):\n"
+		   "        self.libc = ctypes.CDLL(dll)\n\n";
 		   
-	String strIn  = "# INPUT TYPES\n";
-	String strOut = "# OUTPUT TYPES\n";
+	String strIn  = "        # INPUT TYPES\n";
+	String strOut = "        # OUTPUT TYPES\n";
+	String strFun;
 	
 	String cleaned = CleanCFromDeclaration(include);
-	
+					
 	Vector<String> lines = Split(cleaned, "\n");
 	for (const auto &line : lines) {
 		int pospar = line.Find("(");
@@ -2929,37 +2963,80 @@ String GetPythonDeclaration(const String &include) {
 			const auto &type = ctypes[i];
 			if (line.StartsWith(type)) {
 				function = Trim(line.Mid(type.GetCount(), pospar - type.GetCount()));
-				strOut << "libc." << function << ".restype = ctypes." << ptypes[i] << "\n";
+				strOut << "        self.libc." << function << ".restype = ctypes." << ptypes[i] << "\n";
 				break;
 			} 
 		}
 		if (function.IsEmpty() && line.StartsWith("void")) 
 			function = Trim(line.Mid(String("void").GetCount(), pospar - String("void").GetCount()));
 		
-		if (!function.IsEmpty()) {
-			int posparout = line.Find(")");
-			String strargs = line.Mid(pospar+1, posparout - pospar-1);
-			Vector<String> args = Split(strargs, ",");
-			if (!args.IsEmpty()) {
-				String pargs;
-				
-				for (int i = 0; i < args.size(); ++i) {
-					for (int j = 0; j < ctypes.size(); ++j) {
-						const auto &type = ctypes[j];
-						if (Trim(args[i]).StartsWith(type)) {
-							if (!pargs.IsEmpty())
-								pargs << ", ";	
-							pargs << "ctypes." << ptypes[j];
-							break;
-						}
-					}
+		if (function.IsEmpty())
+			continue;
+			
+		int posparout = line.Find(")");
+		String strargs = line.Mid(pospar+1, posparout - pospar-1);
+		
+		Vector<int> argTypeId;
+		Vector<String> argVars;
+		ListArgsCFunction(strargs, ctypes, argTypeId, argVars);
+							
+		if (argTypeId.IsEmpty()) 
+			continue;
+		
+		Vector<String> pargs, cargs, pargTypes;
+		String pre, post;
+		int idata = 0;
+		for (int i = 0; i < argTypeId.size(); ++i) {
+			pargTypes << ptypes[argTypeId[i]];
+			if (isC_Py[argTypeId[i]]) {
+				cargs << Format("ctypes.byref(_data%d)", idata);
+				pargs << argVars[i];
+				pre  << Format("        _data%d = ctypes.POINTER(ctypes.c_double)()\n", idata)
+        			 << Format("        _size%d = ctypes.c_int()\n", idata);
+        		post << Format("        _arraySize%d = ctypes.c_double * _size%d.value\n", idata, idata)
+        			 << Format("        _data%d_pointer = ctypes.cast(_data%d, ctypes.POINTER(_arraySize%d))\n", idata, idata, idata)
+        			 << Format("		%s = np.frombuffer(_data%d_pointer.contents)\n", argVars[i], idata);
+			} else if (isPy_C[argTypeId[i]]) {
+				cargs << argVars[i];
+				pargs << argVars[i];
+			} else {
+				if (i > 0 && isC_Py[argTypeId[i-1]]) {
+					cargs << Format("ctypes.byref(_size%d)", idata);
+					idata++;
+				} else if (i > 0 && isPy_C[argTypeId[i-1]])
+					cargs << Format("len(%s)", argVars[i-1]);
+				else {
+					if (ctypes[argTypeId[i]] == "const char *")
+						cargs << Format("str.encode(%s, 'UTF-8')", argVars[i]);
+					else
+						cargs << argVars[i];
+					pargs << argVars[i];
 				}
-				if (!pargs.IsEmpty())
-					strIn << "libc." << function << ".argtypes = [" << pargs << "]\n";
 			}
 		}
+		strIn << Format("        self.libc.%s.argtypes = [%s]\n", function, ToArgs(pargTypes));
+				
+		String fname = function;
+		fname.Replace("DLL_", "");
+		strFun << "    def " << fname << "(self";
+		if (!pargs.IsEmpty())
+			strFun << ", " << ToArgs(pargs);
+		strFun << "):\n";
+		if (!pre.IsEmpty()) 
+			strFun << "        # Argument preparation\n" 
+				   << pre 
+				   << "        # DLL function call\n"
+				   << Format("        ret = self.libc.%s(%s)\n", function, ToArgs(cargs));
+		else
+			strFun << Format("        self.libc.%s(%s)\n", function, ToArgs(cargs));
+		if (!post.IsEmpty()) 
+			strFun << "        # Vector processing\n" 
+				   << post 
+				   << "        return ret\n";
+		
+		strFun << "\n";
 	}
-	str << strIn << "\n" << strOut << "\n";
+	str << strIn << "\n" << strOut << "\n" << strFun;
 	
 	return str = Trim(str);	
 }
@@ -2972,14 +3049,24 @@ String CleanCFromDeclaration(const String &include, bool removeSemicolon) {
 	str.Replace("};", "");
 	str.Replace("\r\n\r\n", "\r\n");
 	str.Replace(" noexcept", "");
-	str.Replace("  ", "");
-	str.Replace("\t", "");
+	str.Replace("  ", " ");
+	str.Replace("\t", " ");
 	str.Replace(" ;", ";");
+	str.Replace(" (", "(");
+	str.Replace(" )", ")");
 	
 	if (removeSemicolon) 
 		str.Replace(");", ")");
 	
 	return str;
 }
+
+
+bool CoutStreamX::noprint = false;
+
+Stream& CoutX() {
+	return Single<CoutStreamX>();
+}
+
 
 }

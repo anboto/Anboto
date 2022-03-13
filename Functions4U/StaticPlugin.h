@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #ifndef _Functions4U_StaticPlugin_h_
 #define _Functions4U_StaticPlugin_h_
 

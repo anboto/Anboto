@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #ifndef _Functions4U_Functions4U_h
 #define _Functions4U_Functions4U_h
 
@@ -1306,11 +1306,60 @@ enum CONSOLE_COLOR {
 #endif
 };
 
+
 bool SetConsoleColor(CONSOLE_COLOR color);
 void ConsoleOutputDisable(bool disable);
 
-String GetPythonDeclaration(const String &include);
+String GetPythonDeclaration(const String &name, const String &include);
 String CleanCFromDeclaration(const String &include, bool removeSemicolon = true);
+
+class CoutStreamX : public Stream {
+public:
+	static void NoPrint(bool set = true) {noprint = set;}	
+	
+private:
+	String buffer;
+	static bool noprint;
+	
+	void Flush() {
+		ONCELOCK {
+			SetConsoleOutputCP(65001); // set console to UTF8 mode
+		}
+		static HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+		dword dummy;
+		WriteFile(h, ~buffer, buffer.GetCount(), &dummy, NULL);
+		buffer.Clear();
+	}
+
+	void Put0(int w) {
+#ifdef PLATFORM_WIN32
+		buffer.Cat(w);
+		if(CheckUtf8(buffer) || buffer.GetCount() > 8)
+			Flush();
+#else
+		putchar(w);
+#endif
+	}
+	virtual void    _Put(int w) {
+		if (noprint)
+			return;
+		if(w == '\n') {
+#ifdef PLATFORM_WIN32
+			Put0('\r');
+#endif
+			Put0('\n');
+		}
+		else
+		if(w != '\r')
+			Put0(w);
+	}
+	virtual   bool  IsOpen() const { return true; }
+#ifdef PLATFORM_POSIX
+	virtual   void   Flush()       { fflush(stdout); }
+#endif
+};
+
+Stream& CoutX();
 	
 }
 

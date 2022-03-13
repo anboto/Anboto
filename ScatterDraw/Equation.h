@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #ifndef _ScatterDraw_Equation_h_
 #define _ScatterDraw_Equation_h_
 
@@ -437,7 +437,7 @@ public:
 		String c = FormatCoeff(0, nDig);
 		String mean = FormatCoeff(1, nDig);
 		String std = FormatCoeff(2, nDig);
-		String ret = Format("%s/(%s*sqrt(2*PI))*e^(-1/2((x-%s)/%s))", c, std, mean, std);
+		String ret = Format("(%s/(%s*sqrt(2*PI)))*e^(-(1/2)*((x-%s)/%s)^2)", c, std, mean, std);
 		ret.Replace("+ -", "- ");
 		return ret;
 	}	

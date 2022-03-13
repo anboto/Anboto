@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #ifndef _GLCanvas_surface_h_
 #define _GLCanvas_surface_h_
 
@@ -106,9 +106,10 @@ public:
 		}
 		return *this;
 	}
-	double Distance(const Point3D &p)  const {return sqrt(sqr(x-p.x) + sqr(y-p.y) + sqr(z-p.z));}
-	double Manhattan(const Point3D &p) const {return abs(x-p.x) + abs(y-p.y) + abs(z-p.z);}
-	double Manhattan() 				   const {return abs(x) + abs(y) + abs(z);}
+	double Distance(const Point3D &p)  		const {return sqrt(sqr(x-p.x) + sqr(y-p.y) + sqr(z-p.z));}
+	inline double Length(const Point3D &p) 	const {return Distance(p);}
+	double Manhattan(const Point3D &p) 		const {return abs(x-p.x) + abs(y-p.y) + abs(z-p.z);}
+	double Manhattan() 				   		const {return abs(x) + abs(y) + abs(z);}
 	
 	double Angle(const Point3D &p) const {return acos(dot(p)/(GetLength()*p.GetLength()));}
 	
@@ -126,9 +127,18 @@ public:
 		y = -y;
 		z = -z;
 	}
+	void Jsonize(JsonIO &json) {
+		json
+			("x", x)
+			("y", y)
+			("z", z)
+		;
+	}
 };
 
 typedef Point3D Vector3D;
+
+double Length(const Point3D &p1, const Point3D &p2);
 
 class Segment3D : public Moveable<Segment3D> {
 public:
@@ -280,6 +290,25 @@ public:
 	static double GetSurface(const Point3D &p0, const Point3D &p1, const Point3D &p2);
 	
 	String ToString() const { return FormatInt(id[0]) + "," + FormatInt(id[1]) + "," + FormatInt(id[2]) + "," + FormatInt(id[3]); }
+
+	void Jsonize(JsonIO &json) {
+		Vector<int> ids;
+		if (json.IsStoring()) {
+			ids << id[0];
+			ids << id[1];
+			ids << id[2];
+			ids << id[3];	
+		}
+		json
+			("ids", ids)
+		;
+		if (json.IsLoading()) {
+			id[0] = ids[0];
+			id[1] = ids[1];
+			id[2] = ids[2];
+			id[3] = ids[3];
+		}
+	}
 };
 
 class Segment : public MoveableAndDeepCopyOption<Segment> {
@@ -322,7 +351,7 @@ public:
 	Surface(const Surface &surf, int);
 		
 	void Clear();
-	bool IsEmpty();
+	bool IsEmpty() const;
 	
 	Vector<Point3D> nodes;
 	Vector<Panel> panels;
@@ -341,7 +370,7 @@ public:
 	void GetLimits(); 
 	void GetPanelParams();
 	String CheckErrors() const;
-	void GetSurface();
+	double GetSurface();
 	double GetSurfaceXProjection(bool positive, bool negative) const;
 	double GetSurfaceYProjection(bool positive, bool negative) const;
 	double GetSurfaceZProjection(bool positive, bool negative) const;
@@ -354,8 +383,12 @@ public:
 	void GetInertiaFull(Eigen::MatrixXd &inertia, const Point3D &center, bool refine) const;
 	void GetHydrostaticForce(Eigen::VectorXd &f, const Point3D &c0, double rho, double g) const;
 	void GetHydrostaticForceNormalized(Eigen::VectorXd &f, const Point3D &c0) const;
+	void GetHydrostaticForceCB(Eigen::VectorXd &f, const Point3D &c0, const Point3D &cb, double rho, double g) const;
+	void GetHydrostaticForceCBNormalized(Eigen::VectorXd &f, const Point3D &c0, const Point3D &cb) const;
+	static void GetMassForce(Eigen::VectorXd &f, const Point3D &c0, const Point3D &cg, const double mass, const double g);
 	void GetHydrostaticStiffness(Eigen::MatrixXd &c, const Point3D &c0, const Point3D &cg, 
 				const Point3D &cb, double rho, double g, double mass);
+	double GetWaterPlaneArea() const;
 	static Vector<Point3D> GetClosedPolygons(Vector<Segment3D> &segs);
 	static Array<Pointf> Point3dto2D(const Vector<Point3D> &bound);
 	void AddWaterSurface(Surface &surf, const Surface &under, char c);
@@ -376,6 +409,9 @@ public:
 	void Translate(double dx, double dy, double dz);
 	void Rotate(double ax, double ay, double az, double _c_x, double _c_y, double _c_z);
 	void TransRot(double dx, double dy, double dz, double ax, double ay, double az, double _c_x, double _c_y, double _c_z);
+	
+	bool TranslateArchimede(double mass, double rho, double &dz, Surface &under);
+	bool Archimede(double mass, Point3D &cg, const Point3D &c0, double rho, double g, double &dz, double &droll, double &dpitch, Surface &under);
 	
 	bool healing{false};
 	int numTriangles, numBiQuads, numMonoQuads;
@@ -407,6 +443,16 @@ public:
 	static int RemoveDuplicatedPointsAndRenumber(Vector<Panel> &_panels, Vector<Point3D> &_nodes);
 	static void DetectTriBiP(Vector<Panel> &panels) {int dum;	DetectTriBiP(panels, dum, dum, dum);}
 	
+	//inline const Point3D &GetPos() const 	{return pos;}
+	//inline const Point3D &GetAngle() const	{return angle;}
+	
+	void Jsonize(JsonIO &json) {
+		json
+			("nodes", nodes)
+			("panels", panels)
+		;
+	}
+	
 protected:
 	struct PanelPoints {
 		Point3D data[4];
@@ -435,8 +481,26 @@ private:
 							double panelWidth, int &idpan1, int &idpan2);
 	
 	Vector<int> selPanels, selNodes;
+	
+	//Point3D pos, angle;
 };
 
+class SurfaceMass  {
+public:
+	double mass;
+	Point3D cg;
+	Surface surface;
+	
+	void Jsonize(JsonIO &json) {
+		if (json.IsLoading())
+			mass = Null;
+		json
+			("mass", mass)
+			("cg", cg)
+			("surface", surface)
+		;
+	}	
+};
 
 class SurfaceX : DeepCopyOption<SurfaceX> {
 public:
@@ -480,6 +544,9 @@ void SaveStlTxt(String fileName, const Surface &surf, double factor);
 void SaveStlBin(String fileName, const Surface &surf, double factor);
 
 void LoadTDynMsh(String fileName, Surface &surf);
+
+void LoadMesh(String fileName, Surface &surf, double &mass, Point3D &cg);
+void SaveMesh(String fileName, const Surface &surf, double mass, const Point3D &cg);
 	
 }
 

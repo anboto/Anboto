@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #include <Core/Core.h>
 
 #include <Eigen/Eigen.h>
@@ -7,6 +7,7 @@
 #include <Geom/Geom.h>
 #include <Functions4U/Functions4U.h>
 #include <numeric> 
+#include <STEM4U/Rootfinding.h>
 
 namespace Upp {
 using namespace Eigen;
@@ -31,6 +32,10 @@ Point3D Intersection(const Vector3D &lineVector, const Point3D &linePoint, const
 		return Null;
 	double factor = prod1/prod2;
 	return linePoint + lineVector*factor;	
+}
+
+double Length(const Point3D &p1, const Point3D &p2) {
+	return p1.Length(p2);
 }
 
 void Point3D::Translate(double dx, double dy, double dz) {
@@ -198,9 +203,14 @@ Surface::Surface(const Surface &orig, int) {
 	volumex = orig.volumex;
 	volumey = orig.volumey;
 	volumez = orig.volumez;
+	
+	//pos = clone(orig.pos);
+	//angle = clone(orig.angle);
+	
+	avgFacetSideLen = orig.avgFacetSideLen;
 }
 
-bool Surface::IsEmpty() {
+bool Surface::IsEmpty() const {
 	return nodes.IsEmpty();
 }
 
@@ -869,6 +879,8 @@ String Surface::CheckErrors() const {
 				return Format(t_("Node %d in panel %d [%d] does not exist"), panel.id[i]+1, ip+1, i+1);
 		}
 	}
+	if (IsEmpty())
+		return t_("Model is empty");
 	return Null;
 }
 		
@@ -879,15 +891,16 @@ void Surface::GetPanelParams() {
 	}	
 }
 
-void Surface::GetSurface() {
+double Surface::GetSurface() {
 	surface = 0;
 	if (panels.size() == 0) {
 		avgFacetSideLen = 0;
-		return;
+		return 0;
 	}
 	for (int ip = 0; ip < panels.size(); ++ip) 
 		surface += panels[ip].surface0 + panels[ip].surface1;
 	avgFacetSideLen = sqrt(surface/panels.size());
+	return surface;
 }
 
 double Surface::GetSurfaceXProjection(bool positive, bool negative) const {
@@ -1128,9 +1141,9 @@ void Surface::GetHydrostaticForceNormalized(VectorXd &f, const Point3D &c0) cons
 		F.y = p*panel.normal0.y;
 		F.z = p*panel.normal0.z;
 		
-		r.x = c0.x - panel.centroid0.x;
-		r.y = c0.y - panel.centroid0.y;
-		r.z = c0.z - panel.centroid0.z;
+		r.x = panel.centroid0.x - c0.x;
+		r.y = panel.centroid0.y - c0.y;
+		r.z = panel.centroid0.z - c0.z;
 		
 		M = r%F;
 		
@@ -1146,9 +1159,9 @@ void Surface::GetHydrostaticForceNormalized(VectorXd &f, const Point3D &c0) cons
 		F.y = p*panel.normal1.y;
 		F.z = p*panel.normal1.z;
 		
-		r.x = c0.x - panel.centroid1.x;
-		r.y = c0.x - panel.centroid1.y;
-		r.z = c0.x - panel.centroid1.z;
+		r.x = panel.centroid1.x - c0.x;
+		r.y = panel.centroid1.y - c0.y;
+		r.z = panel.centroid1.z - c0.z;
 		
 		M = r%F;
 		
@@ -1160,7 +1173,51 @@ void Surface::GetHydrostaticForceNormalized(VectorXd &f, const Point3D &c0) cons
 		f(5) += M.z;
 	}
 }		
-					
+
+void Surface::GetHydrostaticForceCB(VectorXd &f, const Point3D &c0, const Point3D &cb, double rho, double g) const {
+	GetHydrostaticForceCBNormalized(f, c0, cb);	
+	f.array() *= rho*g; 
+}
+
+void Surface::GetHydrostaticForceCBNormalized(VectorXd &f, const Point3D &c0, const Point3D &cb) const {
+	f.setConstant(6, 0);
+	
+	if (volume == 0)
+		return;
+	
+	f[2] = volume;
+	
+	Vector3D bmoment = (c0 - cb)*volume;
+	f[3] = bmoment.y;
+	f[4] = bmoment.x;					
+}	
+
+void Surface::GetMassForce(VectorXd &f, const Point3D &c0, const Point3D &cg, const double mass, const double g) {
+	f.setConstant(6, 0);
+	
+	if (mass == 0)
+		return;
+		
+	f[2] = mass*g;
+	
+	Vector3D mmoment = (cg - c0)*mass*g;
+	f[3] = mmoment.y;
+	f[4] = mmoment.x;					
+}													
+
+double Surface::GetWaterPlaneArea() const {
+	double ret = 0;
+	
+	for (int ip = 0; ip < panels.size(); ++ip) {	
+		const Panel &panel = panels[ip];
+
+		double momentz0 = panel.normal0.z*panel.surface0;	// n3·dS
+		double momentz1 = panel.normal1.z*panel.surface1;
+		ret -= (momentz0 + momentz1);
+	}
+	return ret;
+}
+
 void Surface::GetHydrostaticStiffness(MatrixXd &c, const Point3D &c0, const Point3D &cg, 
 				const Point3D &cb, double rho, double g, double mass) {
 	c.setConstant(6, 6, 0);
@@ -1576,19 +1633,24 @@ void Surface::Join(const Surface &orig) {
 	Surface::RemoveDuplicatedPanels(panels);
 	Surface::RemoveDuplicatedPointsAndRenumber(panels, nodes);
 	Surface::RemoveDuplicatedPanels(panels);
+	
+	//pos.Set(0,0,0);
+	//angle.Set(0,0,0);
 }
 	
-void Surface::Translate(double x, double y, double z) {
+void Surface::Translate(double dx, double dy, double dz) {
 	for (int i = 0; i < nodes.GetCount(); ++i) 
-		nodes[i].Translate(x, y, z); 
+		nodes[i].Translate(dx, dy, dz); 
 	
 	for (int i = 0; i < skewed.GetCount(); ++i) 
-		skewed[i].Translate(x, y, z);
+		skewed[i].Translate(dx, dy, dz);
 	
 	for (int i = 0; i < segTo1panel.GetCount(); ++i) 
-		segTo1panel[i].Translate(x, y, z);
+		segTo1panel[i].Translate(dx, dy, dz);
 	for (int i = 0; i < segTo3panel.GetCount(); ++i) 
-		segTo3panel[i].Translate(x, y, z);
+		segTo3panel[i].Translate(dx, dy, dz);
+	
+	//pos += Point3D(dx, dy, dz);
 }
 
 void Surface::Rotate(double a_x, double a_y, double a_z, double c_x, double c_y, double c_z) {
@@ -1605,6 +1667,8 @@ void Surface::Rotate(double a_x, double a_y, double a_z, double c_x, double c_y,
 		segTo1panel[i].TransRot(quat);
 	for (int i = 0; i < segTo3panel.GetCount(); ++i) 
 		segTo3panel[i].TransRot(quat);
+	
+	//angle += Point3D(a_x, a_y, a_z);
 }
 
 void Surface::TransRot(double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz) {
@@ -1621,9 +1685,92 @@ void Surface::TransRot(double dx, double dy, double dz, double ax, double ay, do
 		segTo1panel[i].TransRot(quat);
 	for (int i = 0; i < segTo3panel.GetCount(); ++i) 
 		segTo3panel[i].TransRot(quat);
-}
 	
+	//pos += Point3D(dx, dy, dz);
+	//angle += Point3D(ax, ay, az);
+}
 
+
+bool Surface::TranslateArchimede(double mass, double rho, double &dz, Surface &under) {
+	if (IsEmpty())
+		return false;
+	Surface base;
+
+	int nIter = 0;	
+
+	VectorXd x(1);
+	x[0] = dz;
+	if (!SolveNonLinearEquations(x, [&](const VectorXd &x, VectorXd &residual)->int {
+		nIter++;
+		base = clone(*this);
+		double dz = x[0];
+		base.Translate(0, 0, dz);
+		under.CutZ(base, -1);
+		under.GetPanelParams();
+		under.GetVolume();
+		residual[0] = under.volume*rho - mass;		// ∑ Fheave = 0
+		if (abs(residual[0]) < mass/1e10)
+			return -1;
+		return 0;
+	}))
+		return false;
+	
+	dz = x[0];
+			
+	Translate(0, 0, dz);
+	return true;
+}
+
+bool Surface::Archimede(double mass, Point3D &cg, const Point3D &c0, double rho, double g, double &dz, double &droll, double &dpitch, Surface &under) {
+	int maxIter = 50;
+	Surface base;
+	Point3D basecg;
+	
+	int nIter = 0;	
+	
+	VectorXd x(2);
+	x[0] = droll;
+	x[1] = dpitch;
+	if (!SolveNonLinearEquations(x, [&](const VectorXd &x, VectorXd &residual)->int {
+		nIter++;
+		
+		double droll = x[0], dpitch = x[1];
+		
+		base = clone(*this);
+		basecg = clone(cg);
+
+		base.Rotate(droll, dpitch, 0, c0.x, c0.y, c0.z);
+		basecg.Rotate(droll, dpitch, 0, c0.x, c0.y, c0.z);
+		
+		if (!base.TranslateArchimede(mass, rho, dz, under))
+			return false;
+		Point3D cb = under.GetCenterOfBuoyancy();
+		basecg.Translate(0, 0, dz);
+		
+		if (dz < 0.01 && cb.Distance(basecg) < 0.01)
+			return -1;
+	
+		Eigen::VectorXd fcb, fcg;
+		GetMassForce(fcg, c0, basecg, mass, g);
+		double rho = mass/under.volume;
+		under.GetHydrostaticForceCB(fcb, c0, cb, rho, g);
+	
+		residual[0] = fcb[3] + fcg[3];		// ∑ Froll = 0
+		residual[1] = fcb[4] + fcg[4];		// ∑ Fpitch = 0
+		
+		if (abs(residual[0]) < 0.01 && abs(residual[1]) < 0.01)
+			return -1;
+		return 0;
+		}))
+		return false;
+
+	droll = x[0];
+	dpitch = x[1];
+	
+	TransRot(0, 0, dz, droll, dpitch, 0, c0.x, c0.y, c0.z);
+	cg.TransRot(0, 0, dz, droll, dpitch, 0, c0.x, c0.y, c0.z);
+	return true;
+}
 
 void Surface::DeployXSymmetry() {
 	int nnodes = nodes.GetCount();

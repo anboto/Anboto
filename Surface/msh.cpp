@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #include <Core/Core.h>
 
 #include <Eigen/Eigen.h>
@@ -79,6 +79,28 @@ void LoadTDynMsh(String fileName, Surface &surf) {
 			p.z /= 1000;
 		}
 	}
+}
+
+void LoadMesh(String fileName, Surface &surf, double &mass, Point3D &cg) {
+	SurfaceMass sm;
+	
+	if (!LoadFromJsonFile(sm, fileName))
+		throw Exc(t_("Parsing error"));
+	
+	surf = pick(sm.surface);
+	mass = sm.mass;
+	cg = pick(sm.cg);
+}
+
+void SaveMesh(String fileName, const Surface &surf, double mass, const Point3D &cg) {
+	SurfaceMass sm;
+	
+	sm.surface = clone(surf);
+	sm.mass = mass;
+	sm.cg = clone(cg);
+	
+	if (!StoreAsJsonFile(sm, fileName, true))
+		throw Exc(t_("Parsing error"));
 }
 
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #include "trackball.h"
 #include "trkball.h"
 
@@ -11,19 +11,35 @@ TrackBall::TrackBall() {
 	owner = NULL;
 	tracking = false;
 	zoomAngle = 10;
-	ViewXYZ(true, true, true);
+	sign = true;
+	ViewXYZ(true, true, true, sign);
 }
 
-void TrackBall::ViewXYZ(bool x, bool y, bool z) {
+void TrackBall::ViewXYZ(bool x, bool y, bool z, bool sign) {
 	curquat[0] = curquat[1] = curquat[2] = curquat[3] = 0;
 	if (x && y && z) {
-		curquat[0] = 0.15;	curquat[1] = 0.35;	curquat[2] = 0.85;	curquat[3] = 0.35;
-	} else if (y && z) 
-		curquat[0] = curquat[1] = curquat[2] = curquat[3] = 0.5;
-	else if (x && z) 
-		curquat[1] = curquat[2] = sqrt(0.5);
-	else if (x && y)
-		curquat[2] = curquat[3] = sqrt(0.5);
+		if (sign) {
+			curquat[0] = 0.15;	curquat[1] = 0.35;	curquat[2] = 0.85;	curquat[3] = 0.35;
+		} else {
+			curquat[0] = 0.15;	curquat[1] = 0.35;	curquat[2] = 0.85;	curquat[3] = 0.35;
+		}
+	} else if (y && z) {
+		if (sign)
+			curquat[0] = curquat[1] = curquat[2] = curquat[3] = 0.5;
+		else {
+			curquat[0] = 0.5;	curquat[1] = -0.5;	curquat[2] = -0.5;	curquat[3] = 0.5;
+		}
+	} else if (x && z) {
+		if (sign)
+			curquat[0] = curquat[3] = sqrt(0.5);
+		else
+			curquat[1] = curquat[2] = sqrt(0.5);
+	} else if (x && y) {
+		if (sign)
+			curquat[2] = curquat[3] = sqrt(0.5);
+		else
+			curquat[0] = curquat[1] = sqrt(0.5);
+	}
 }
 
 void TrackBall::Init(Ctrl *ow, int _buttonRot) {

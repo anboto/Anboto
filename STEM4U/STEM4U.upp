@@ -16,6 +16,7 @@ file
 	Polynomial.h,
 	Sundials.cpp,
 	Sundials.h,
+	Rootfinding.h,
 	LocalFitting.h,
 	Butterworth.h,
 	CrossCorrelation.h,

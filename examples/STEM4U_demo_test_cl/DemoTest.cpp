@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #include <Core/Core.h>
 #include <Functions4U/Functions4U.h>
 #include <Eigen/Eigen.h>
@@ -14,8 +14,47 @@
 #include <STEM4U/Utility.h>
 #include <STEM4U/CrossCorrelation.h>
 #include <ScatterDraw/DataSource.h>
+#include <STEM4U/Rootfinding.h>
 
 using namespace Upp;
+
+
+void TestRootfinding() {
+	UppLog() << "\n\nRoot finding functions";
+	
+	UppLog() << "\n'Root polishing':";
+	{
+		int nf = 0, ndf = 0;
+		double y = NewtonRaphson<double>([&](double x)->double {nf++; return sin(x);}, [&](double x)->double {ndf++; return cos(x);}, 3*M_PI/4, 0.001, 50);
+		UppLog() << Format("\nNewtonRaphson:      %2d f(x) %2d df(x) y = %f", nf, ndf, y); 
+		VERIFY(abs(y - M_PI) < 0.001);
+	}
+	{
+		int nf = 0;
+		double y = QuasiNewtonRaphson<double>([&](double x)->double {nf++; return sin(x);}, 3*M_PI/4, 0.01, 0.001, 50);
+		UppLog() << Format("\nQuasiNewtonRaphson: %2d f(x)          y = %f", nf, y);
+		VERIFY(abs(y - M_PI) < 0.001);
+	}
+	
+	UppLog() << "\n'Root bracketing':";
+	
+	double from, to;
+	bool ok = RootBracketing<double>([&](double x)->double {return sin(x);}, 3*M_PI/4, 0, 2*M_PI, M_PI/4, from, to, false);
+	{
+		int nf = 0;
+		double y = Bisection<double>([&](double x)->double {nf++; return sin(x);}, from, to, 0.001, 50);
+		UppLog() << Format("\nBisection:          %2d f(x)          y = %f", nf, y);
+		VERIFY(abs(y - M_PI) < 0.001);
+	}
+	{
+		int nf = 0;
+		double y = Brent<double>([&](double x)->double {nf++; return sin(x);}, from, to, 0.001, 50);
+		UppLog() << Format("\nBrent:              %2d f(x)          y = %f", nf, y);
+		VERIFY(abs(y - M_PI) < 0.001);
+	}
+		
+	UppLog() << "\n";
+}
 
 void TestIntInf() {
 	UppLog() << "\n\nintInf demo. A signed integer type with arbitrary-precision including the usual arithmetic.";
@@ -388,11 +427,11 @@ void TestSeaWaves() {
 		UppLog() << "\n" << Format("Sea data for Hs: %.2f m, Tp; %.2f s, at x: %.2f m, y: %.2f m, z: %.2f m, t: %.3f s", Hs, Tp, x, y, z, t);
 		UppLog() << "\n" << Format("Free surface z: %f m = %f m", waves.zSurf, waves.ZSurf(x, y, t));
 		VERIFY(abs(waves.zSurf - waves.ZSurf(x, y, t)) < 0.000001);
-		VERIFY(abs(waves.zSurf - 0.13560241) < 0.000001);
+		VERIFY(abs(waves.zSurf + 0.0758260574) < 0.000001);
 		UppLog() << "\n" << Format("vx: %f m/s, vy: %f m/s, vz: %f m/s", waves.vx, waves.vy, waves.vz);
-		VERIFY(abs(waves.vz + 0.102412178) < 0.000001);
+		VERIFY(abs(waves.vz + 0.168306635) < 0.000001);
 		UppLog() << "\n" << Format("ax: %f m/s2, ay: %f m/s2, az: %f m/s2", waves.ax, waves.ay, waves.az);
-		VERIFY(abs(waves.az - 0.000565667) < 0.000001);
+		VERIFY(abs(waves.az - 0.00269468) < 0.000001);
 		UppLog() << "\n" << Format("p: %.3f Pa = %.3f Pa", waves.p, waves.Pressure(x, y, z, t));
 		VERIFY(abs(waves.p - waves.Pressure(x, y, z, t)) < 0.000001);
 	}
@@ -450,18 +489,29 @@ void TestXCorr() {
 }
 
 void TestOthers() {
-	double x, y, dy, d2y;
-	
-	x = 3;
-	LinearInterpolate(x, 2., 4., 1., 5., y, dy);
-	VERIFY(EqualDecimals(y, 3., 10));
-	VERIFY(EqualDecimals(dy, 2., 10));
-	
-	x = 4;
-	QuadraticInterpolate(x, 2., 4., 5., 1., 5., 3., y, dy, d2y);
-	VERIFY(EqualDecimals(y, 5., 10));
-	VERIFY(EqualDecimals(dy,  -0.666666666666, 10));
-	VERIFY(EqualDecimals(d2y, -2.666666666666, 10));	
+	{
+		double x, y, dy, d2y;
+		
+		x = 3;
+		LinearInterpolate(x, 2., 4., 1., 5., y, dy);
+		VERIFY(EqualDecimals(y, 3., 10));
+		VERIFY(EqualDecimals(dy, 2., 10));
+		
+		x = 4;
+		QuadraticInterpolate(x, 2., 4., 5., 1., 5., 3., y, dy, d2y);
+		VERIFY(EqualDecimals(y, 5., 10));
+		VERIFY(EqualDecimals(dy,  -0.666666666666, 10));
+		VERIFY(EqualDecimals(d2y, -2.666666666666, 10));
+	}
+	{
+		Vector<double> x = {0, 2, 4, 6};
+		Vector<double> y = {0, 8, 16, 32};
+		
+		double a, b;
+		LinearRegression(x, y, a, b);
+		VERIFY(EqualDecimals(a, 5.2, 10));	
+		VERIFY(EqualDecimals(b, -1.6, 10));
+	}
 }
 
 
@@ -480,6 +530,7 @@ CONSOLE_APP_MAIN
 	try {
 		bool test = CommandLine().size() > 0 && CommandLine()[0] == "-test";
 		
+		TestRootfinding();
 		TestOthers();
 		TestCombinations();
 		TestXCorr();

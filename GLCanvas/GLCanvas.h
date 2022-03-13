@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #ifndef _GLCanvas_GLCanvas_h_
 #define _GLCanvas_GLCanvas_h_
 
@@ -34,6 +34,9 @@ private:
 	Color backgroundColor = White();
 	float lineThickness = 1;
 	int jpgQuality = 90;
+	
+	bool lastx = false, lasty = false, lastz = false;
+	bool sign = false;
 		
 protected:
 	virtual void Layout();

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #include <Core/Core.h>
 
 #include <plugin/jpg/jpg.h>
@@ -237,7 +237,12 @@ void GLCanvas::SetZoomDistance(double distance) {
 }
 
 void GLCanvas::View(bool x, bool y, bool z) {
-	trackBall.ViewXYZ(x, y, z);	
+	if (x == lastx && y == lasty && z == lastz)
+		sign = !sign;
+	else
+		sign = true;
+	lastx = x; lasty = y; lastz = z;
+	trackBall.ViewXYZ(x, y, z, sign);	
 	Refresh();
 }
 

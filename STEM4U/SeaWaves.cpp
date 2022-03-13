@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #include <Core/Core.h>
 #include <Functions4U/Functions4U.h>
 #include <Eigen/Eigen.h>
@@ -28,7 +28,8 @@ double SeaWaves::WaveNumber(double T, double h, bool exact) {
 	VectorXd x(1);
 	x[0] = k;
 	if (SolveNonLinearEquations(x, [&](const VectorXd &x, VectorXd &residual)->int {
-		residual[0] = w*w - g*k*tanh(x[0]*h);
+		k = x[0];
+		residual[0] = w*w - g*k*tanh(k*h);
 		return 0;
 	}))
 		return x[0];

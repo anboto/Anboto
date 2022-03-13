@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #ifndef _STEM4U_utility_h_
 #define _STEM4U_utility_h_
 
@@ -176,6 +176,35 @@ typename Range::value_type SawTeethRatio(const Range &d) {
 	}
 	return Scalar(numcrosses)/(d.size()-1);
 }
+
+
+// y = ax + b
+template <class Range>
+void LinearFitting(const Range &x, const Range &y, typename Range::value_type &a, typename Range::value_type &b, const int clen = Null) {
+	int len = IsNull(clen) ? x.size() : clen;
+	ASSERT(len <= x.size() && len <= y.size());
+	using Scalar = typename Range::value_type;
+
+	a = 0;	
+	Scalar sumx = 0, sumy = 0;	
+	for (int i = 0; i < len; i++) { 
+		sumx += x[i];
+		sumy += y[i];
+	}
+	Scalar sum = len;
+	Scalar sxoss = sumx/sum;
+	Scalar sumtotal = 0;
+	for (int i = 0; i < len; i++) {
+		Scalar ti = x[i] - sxoss;
+		sumtotal += ti*ti;
+		a += ti*y[i];
+	}
+	a /= sumtotal; 
+	b = (sumy - sumx*a)/sum;
+}
+
+#define LinearRegression	LinearFitting
+
 
 }
 

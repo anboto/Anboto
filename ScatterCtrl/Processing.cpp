@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2021, the Anboto author and contributors
+// Copyright 2021 - 2022, the Anboto author and contributors
 #include "ScatterCtrl.h"
 
 namespace Upp {
@@ -234,6 +234,8 @@ ProcessingTab::ProcessingTab()
 	avgFirst = linearFirst = cuadraticFirst = cubicFirst = sinusFirst = sinusTendFirst = splineFirst = true;
 
 	exclamationOpened = false;
+	
+	newWidthMovAvg = tabFitRight.width;
 	newWidthMax = newWidthMin = newWidthMovAvg-1;
 	mpm = Null;
 }
