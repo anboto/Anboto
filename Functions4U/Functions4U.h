@@ -236,6 +236,8 @@ int NumAdvicedDigits(double d, double range);
 String FormatDoubleAutosize(double d);	
 String FormatDoubleAutosize(double d, double range);
 String FormatDoubleSize(double d, int fieldWidth, bool fillSpaces = false);
+#define	FDAS	FormatDoubleAutosize
+#define	FDS		FormatDoubleSize
 
 String RemoveAccents(String str);
 String RemoveAccent(wchar c);
@@ -1348,6 +1350,7 @@ private:
 			Put0('\r');
 #endif
 			Put0('\n');
+			Put0('>');
 		}
 		else
 		if(w != '\r')

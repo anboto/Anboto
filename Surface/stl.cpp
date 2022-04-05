@@ -73,7 +73,7 @@ static void LoadStlTxt(String fileName, Surface &surf, bool &isText) {
 }
 			
 static void STLFacetTxtOut(FileOut &out, const Point3D &p0, const Point3D &p1, const Point3D &p2, 
-						const Point3D &p3, const Vector3D &normal, double factor) {
+						const Point3D &p3, const Direction3D &normal, double factor) {
 	out << "facet normal " << normal.x << " " << normal.y << " " << normal.z << "\n";
 	out << "   outer loop" << "\n";
 	out << "      vertex " << p0.x*factor << " " << p0.y*factor << " " << p0.z*factor << "\n";
@@ -135,7 +135,7 @@ static void LoadStlBin(String fileName, Surface &surf, String &header) {
 	/*int32 numFacets =*/ in.ReadB<int32>();
 	
 	while (!in.IsEof()) {
-    	Vector3D normal;
+    	Direction3D normal;
     	normal.x = double(in.ReadB<float>());
     	normal.y = double(in.ReadB<float>());
     	normal.z = double(in.ReadB<float>());

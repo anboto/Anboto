@@ -46,22 +46,24 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
 	double x, y, z;
-
-	Point3D() {}
-	Point3D(const Nuller&) {SetNull();}
-	Point3D(const Point3D &p) : x(p.x), y(p.y), z(p.z) {}
-	Point3D(const Eigen::Vector3d &p) : x(p[0]), y(p[1]), z(p[2]) {}
-	Point3D(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {}
+	
+	Point3D() 									{}
+	Point3D(const Nuller&) 						{SetNull();}
+	Point3D(const Point3D &p) 					{Set(p);}
+	Point3D(const Eigen::Vector3d &p) 			{x = p(0);	y = p(1);	z = p(2);}
+	Point3D(double _x, double _y, double _z) 	{x = _x; y = _y; z = _z;}
 	
 	void SetNull() 				{x = Null; y = 0;}
 	bool IsNullInstance() const	{return IsNull(x);}
+	
+	void Reset() 			{x = y = z = 0;}
 	
 	Point3D(bool positive)	{x = Null; y = positive ? 1 : -1;}
 	bool IsPosInf()			{return IsNull(x) && y == 1;}
 	bool IsNegInf()			{return IsNull(x) && y == -1;}
 	
-	void Set(const Point3D &p) 					{x = p.x; y = p.y; z = p.z;}
-	void Set(double _x, double _y, double _z) 	{x = _x;  y = _y;  z = _z;}
+	void Set(const Point3D &p) 					{x = p.x;	y = p.y;	z = p.z;}
+	void Set(double _x, double _y, double _z) 	{x = _x;  	y = _y;  	z = _z;}
 	
 	String ToString() const { return FormatDouble(x) + "," + FormatDouble(y) + "," + FormatDouble(z); }
 	
@@ -83,7 +85,7 @@ public:
 	// Dot product or scalar product
 	double dot(const Point3D& a) const {return x*a.x + y*a.y + z*a.z;}
 	
-	// Cross product or vector product (or wedge product ∧ in 3D) 
+	// Cross product or vector product X (or wedge product ∧ in 3D) 
 	inline friend Point3D operator%(const Point3D& a, const Point3D& b) {return Point3D(a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x);}
 	
 	inline friend Point3D operator+(const Point3D& a, const Point3D& b) {return Point3D(a.x+b.x, a.y+b.y, a.z+b.z);}
@@ -93,12 +95,12 @@ public:
 	inline void operator+=(const Point3D& a) {x += a.x; y += a.y; z += a.z;}
 	inline void operator-=(const Point3D& a) {x -= a.x; y -= a.y; z -= a.z;}
 
-	double GetLength() const {return sqrt(x*x + y*y + z*z);}
+	double GetLength() const {return ::sqrt(x*x + y*y + z*z);}
 	Point3D &Normalize() {
 		double length = GetLength();
 		
 		if (length < 1e-10) 
-			x = y = z = 0;
+			Reset();
 		else {
 		    x = x/length;
 		    y = y/length;
@@ -106,7 +108,7 @@ public:
 		}
 		return *this;
 	}
-	double Distance(const Point3D &p)  		const {return sqrt(sqr(x-p.x) + sqr(y-p.y) + sqr(z-p.z));}
+	double Distance(const Point3D &p)  		const {return ::sqrt(sqr(x-p.x) + sqr(y-p.y) + sqr(z-p.z));}
 	inline double Length(const Point3D &p) 	const {return Distance(p);}
 	double Manhattan(const Point3D &p) 		const {return abs(x-p.x) + abs(y-p.y) + abs(z-p.z);}
 	double Manhattan() 				   		const {return abs(x) + abs(y) + abs(z);}
@@ -123,9 +125,9 @@ public:
 		z = 2*p0.z - z;
 	}
 	void Mirror() {
-		x = -x;
-		y = -y;
-		z = -z;
+		SimX();
+		SimY();
+		SimZ();
 	}
 	void Jsonize(JsonIO &json) {
 		json
@@ -136,7 +138,55 @@ public:
 	}
 };
 
-typedef Point3D Vector3D;
+typedef Point3D Direction3D;
+
+
+class Force6 : public Moveable<Force6> {
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	
+	Force6() {}
+	Force6(const Force6 &f)				{Set(f);}
+	Force6(const Eigen::VectorXd &v)	{Set(v);}
+	
+	void Set(const Force6 &f)	{x = f.x;	y = f.y;	z = f.z;	rx = f.rx;	ry = f.ry;	rz = f.rz;}
+	void Set(const Eigen::VectorXd &v) {
+		ASSERT(v.size() == 6);
+		x = v[0];	y = v[1];	z = v[2];	rx = v[3];	ry = v[4];	rz = v[5];
+	}
+		
+	void Reset() {x = y = z = rx = ry = rz = 0;}
+	
+	void Add(const Direction3D &force, const Point3D &point, const Point3D &c0);
+	void operator*=(double v) 	{x *= v;	y *= v;		z *= v;		rx *= v;	ry *= v;	rz *= v;}
+	
+	double& operator[](int id) {
+		ASSERT(id >= 0 && id < 6);
+		switch (id) {
+		case 0:	return x;
+		case 1:	return y;
+		case 2:	return z;
+		case 3:	return rx;
+		case 4:	return ry;
+		default:return rz;
+		}
+	}
+	Eigen::VectorXd ToVector() const {
+		Eigen::VectorXd v(6);
+		ToC(v.data());
+		return v;
+	}
+	void ToC(double *v) const {
+		v[0] = x;	v[1] = y;	v[2] = z;	v[3] = rx;	v[4] = ry;	v[5] = rz;
+	}
+
+	double x, y, z, rx, ry, rz;
+};
+
+void Print(const Force6 &f);
+Eigen::VectorXd C6ToVector(const double *c);
+void Vector6ToC(const Eigen::VectorXd &v, double *c);
+
 
 double Length(const Point3D &p1, const Point3D &p2);
 
@@ -149,7 +199,7 @@ public:
 	Segment3D() {}
 	Segment3D(const Nuller&) {SetNull();}
 	Segment3D(const Point3D &_from, const Point3D &_to) : from(_from), to(_to) {}
-	Segment3D(const Point3D &_from, const Vector3D &normal, double length) : from(_from) {
+	Segment3D(const Point3D &_from, const Direction3D &normal, double length) : from(_from) {
 		to = Point3D(from.x + length*normal.x, from.y + length*normal.y, from.z + length*normal.z);
 	}
 	void SetNull() 				{from = Null;}
@@ -159,7 +209,7 @@ public:
 		from.Set(_from);
 		to.Set(_to);
 	}
-	void Set(const Point3D &_from, const Vector3D &normal, double length) {
+	void Set(const Point3D &_from, const Direction3D &normal, double length) {
 		from.Set(_from);
 		to.Set(from.x + length*normal.x, from.y + length*normal.y, from.z + length*normal.z);
 	}
@@ -185,13 +235,13 @@ public:
 		to.Mirror(p0);
 	}
 	
-	Vector3D Vector() {return Vector3D(to - from);}
+	Direction3D Direction() {return Direction3D(to - from);}
 	
 	Point3D IntersectionPlaneX(double x);
 	Point3D IntersectionPlaneY(double y);
 	Point3D IntersectionPlaneZ(double z);
 	
-	Point3D Intersection(const Point3D &planePoint, const Vector3D &planeNormal);
+	Point3D Intersection(const Point3D &planePoint, const Direction3D &planeNormal);
 	
 	bool PointIn(const Point3D &p) const;
 	bool SegmentIn(const Segment3D &in, double in_len) const;
@@ -213,10 +263,12 @@ void DeleteDuplicatedSegments(Vector<Segment3D> &segs);
 	
 Point3D GetCentroid(const Point3D &a, const Point3D &b);
 Point3D GetCentroid(const Point3D &a, const Point3D &b, const Point3D &c);
-Vector3D GetNormal(const Point3D &a, const Point3D &b, const Point3D &c);
+Direction3D GetNormal(const Point3D &a, const Point3D &b, const Point3D &c);
 
-Point3D Intersection(const Vector3D &lineVector, const Point3D &linePoint, const Vector3D &planeNormal, const Point3D &planePoint);
+Point3D Intersection(const Direction3D &lineVector, const Point3D &linePoint, const Direction3D &planeNormal, const Point3D &planePoint);
 
+void TranslateForce(const Point3D &from, const Eigen::VectorXd &ffrom, Point3D &to, Eigen::VectorXd &fto);
+	
 bool PointInSegment(const Point3D &p, const Segment3D &seg);
 bool SegmentInSegment(const Segment3D &in, double in_len, const Segment3D &seg);
 bool SegmentInSegment(const Segment3D &in, const Segment3D &seg);
@@ -367,25 +419,26 @@ public:
 	String Heal(bool basic, Function <bool(String, int pos)> Status = Null);
 	void Orient();
 	void Image(int axis);
-	void GetLimits(); 
+	const VolumeEnvelope &GetEnvelope(); 
 	void GetPanelParams();
 	String CheckErrors() const;
 	double GetSurface();
 	double GetSurfaceXProjection(bool positive, bool negative) const;
 	double GetSurfaceYProjection(bool positive, bool negative) const;
 	double GetSurfaceZProjection(bool positive, bool negative) const;
+	Pointf GetSurfaceZProjectionCG() const;
 	void GetSegments();
 	double GetAvgLenSegment()	{return avgLenSegment;}
 	void GetVolume();
 	int VolumeMatch(double ratioWarning, double ratioError) const;
 	Point3D GetCenterOfBuoyancy() const;
-	void GetInertia(Eigen::Matrix3d &inertia, const Point3D &center, bool refine = false) const;
-	void GetInertiaFull(Eigen::MatrixXd &inertia, const Point3D &center, bool refine) const;
-	void GetHydrostaticForce(Eigen::VectorXd &f, const Point3D &c0, double rho, double g) const;
-	void GetHydrostaticForceNormalized(Eigen::VectorXd &f, const Point3D &c0) const;
-	void GetHydrostaticForceCB(Eigen::VectorXd &f, const Point3D &c0, const Point3D &cb, double rho, double g) const;
-	void GetHydrostaticForceCBNormalized(Eigen::VectorXd &f, const Point3D &c0, const Point3D &cb) const;
-	static void GetMassForce(Eigen::VectorXd &f, const Point3D &c0, const Point3D &cg, const double mass, const double g);
+	void GetInertia33(Eigen::Matrix3d &inertia, const Point3D &center, bool refine = false) const;
+	void GetInertia66(Eigen::MatrixXd &inertia, const Point3D &center, bool refine) const;
+	void GetHydrostaticForce(Force6 &f, const Point3D &c0, double rho, double g) const;
+	void GetHydrostaticForceNormalized(Force6 &f, const Point3D &c0) const;
+	void GetHydrostaticForceCB(Force6 &f, const Point3D &c0, const Point3D &cb, double rho, double g) const;
+	void GetHydrostaticForceCBNormalized(Force6 &f, const Point3D &c0, const Point3D &cb) const;
+	static void GetMassForce(Force6 &f, const Point3D &c0, const Point3D &cg, const double mass, const double g);
 	void GetHydrostaticStiffness(Eigen::MatrixXd &c, const Point3D &c0, const Point3D &cg, 
 				const Point3D &cb, double rho, double g, double mass);
 	double GetWaterPlaneArea() const;

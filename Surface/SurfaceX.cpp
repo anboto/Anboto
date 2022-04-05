@@ -76,19 +76,22 @@ double SurfaceX::GetVolume(const SurfaceX &surf, bool (*Fun)(double,double,doubl
 }
 
 void SurfaceX::GetTransformFast(Eigen::MatrixXd &mat, double dx, double dy, double dz, double ax, double ay, double az) {
-    double sq_o1o2o3 = sqr(ax) + sqr(ay) + sqr(az);
+    double ax2 = sqr(ax);
+    double ay2 = sqr(ay);
+    double az2 = sqr(az);
+    double sq_o1o2o3 = ax2 + ay2 + az2;
     double sqrt_o1o2o3 = sqrt(1 + sq_o1o2o3);
 
 	Eigen::MatrixXd rotMat = Eigen::MatrixXd::Zero(4, 4);
-    rotMat(0,0) = sqr(ax)*sqrt_o1o2o3 + sqr(ay) + sqr(az);
+    rotMat(0,0) = ax2*sqrt_o1o2o3 + ay2 + az2;
     rotMat(1,0) = az*sq_o1o2o3 + ax*ay*(sqrt_o1o2o3-1);
     rotMat(2,0) = -ay*sq_o1o2o3 + ax*az*(sqrt_o1o2o3-1);
     rotMat(0,1) = -az*sq_o1o2o3 + ax*ay*(sqrt_o1o2o3-1);
-    rotMat(1,1) = sqr(ax) + sqr(ay)*sqrt_o1o2o3 + sqr(az);
+    rotMat(1,1) = ax2 + ay2*sqrt_o1o2o3 + az2;
     rotMat(2,1) = ax*sq_o1o2o3 + ay*az*(sqrt_o1o2o3-1);
     rotMat(0,2) = ay*sq_o1o2o3 + ax*az*(sqrt_o1o2o3-1);
     rotMat(1,2) = -ax*sq_o1o2o3 + ay*az*(sqrt_o1o2o3-1);
-    rotMat(2,2) = sqr(ax) + sqr(ay) + sqr(az)*sqrt_o1o2o3;
+    rotMat(2,2) = ax2 + ay2 + az2*sqrt_o1o2o3;
     if (sq_o1o2o3 != 0)
         rotMat *= (1/(sq_o1o2o3*sqrt_o1o2o3));
     rotMat(3,3) = 1;

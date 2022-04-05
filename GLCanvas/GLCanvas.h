@@ -84,7 +84,7 @@ public:
 	
 	Image GetImage();
 	void SaveToClipboard();
-	void SaveToFile();
+	void SaveToFile(String fileName);
 	
 	Function <void()> WhenPaint;	
 	

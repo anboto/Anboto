@@ -20,12 +20,12 @@ Point3D GetCentroid(const Point3D &a, const Point3D &b, const Point3D &c) {
 	return Point3D(avg(a.x, b.x,c.x), avg(a.y, b.y, c.y), avg(a.z, b.z, c.z));	
 }
 
-Vector3D GetNormal(const Point3D &a, const Point3D &b, const Point3D &c) {
-	return Vector3D((a - b) % (b - c)).Normalize();
+Direction3D GetNormal(const Point3D &a, const Point3D &b, const Point3D &c) {
+	return Direction3D((a - b) % (b - c)).Normalize();
 }
 
-Point3D Intersection(const Vector3D &lineVector, const Point3D &linePoint, const Point3D &planePoint, const Vector3D &planeNormal) {
-	Vector3D diff = planePoint - linePoint;
+Point3D Intersection(const Direction3D &lineVector, const Point3D &linePoint, const Point3D &planePoint, const Direction3D &planeNormal) {
+	Direction3D diff = planePoint - linePoint;
 	double prod1 = diff.dot(planeNormal);
 	double prod2 = lineVector.dot(planeNormal);
 	if (abs(prod2) < EPS_XYZ)
@@ -36,6 +36,19 @@ Point3D Intersection(const Vector3D &lineVector, const Point3D &linePoint, const
 
 double Length(const Point3D &p1, const Point3D &p2) {
 	return p1.Length(p2);
+}
+
+void TranslateForce(const Point3D &from, const VectorXd &ffrom, Point3D &to, VectorXd &fto) {
+	Direction3D r(from.x - to.x, from.y - to.y, from.z - to.z);
+	Direction3D F(ffrom[0], ffrom[1], ffrom[2]);
+	Direction3D M = r%F;
+	
+	M = r%F;
+	
+	fto = clone(ffrom);
+	fto(3) += M.x;
+	fto(4) += M.y;
+	fto(5) += M.z;
 }
 
 void Point3D::Translate(double dx, double dy, double dz) {
@@ -114,9 +127,9 @@ Point3D Segment3D::IntersectionPlaneZ(double z) {
 	return Point3D(from.x + (to.x - from.x)*factor, from.y + (to.y - from.y)*factor, z);
 }
 
-Point3D Segment3D::Intersection(const Point3D &planePoint, const Vector3D &planeNormal) {
-	Vector3D vector = Vector();
-	Vector3D diff = planePoint - from;
+Point3D Segment3D::Intersection(const Point3D &planePoint, const Direction3D &planeNormal) {
+	Direction3D vector = Direction();
+	Direction3D diff = planePoint - from;
 	double prod1 = diff.dot(planeNormal);
 	double prod2 = vector.dot(planeNormal);
 	if (abs(prod2) < EPS_XYZ)
@@ -226,10 +239,10 @@ bool Surface::FixSkewed(int ipanel) {
 	Point3D &p2 = nodes[id2];
 	Point3D &p3 = nodes[id3];
 	if (id0 != id3) {		// Is not triangular 
-		Vector3D normal301 = GetNormal(p3, p0, p1);
-		Vector3D normal012 = GetNormal(p0, p1, p2);
-		Vector3D normal123 = GetNormal(p1, p2, p3);
-		Vector3D normal230 = GetNormal(p2, p3, p0);
+		Direction3D normal301 = GetNormal(p3, p0, p1);
+		Direction3D normal012 = GetNormal(p0, p1, p2);
+		Direction3D normal123 = GetNormal(p1, p2, p3);
+		Direction3D normal230 = GetNormal(p2, p3, p0);
 		double d0  = normal301.Manhattan();
 		double d01 = normal301.Manhattan(normal012);
 		double d02 = normal301.Manhattan(normal123);
@@ -791,7 +804,7 @@ void Surface::Image(int axis) {
 		ReorientPanel(i);
 }
 	
-void Surface::GetLimits() {
+const VolumeEnvelope &Surface::GetEnvelope() {
 	env.maxX = env.maxY = env.maxZ = -DBL_MAX; 
 	env.minX = env.minY = env.minZ = DBL_MAX;
 	for (int i = 0; i < nodes.GetCount(); ++i) {
@@ -802,6 +815,7 @@ void Surface::GetLimits() {
 		env.maxZ = max(env.maxZ, nodes[i].z);
 		env.minZ = min(env.minZ, nodes[i].z);
 	}
+	return env;
 }
 
 void Surface::JointTriangularPanels(int ip0, int ip1, int inode0, int inode1) {
@@ -978,6 +992,30 @@ double Surface::GetSurfaceZProjection(bool positive, bool negative) const {
 	return area;
 }
 
+Pointf Surface::GetSurfaceZProjectionCG() const {
+	double area = 0;
+	Pointf ret(0, 0);
+	
+	for (int ip = 0; ip < panels.GetCount(); ++ip) {
+		const Panel &panel = panels[ip];
+		
+		double area0 = -panel.surface0*panel.normal0.z;
+		area += area0;
+		ret.x += area0*panel.centroid0.x;
+		ret.y += area0*panel.centroid0.y;
+		
+		double area1 = -panel.surface1*panel.normal1.z; 
+		area += area1;
+		ret.x += area1*panel.centroid1.x;
+		ret.y += area1*panel.centroid1.y;
+	}
+	ret.x /= area;
+	ret.y /= area;
+	
+	return ret;
+}
+	
+	
 void Surface::GetVolume() {
 	volumex = volumey = volumez = 0;
 	
@@ -1053,7 +1091,7 @@ static void CalcDet(const Matrix3d &A, Vector3d &diag, Vector3d &offd, double &v
 }
 
 // From https://github.com/melax/sandbox
-void Surface::GetInertia(Matrix3d &inertia, const Point3D &center, bool refine) const {
+void Surface::GetInertia33(Matrix3d &inertia, const Point3D &center, bool refine) const {
 	double volume = 0;                  
 	Vector3d diag(0, 0, 0);             // accumulate matrix main diagonal integrals [x*x, y*y, z*z]
 	Vector3d offd(0, 0, 0);             // accumulate matrix off-diagonal  integrals [y*z, x*z, x*y]
@@ -1095,10 +1133,10 @@ void Surface::GetInertia(Matrix3d &inertia, const Point3D &center, bool refine) 
 	}
 }
 
-void Surface::GetInertiaFull(MatrixXd &inertia, const Point3D &center, bool refine) const {
+void Surface::GetInertia66(MatrixXd &inertia, const Point3D &center, bool refine) const {
 	inertia = Eigen::MatrixXd::Zero(6,6);	
 	Matrix3d inertia3;
-	GetInertia(inertia3, center, refine);
+	GetInertia33(inertia3, center, refine);
 	inertia.bottomRightCorner(3, 3) = inertia3;
 	inertia(0, 0) = inertia(1, 1) = inertia(2, 2) = 1;
 	
@@ -1122,87 +1160,57 @@ void Surface::GetInertiaFull(MatrixXd &inertia, const Point3D &center, bool refi
 	inertia(1, 3) = inertia(3, 1) = -cz;
 }	
 
-void Surface::GetHydrostaticForce(VectorXd &f, const Point3D &c0, double rho, double g) const {
+void Surface::GetHydrostaticForce(Force6 &f, const Point3D &c0, double rho, double g) const {
 	GetHydrostaticForceNormalized(f, c0);	
-	f.array() *= rho*g; 
+	f *= rho*g; 
 }
-
-void Surface::GetHydrostaticForceNormalized(VectorXd &f, const Point3D &c0) const {
-	f.setConstant(6, 0);				
+	
+void Surface::GetHydrostaticForceNormalized(Force6 &f, const Point3D &c0) const {
+	f.Reset();				
 				
 	for (int ip = 0; ip < panels.GetCount(); ++ip) {	
 		const Panel &panel = panels[ip];
 		
-		Vector3D r, F, M;
 		double p;
+		Direction3D f0, f1;
 		
 		p = panel.centroid0.z*panel.surface0;
-		F.x = p*panel.normal0.x;
-		F.y = p*panel.normal0.y;
-		F.z = p*panel.normal0.z;
+		f0.x = p*panel.normal0.x;
+		f0.y = p*panel.normal0.y;
+		f0.z = p*panel.normal0.z;
 		
-		r.x = panel.centroid0.x - c0.x;
-		r.y = panel.centroid0.y - c0.y;
-		r.z = panel.centroid0.z - c0.z;
-		
-		M = r%F;
-		
-		f(0) += F.x;
-		f(1) += F.y;
-		f(2) += F.z;
-		f(3) += M.x;
-		f(4) += M.y;
-		f(5) += M.z;
+		f.Add(f0, panel.centroid0, c0);
 	
 		p = panel.centroid1.z*panel.surface1;
-		F.x = p*panel.normal1.x;
-		F.y = p*panel.normal1.y;
-		F.z = p*panel.normal1.z;
+		f1.x = p*panel.normal1.x;
+		f1.y = p*panel.normal1.y;
+		f1.z = p*panel.normal1.z;
 		
-		r.x = panel.centroid1.x - c0.x;
-		r.y = panel.centroid1.y - c0.y;
-		r.z = panel.centroid1.z - c0.z;
-		
-		M = r%F;
-		
-		f(0) += F.x;
-		f(1) += F.y;
-		f(2) += F.z;
-		f(3) += M.x;
-		f(4) += M.y;
-		f(5) += M.z;
+		f.Add(f1, panel.centroid1, c0);
 	}
 }		
 
-void Surface::GetHydrostaticForceCB(VectorXd &f, const Point3D &c0, const Point3D &cb, double rho, double g) const {
+void Surface::GetHydrostaticForceCB(Force6 &f, const Point3D &c0, const Point3D &cb, double rho, double g) const {
 	GetHydrostaticForceCBNormalized(f, c0, cb);	
-	f.array() *= rho*g; 
+	f *= rho*g; 
 }
 
-void Surface::GetHydrostaticForceCBNormalized(VectorXd &f, const Point3D &c0, const Point3D &cb) const {
-	f.setConstant(6, 0);
+void Surface::GetHydrostaticForceCBNormalized(Force6 &f, const Point3D &c0, const Point3D &cb) const {
+	f.Reset();
 	
 	if (volume == 0)
 		return;
 	
-	f[2] = volume;
-	
-	Vector3D bmoment = (c0 - cb)*volume;
-	f[3] = bmoment.y;
-	f[4] = bmoment.x;					
+	f.Add(Direction3D(0, 0, volume), cb, c0);		
 }	
 
-void Surface::GetMassForce(VectorXd &f, const Point3D &c0, const Point3D &cg, const double mass, const double g) {
-	f.setConstant(6, 0);
+void Surface::GetMassForce(Force6 &f, const Point3D &c0, const Point3D &cg, const double mass, const double g) {
+	f.Reset();
 	
 	if (mass == 0)
 		return;
 		
-	f[2] = mass*g;
-	
-	Vector3D mmoment = (cg - c0)*mass*g;
-	f[3] = mmoment.y;
-	f[4] = mmoment.x;					
+	f.Add(Direction3D(0, 0, mass*g), cg, c0);
 }													
 
 double Surface::GetWaterPlaneArea() const {
@@ -1685,9 +1693,6 @@ void Surface::TransRot(double dx, double dy, double dz, double ax, double ay, do
 		segTo1panel[i].TransRot(quat);
 	for (int i = 0; i < segTo3panel.GetCount(); ++i) 
 		segTo3panel[i].TransRot(quat);
-	
-	//pos += Point3D(dx, dy, dz);
-	//angle += Point3D(ax, ay, az);
 }
 
 
@@ -1750,13 +1755,13 @@ bool Surface::Archimede(double mass, Point3D &cg, const Point3D &c0, double rho,
 		if (dz < 0.01 && cb.Distance(basecg) < 0.01)
 			return -1;
 	
-		Eigen::VectorXd fcb, fcg;
+		Force6 fcb, fcg;
 		GetMassForce(fcg, c0, basecg, mass, g);
 		double rho = mass/under.volume;
 		under.GetHydrostaticForceCB(fcb, c0, cb, rho, g);
 	
-		residual[0] = fcb[3] + fcg[3];		// ∑ Froll = 0
-		residual[1] = fcb[4] + fcg[4];		// ∑ Fpitch = 0
+		residual[0] = fcb.rx + fcg.rx;		// ∑ Froll = 0
+		residual[1] = fcb.ry + fcg.ry;		// ∑ Fpitch = 0
 		
 		if (abs(residual[0]) < 0.01 && abs(residual[1]) < 0.01)
 			return -1;
@@ -2422,6 +2427,34 @@ char Surface::IsWaterPlaneMesh() const {
 		return 'n';
 	else
 		return 'x';	
+}
+
+void Force6::Add(const Direction3D &F, const Point3D &point, const Point3D &c0) {
+	Direction3D r = point - c0;
+	Direction3D M = r%F;
+	x += F.x;
+	y += F.y;
+	z += F.z;
+	rx += M.x;
+	ry += M.y;
+	rz += M.z;
+}
+
+Eigen::VectorXd C6ToVector(const double *c) {
+	Eigen::VectorXd v(6);
+	std::copy(c, c+6, v.data());
+	return v;
+}
+
+void Vector6ToC(const Eigen::VectorXd &v, double *c) {
+	ASSERT(v.size() == 6);
+	std::copy(v.data(), v.data()+6, c);
+}
+
+void Print(const Force6 &f) {
+	Cout() << Format("\nx: %s. y: %s. z: %s. rx: %s. ry: %s. rz: %s", 
+		FDS(f.x, 10, true), FDS(f.y, 10, true), FDS(f.z, 10, true),
+		FDS(f.rx, 10, true),FDS(f.ry, 10, true),FDS(f.rz, 10, true));
 }
 
 }

@@ -1036,7 +1036,7 @@ String FormatDoubleAutosize(double d) {
 }
 	
 String FormatDoubleAutosize(double d, double range) {
-	return FormatDoubleSize(d, NumAdvicedDigits(d, range));
+	return FDS(d, NumAdvicedDigits(d, range));
 }
 
 /*
@@ -2616,7 +2616,7 @@ bool Dl::Load(const String &fileDll) {
 		if (FreeLibrary(hinstLib) == 0)
 			return false;
 	
-	hinstLib = LoadLibraryEx(TEXT(fileDll), nullptr, LOAD_IGNORE_CODE_AUTHZ_LEVEL);
+	hinstLib = LoadLibraryEx(TEXT(ToSystemCharset(fileDll)), nullptr, LOAD_IGNORE_CODE_AUTHZ_LEVEL);
 	if (!hinstLib) 
 		return false;
 	return true;

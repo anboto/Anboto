@@ -50,14 +50,14 @@ void TestSurfaceX_Calc() {
 	UppLog() << Format("\nVolume:  %.3f", under.volume);
 	UppLog() << Format("\nSeconds: %.8f", t.Seconds());
 	Point3D cb = under.GetCenterOfBuoyancy();
-	UppLog() << Format("\nCB:      %s %s %s", FormatDoubleSize(cb.x, 10, true), FormatDoubleSize(cb.y, 10, true), FormatDoubleSize(cb.z, 10, true));
+	UppLog() << Format("\nCB:      %s %s %s", FDS(cb.x, 10, true), FDS(cb.y, 10, true), FDS(cb.z, 10, true));
 
 	Point3D c0(0, 0, 0);
 	VectorXd f;
 	under.GetHydrostaticForce(f, c0, rho, g);
 	UppLog() << "\nHydroF:  ";
 	for (int i = 0; i < 6; ++i)
-		UppLog() << FormatDoubleSize(f(i), 10, true) << " ";
+		UppLog() << FDS(f(i), 10, true) << " ";
 	
 	UppLog() << "\nSurfaceX data";
 	

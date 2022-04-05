@@ -141,27 +141,27 @@ void MiscellaneousDemos() {
 	UppLog() << "\nfround(, 5) = '" << (res = fround(num, 5)) << "'";
 	VERIFY(res == 2345678.90177);
 	
-	UppLog() << "\nFormatDoubleSize(, 3) = '" << (str = FormatDoubleSize(num, 3, true)) << "'";
+	UppLog() << "\nFormatDoubleSize(, 3) = '" << (str = FDS(num, 3, true)) << "'";
 	VERIFY(str == "2.3E6");
-	UppLog() << "\nFormatDoubleSize(, 4) = '" << (str = FormatDoubleSize(num, 4, true)) << "'";
+	UppLog() << "\nFormatDoubleSize(, 4) = '" << (str = FDS(num, 4, true)) << "'";
 	VERIFY(str == "2.3E6");
-	UppLog() << "\nFormatDoubleSize(, 5) = '" << (str = FormatDoubleSize(num, 5, true)) << "'";
+	UppLog() << "\nFormatDoubleSize(, 5) = '" << (str = FDS(num, 5, true)) << "'";
 	VERIFY(str == "2.3E6");
-	UppLog() << "\nFormatDoubleSize(, 6) = '" << (str = FormatDoubleSize(num, 6, true)) << "'";
+	UppLog() << "\nFormatDoubleSize(, 6) = '" << (str = FDS(num, 6, true)) << "'";
 	VERIFY(str == "2.35E6");
-	UppLog() << "\nFormatDoubleSize(, 7) = '" << (str = FormatDoubleSize(num, 7, true)) << "'";
+	UppLog() << "\nFormatDoubleSize(, 7) = '" << (str = FDS(num, 7, true)) << "'";
 	VERIFY(str == "2345679");
-	UppLog() << "\nFormatDoubleSize(, 8) = '" << (str = FormatDoubleSize(num, 8, true)) << "'";
+	UppLog() << "\nFormatDoubleSize(, 8) = '" << (str = FDS(num, 8, true)) << "'";
 	VERIFY(str == " 2345679");
-	UppLog() << "\nFormatDoubleSize(, 9) = '" << (str = FormatDoubleSize(num, 9, true)) << "'";
+	UppLog() << "\nFormatDoubleSize(, 9) = '" << (str = FDS(num, 9, true)) << "'";
 	VERIFY(str == "2345678.9");
-	UppLog() << "\nFormatDoubleSize(,10) = '" << (str = FormatDoubleSize(num,10, true)) << "'";
+	UppLog() << "\nFormatDoubleSize(,10) = '" << (str = FDS(num,10, true)) << "'";
 	VERIFY(str == " 2345678.9");
-	UppLog() << "\nFormatDoubleSize(,11) = '" << (str = FormatDoubleSize(num,11, true)) << "'";
+	UppLog() << "\nFormatDoubleSize(,11) = '" << (str = FDS(num,11, true)) << "'";
 	VERIFY(str == "2345678.902");
-	UppLog() << "\nFormatDoubleSize(,12) = '" << (str = FormatDoubleSize(num,12, true)) << "'";
+	UppLog() << "\nFormatDoubleSize(,12) = '" << (str = FDS(num,12, true)) << "'";
 	VERIFY(str == "2345678.9018");
-	UppLog() << "\nFormatDoubleSize(,13) = '" << (str = FormatDoubleSize(num,13, true)) << "'";
+	UppLog() << "\nFormatDoubleSize(,13) = '" << (str = FDS(num,13, true)) << "'";
 	VERIFY(str == "2345678.90177");
 	
 	

@@ -45,7 +45,7 @@ void GLCanvas::ContextMenu(Bar& bar) {
 	bar.Add(t_("View isometric XYZ"), 	[&]{View(true, true, true);});
 	bar.Separator();
 	bar.Add(t_("Copy image"),  GLCanvasImg::Copy(), [&]{ExecuteGL(THISFN(SaveToClipboard), true);}).Key(K_CTRL_C).Help(t_("Copy image to clipboard"));
-	bar.Add(t_("Save image"),  GLCanvasImg::Save(), [&]{ExecuteGL(THISFN(SaveToFile), true);}).Key(K_CTRL_S).Help(t_("Save image to file"));
+	bar.Add(t_("Save image"),  GLCanvasImg::Save(), [&]{ExecuteGL([=]{SaveToFile(Null);}, true);}).Key(K_CTRL_S).Help(t_("Save image to file"));
 }
 
 bool GLCanvas::Key(dword key, int ) {
@@ -58,7 +58,7 @@ bool GLCanvas::Key(dword key, int ) {
 	else if (key == K_CTRL_C)
 		SaveToClipboard();
 	else if (key == K_CTRL_S)
-		SaveToFile();
+		SaveToFile(Null);
 	else
 		return false;
 	return true;
@@ -83,7 +83,7 @@ Image GLCanvas::GetImage() {
 	ImageBuffer ib(sz);
 
 	glGetError();
-	glReadPixels(0, 0, sz.cx, sz.cy, GL_BGRA_EXT, GL_UNSIGNED_BYTE, static_cast<GLvoid*>(~ib));
+	glReadPixels(0, 0, sz.cx, sz.cy, GL_BGRA_EXT, GL_UNSIGNED_BYTE, static_cast<GLvoid *>(~ib));
 	if (GL_NO_ERROR != glGetError())
 		return Null;
 	
@@ -124,7 +124,7 @@ void GLCanvas::OnTypeImage(FileSel *_fs) {
 		fs.file = ForceExt(GetFileName(~fs), ".pdf");
 }
 
-void GLCanvas::SaveToFile() {
+void GLCanvas::SaveToFile(String fileName) {
 	GuiLock __;
 
 	Image image = GetImage();
@@ -133,34 +133,37 @@ void GLCanvas::SaveToFile() {
 		return;
 	}
 	
-	FileSel fs;
-	fs.Type(Format(t_("%s bitmap file"), "jpeg"), "*.jpg");
-	fs.Type(Format(t_("%s bitmap file"), "png"), "*.png");
-	fs.Type(Format(t_("%s vector file"), "pdf"), "*.pdf");
-	fs.AllFilesType();
-	if (!defaultFileName.IsEmpty())
-		fs = defaultFileName;
-	else
-		fs = String(t_("Mesh view")) + ".jpg";
+	if (IsNull(fileName)) {
+		FileSel fs;
+		fs.Type(Format(t_("%s bitmap file"), "jpeg"), "*.jpg");
+		fs.Type(Format(t_("%s bitmap file"), "png"), "*.png");
+		fs.Type(Format(t_("%s vector file"), "pdf"), "*.pdf");
+		fs.AllFilesType();
+		if (!defaultFileName.IsEmpty())
+			fs = defaultFileName;
+		else
+			fs = String(t_("Mesh view")) + ".jpg";
+		
+		String ext = GetFileExt(~fs);
+		fs.DefaultExt(ext);
+		int idt = 0;
+		if (ext == ".jpg" || ext == ".jpeg")
+			idt = 0;
+		else if (ext == ".png")
+			idt = 1;
+		else if (ext == ".pdf")
+			idt = 2;
+		fs.ActiveType(idt);
 	
-	String ext = GetFileExt(~fs);
-	fs.DefaultExt(ext);
-	int idt = 0;
-	if (ext == ".jpg" || ext == ".jpeg")
-		idt = 0;
-	else if (ext == ".png")
-		idt = 1;
-	else if (ext == ".pdf")
-		idt = 2;
-	fs.ActiveType(idt);
-
-	fs.ActiveDir(GetFileFolder(defaultFileName));
-	fs.type.WhenAction = THISBACK1(OnTypeImage, &fs); 
-    if(!fs.ExecuteSaveAs(t_("Saving image to file"))) {
-        Exclamation(t_("Image has not been saved"));
-        return;
-    }
-    String fileName = defaultFileName = ~fs;
+		fs.ActiveDir(GetFileFolder(defaultFileName));
+		fs.type.WhenAction = THISBACK1(OnTypeImage, &fs); 
+	    if(!fs.ExecuteSaveAs(t_("Saving image to file"))) {
+	        Exclamation(t_("Image has not been saved"));
+	        return;
+	    }
+	    fileName = defaultFileName = ~fs;
+	} else
+		defaultFileName = fileName;
 	 
 	if (GetFileExt(fileName) == ".png") {
 		WaitCursor waitcursor;
@@ -296,7 +299,7 @@ void GLCanvas::PaintLine(const Segment3D &p, const Color &color) {
 
 void GLCanvas::PaintArrow(double x0, double y0, double z0, double x1, double y1, double z1, const Color &color) {
 	Segment3D seg(Point3D(x0, y0, z0), Point3D(x1, y1, z1));
-	Vector3D vector = seg.Vector().Normalize();
+	Direction3D vector = seg.Direction().Normalize();
 	double len = seg.Length();
 	double lenArr = 0.8*len;
 	Point3D pointTri(x0, y0, z0);

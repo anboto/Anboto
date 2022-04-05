@@ -1426,7 +1426,7 @@ bool ScatterDraw::PlotTexts(T& w, bool boldX, bool boldY) {
 				else if (cbModifFormatX)
 					cbModifFormatX(gridLabelX, i, gridX);
 				else
-					gridLabelX = FormatDoubleSize(gridX, min(numNumX, NumAdvicedDigits(gridX, xRange)), false);
+					gridLabelX = FDS(gridX, min(numNumX, NumAdvicedDigits(gridX, xRange)), false);
 				
 				if (!gridLabelX.IsEmpty()) {
 					if (drawXReticleNumbers) {
@@ -1468,7 +1468,7 @@ bool ScatterDraw::PlotTexts(T& w, bool boldX, bool boldY) {
 				else if (cbModifFormatY)
 					cbModifFormatY(gridLabelY, i, gridY);
 				else
-					gridLabelY = FormatDoubleSize(gridY, min(numNumY, NumAdvicedDigits(gridY, yRange)), false);
+					gridLabelY = FDS(gridY, min(numNumY, NumAdvicedDigits(gridY, yRange)), false);
 				Size sz = GetTextSizeSpace(gridLabelY, fontYNum);
 				DrawText(w, -sz.cx - plotScaleX*6, reticleY - sz.cy/2, 0, gridLabelY, fontYNum, axisColor);
 			}
@@ -1480,7 +1480,7 @@ bool ScatterDraw::PlotTexts(T& w, bool boldX, bool boldY) {
 				else if (cbModifFormatY2)
 					cbModifFormatY2(gridLabelY2, i, gridY2);
 				else
-					gridLabelY2 = FormatDoubleSize(gridY2, min(numNumY2, NumAdvicedDigits(gridY2, yRange2)), false);
+					gridLabelY2 = FDS(gridY2, min(numNumY2, NumAdvicedDigits(gridY2, yRange2)), false);
 				Size sz = GetTextSizeSpace(gridLabelY2, fontY2Num);
 				DrawText(w, plotW + plotScaleX*10, reticleY - sz.cy/2, 0, gridLabelY2, fontY2Num, axisColor);
 			}
