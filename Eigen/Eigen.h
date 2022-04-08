@@ -58,7 +58,7 @@ bool NonLinearOptimization(Eigen::VectorXd &y, Eigen::Index numData,
 			Function <int(const Eigen::VectorXd &y, Eigen::VectorXd &residual)>residual,
 			double xtol = Null, double ftol = Null, int maxfev = Null);
 bool SolveNonLinearEquations(Eigen::VectorXd &y, Function <int(const Eigen::VectorXd &b, Eigen::VectorXd &residual)> Residual,
-			double xtol = Null, int maxfev = Null);
+			double xtol = Null, int maxfev = Null, double factor = Null);
 
 template <class T>
 void Xmlize(XmlIO &xml, Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &mat) {

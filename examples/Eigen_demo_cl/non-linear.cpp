@@ -126,8 +126,7 @@ void NonLinearOptimization() {
 	}
 }
 
-struct Hybrd_functor : NonLinearOptimizationFunctor<double>
-{
+struct Hybrd_functor : NonLinearOptimizationFunctor<double> {
 	Hybrd_functor() : NonLinearOptimizationFunctor<double>(9, 9) {}
 	int operator()(const VectorXd &x, VectorXd &fvec) const {
 		double temp, temp1, temp2;

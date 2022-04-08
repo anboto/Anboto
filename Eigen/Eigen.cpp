@@ -30,13 +30,15 @@ bool NonLinearOptimization(VectorXd &y, Eigen::Index numData,
 }
 
 bool SolveNonLinearEquations(VectorXd &y, Function <int(const VectorXd &b, VectorXd &residual)> Residual,
-			double xtol, int maxfev) {
+			double xtol, int maxfev, double factor) {
 	Basic_functor functor(Residual);
 	HybridNonLinearSolver<Basic_functor> solver(functor);
 	if (!IsNull(xtol))
 		solver.parameters.xtol *= xtol;
 	if (!IsNull(maxfev))
 		solver.parameters.maxfev = maxfev;
+	if (!IsNull(factor))
+		solver.parameters.factor = factor;
 	int ret = solver.solveNumericalDiff(y);
 	if (ret == HybridNonLinearSolverSpace::ImproperInputParameters ||
 	    ret == HybridNonLinearSolverSpace::TooManyFunctionEvaluation ||

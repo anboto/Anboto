@@ -1009,6 +1009,9 @@ Pointf Surface::GetSurfaceZProjectionCG() const {
 		ret.x += area1*panel.centroid1.x;
 		ret.y += area1*panel.centroid1.y;
 	}
+	if (area == 0)
+		return Null;
+	
 	ret.x /= area;
 	ret.y /= area;
 	
@@ -1700,28 +1703,81 @@ bool Surface::TranslateArchimede(double mass, double rho, double &dz, Surface &u
 	if (IsEmpty())
 		return false;
 	Surface base;
+	
+	if (env.minZ  > 0)
+		dz = env.minZ;
+
+	auto Residual = [&](const double dz)->double {
+		base = clone(*this);
+		base.Translate(0, 0, dz);
+		under.CutZ(base, -1);
+		under.GetPanelParams();
+		under.GetVolume();
+		if (under.volume == 0 || under.volume == volume)
+			return Null;		
+		return under.volume*rho - mass;		// ∑ Fheave = 0
+	};
 
 	int nIter = 0;	
 
 	VectorXd x(1);
 	x[0] = dz;
-	if (!SolveNonLinearEquations(x, [&](const VectorXd &x, VectorXd &residual)->int {
+	if (SolveNonLinearEquations(x, [&](const VectorXd &x, VectorXd &residual)->int {
 		nIter++;
-		base = clone(*this);
-		double dz = x[0];
-		base.Translate(0, 0, dz);
-		under.CutZ(base, -1);
-		under.GetPanelParams();
-		under.GetVolume();
-		residual[0] = under.volume*rho - mass;		// ∑ Fheave = 0
-		if (abs(residual[0]) < mass/1e10)
+		residual[0] = Residual(x[0]);		// ∑ Fheave = 0
+		if (IsNull(residual[0]))
+			residual[0] = mass;
+		if (abs(residual[0]) < 0.1)
 			return -1;
 		return 0;
 	}))
-		return false;
+		dz = x[0];
+	else {
+		// Slow, but more robust...
+		double ndz, mn = mass*10;
+		for (double dz2 = 0; dz2 < 50; dz2 += 0.5) {
+			double res = Residual(dz+dz2);
+			if (IsNull(res))
+				break;
+			res = abs(res);
+			if (res < mn) {
+				mn = res;
+				ndz = dz2;
+			}
+		}
+		for (double dz2 = -0.5; dz2 > -50; dz2 -= 0.5) {
+			double res = Residual(dz+dz2);
+			if (IsNull(res))
+				break;
+			res = abs(res);
+			if (res < mn) {
+				mn = res;
+				ndz = dz2;
+			}
+		}
+		for (double dz2 = ndz-0.7; dz2 <= ndz+0.7; dz2 += 0.1) {
+			double res = Residual(dz+dz2);
+			if (IsNull(res))
+				return false;
+			res = abs(res);
+			if (res < mn) {
+				mn = res;
+				ndz = dz2;
+			}
+		}
+		for (double dz2 = ndz-0.07; dz2 <= ndz+0.07; dz2 += 0.01) {
+			double res = Residual(dz+dz2);
+			if (IsNull(res))
+				return false;
+			res = abs(res);
+			if (res < mn) {
+				mn = res;
+				ndz = dz2;
+			}
+		}
+		dz += ndz;
+	}
 	
-	dz = x[0];
-			
 	Translate(0, 0, dz);
 	return true;
 }
@@ -1736,39 +1792,46 @@ bool Surface::Archimede(double mass, Point3D &cg, const Point3D &c0, double rho,
 	VectorXd x(2);
 	x[0] = droll;
 	x[1] = dpitch;
-	if (!SolveNonLinearEquations(x, [&](const VectorXd &x, VectorXd &residual)->int {
-		nIter++;
+	try {
+		if (!SolveNonLinearEquations(x, [&](const VectorXd &x, VectorXd &residual)->int {
+			nIter++;
+			
+			double droll = x[0], dpitch = x[1];
+			
+			base = clone(*this);
+			basecg = clone(cg);
+	
+			base.Rotate(droll, dpitch, 0, c0.x, c0.y, c0.z);
+			basecg.Rotate(droll, dpitch, 0, c0.x, c0.y, c0.z);
+			
+			if (!base.TranslateArchimede(mass, rho, dz, under))
+				throw Exc("");
+			Point3D cb = under.GetCenterOfBuoyancy();
+			basecg.Translate(0, 0, dz);
+			
+			if (dz < 0.01 && cb.Distance(basecg) < 0.01)
+				return -1;
 		
-		double droll = x[0], dpitch = x[1];
+			Force6 fcb, fcg;
+			GetMassForce(fcg, c0, basecg, mass, g);
+			double rho;
+			if (under.volume > 0) {
+				rho = mass/under.volume;
+				under.GetHydrostaticForceCB(fcb, c0, cb, rho, g);
+			} else
+				fcb.Reset();
 		
-		base = clone(*this);
-		basecg = clone(cg);
-
-		base.Rotate(droll, dpitch, 0, c0.x, c0.y, c0.z);
-		basecg.Rotate(droll, dpitch, 0, c0.x, c0.y, c0.z);
-		
-		if (!base.TranslateArchimede(mass, rho, dz, under))
+			residual[0] = fcb.rx + fcg.rx;		// ∑ Froll = 0
+			residual[1] = fcb.ry + fcg.ry;		// ∑ Fpitch = 0
+			
+			if (abs(residual[0]) < 0.01 && abs(residual[1]) < 0.01)
+				return -1;
+			return 0;
+			}))
 			return false;
-		Point3D cb = under.GetCenterOfBuoyancy();
-		basecg.Translate(0, 0, dz);
-		
-		if (dz < 0.01 && cb.Distance(basecg) < 0.01)
-			return -1;
-	
-		Force6 fcb, fcg;
-		GetMassForce(fcg, c0, basecg, mass, g);
-		double rho = mass/under.volume;
-		under.GetHydrostaticForceCB(fcb, c0, cb, rho, g);
-	
-		residual[0] = fcb.rx + fcg.rx;		// ∑ Froll = 0
-		residual[1] = fcb.ry + fcg.ry;		// ∑ Fpitch = 0
-		
-		if (abs(residual[0]) < 0.01 && abs(residual[1]) < 0.01)
-			return -1;
-		return 0;
-		}))
-		return false;
-
+	} catch (...) {
+		return false;	
+	}
 	droll = x[0];
 	dpitch = x[1];
 	
