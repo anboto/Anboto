@@ -1,7 +1,7 @@
 #ifndef _Controls4U_Demo_Controls4U_Demo_win_h_
 #define _Controls4U_Demo_Controls4U_Demo_win_h_
 
-#define LAYOUTFILE <Controls4U_Demo/Controls4U_Demo_win.lay>
+#define LAYOUTFILE <examples/Controls4U_Demo/Controls4U_Demo_win.lay>
 #include <CtrlCore/lay.h>
 
 class Firefox_Demo : public WithFirefox<StaticRect> {

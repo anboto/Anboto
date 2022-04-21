@@ -16,9 +16,9 @@ struct Example {
 	int index;
 };
 
-Upp::Array<Example>& Examples()
+Array<Example>& Examples()
 {
-	static Upp::Array<Example> x;
+	static Array<Example> x;
 	return x;
 }
 

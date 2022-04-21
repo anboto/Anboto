@@ -596,7 +596,7 @@ ScatterDraw &ScatterDraw::InsertSeries(int index, Vector<double> &xData, Vector<
 	return InsertSeries<VectorXY>(index, xData, yData);
 }
 
-ScatterDraw &ScatterDraw::InsertSeries(int index, Upp::Array<double> &xData, Upp::Array<double> &yData) {
+ScatterDraw &ScatterDraw::InsertSeries(int index, Array<double> &xData, Array<double> &yData) {
 	return InsertSeries<ArrayXY>(index, xData, yData);
 }
 		
@@ -604,7 +604,7 @@ ScatterDraw &ScatterDraw::InsertSeries(int index, Vector<Pointf> &points) {
 	return InsertSeries<VectorPointf>(index, points);
 }
 
-ScatterDraw &ScatterDraw::InsertSeries(int index, Upp::Array<Pointf> &points) {
+ScatterDraw &ScatterDraw::InsertSeries(int index, Array<Pointf> &points) {
 	return InsertSeries<ArrayPointf>(index, points);
 }
 

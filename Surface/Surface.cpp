@@ -81,9 +81,9 @@ void Point3D::TransRot(const Affine3d &quat) {
 void GetTransform(Affine3d &aff, double ax, double ay, double az, double cx, double cy, double cz) {
 	Vector3d c(cx, cy, cz);	
 	aff =	Translation3d(c) *
-			AngleAxisd(ax*M_PI/180, Vector3d::UnitX()) *
-		 	AngleAxisd(ay*M_PI/180, Vector3d::UnitY()) *
-		 	AngleAxisd(az*M_PI/180, Vector3d::UnitZ()) *
+			AngleAxisd(ax, Vector3d::UnitX()) *
+		 	AngleAxisd(ay, Vector3d::UnitY()) *
+		 	AngleAxisd(az, Vector3d::UnitZ()) *
 		 	Translation3d(-c);
 }
 
@@ -91,9 +91,9 @@ void GetTransform(Affine3d &aff, double dx, double dy, double dz, double ax, dou
 	Vector3d d(dx, dy, dz), c(cx, cy, cz);	
 	aff =	Translation3d(d) *
 			Translation3d(c) *
-			AngleAxisd(ax*M_PI/180, Vector3d::UnitX()) *
-		 	AngleAxisd(ay*M_PI/180, Vector3d::UnitY()) *
-		 	AngleAxisd(az*M_PI/180, Vector3d::UnitZ()) *
+			AngleAxisd(ax, Vector3d::UnitX()) *
+		 	AngleAxisd(ay, Vector3d::UnitY()) *
+		 	AngleAxisd(az, Vector3d::UnitZ()) *
 		 	Translation3d(-c);
 }
 
@@ -931,7 +931,7 @@ double Surface::GetSurfaceXProjection(bool positive, bool negative) const {
 		if (add0)
 			area += -panel.surface0*panel.normal0.x;
 		
-		bool add1;
+		bool add1 = false;
 		if (panel.normal1.x > 0)
 			add1 = positive;
 		else if (panel.normal1.x < 0)
@@ -948,7 +948,7 @@ double Surface::GetSurfaceYProjection(bool positive, bool negative) const {
 	for (int ip = 0; ip < panels.GetCount(); ++ip) {
 		const Panel &panel = panels[ip];
 		
-		bool add0;
+		bool add0 = false;
 		if (panel.normal0.y > 0)
 			add0 = positive;
 		else if (panel.normal0.y < 0)
@@ -1137,7 +1137,7 @@ void Surface::GetInertia33(Matrix3d &inertia, const Point3D &center, bool refine
 }
 
 void Surface::GetInertia66(MatrixXd &inertia, const Point3D &center, bool refine) const {
-	inertia = Eigen::MatrixXd::Zero(6,6);	
+	inertia = MatrixXd::Zero(6,6);	
 	Matrix3d inertia3;
 	GetInertia33(inertia3, center, refine);
 	inertia.bottomRightCorner(3, 3) = inertia3;
@@ -1163,12 +1163,12 @@ void Surface::GetInertia66(MatrixXd &inertia, const Point3D &center, bool refine
 	inertia(1, 3) = inertia(3, 1) = -cz;
 }	
 
-void Surface::GetHydrostaticForce(Force6 &f, const Point3D &c0, double rho, double g) const {
+void Surface::GetHydrostaticForce(Force6D &f, const Point3D &c0, double rho, double g) const {
 	GetHydrostaticForceNormalized(f, c0);	
 	f *= rho*g; 
 }
 	
-void Surface::GetHydrostaticForceNormalized(Force6 &f, const Point3D &c0) const {
+void Surface::GetHydrostaticForceNormalized(Force6D &f, const Point3D &c0) const {
 	f.Reset();				
 				
 	for (int ip = 0; ip < panels.GetCount(); ++ip) {	
@@ -1182,38 +1182,38 @@ void Surface::GetHydrostaticForceNormalized(Force6 &f, const Point3D &c0) const 
 		f0.y = p*panel.normal0.y;
 		f0.z = p*panel.normal0.z;
 		
-		f.Add(f0, panel.centroid0, c0);
+		f.AddLinear(f0, panel.centroid0, c0);
 	
 		p = panel.centroid1.z*panel.surface1;
 		f1.x = p*panel.normal1.x;
 		f1.y = p*panel.normal1.y;
 		f1.z = p*panel.normal1.z;
 		
-		f.Add(f1, panel.centroid1, c0);
+		f.AddLinear(f1, panel.centroid1, c0);
 	}
 }		
 
-void Surface::GetHydrostaticForceCB(Force6 &f, const Point3D &c0, const Point3D &cb, double rho, double g) const {
+void Surface::GetHydrostaticForceCB(Force6D &f, const Point3D &c0, const Point3D &cb, double rho, double g) const {
 	GetHydrostaticForceCBNormalized(f, c0, cb);	
 	f *= rho*g; 
 }
 
-void Surface::GetHydrostaticForceCBNormalized(Force6 &f, const Point3D &c0, const Point3D &cb) const {
+void Surface::GetHydrostaticForceCBNormalized(Force6D &f, const Point3D &c0, const Point3D &cb) const {
 	f.Reset();
 	
 	if (volume == 0)
 		return;
 	
-	f.Add(Direction3D(0, 0, volume), cb, c0);		
+	f.AddLinear(Direction3D(0, 0, volume), cb, c0);		
 }	
 
-void Surface::GetMassForce(Force6 &f, const Point3D &c0, const Point3D &cg, const double mass, const double g) {
+void Surface::GetMassForce(Force6D &f, const Point3D &c0, const Point3D &cg, const double mass, const double g) {
 	f.Reset();
 	
 	if (mass == 0)
 		return;
 		
-	f.Add(Direction3D(0, 0, mass*g), cg, c0);
+	f.AddLinear(Direction3D(0, 0, mass*g), cg, c0);
 }													
 
 double Surface::GetWaterPlaneArea() const {
@@ -1801,8 +1801,8 @@ bool Surface::Archimede(double mass, Point3D &cg, const Point3D &c0, double rho,
 			base = clone(*this);
 			basecg = clone(cg);
 	
-			base.Rotate(droll, dpitch, 0, c0.x, c0.y, c0.z);
-			basecg.Rotate(droll, dpitch, 0, c0.x, c0.y, c0.z);
+			base.Rotate(ToRad(droll), ToRad(dpitch), 0, c0.x, c0.y, c0.z);
+			basecg.Rotate(ToRad(droll), ToRad(dpitch), 0, c0.x, c0.y, c0.z);
 			
 			if (!base.TranslateArchimede(mass, rho, dz, under))
 				throw Exc("");
@@ -1812,7 +1812,7 @@ bool Surface::Archimede(double mass, Point3D &cg, const Point3D &c0, double rho,
 			if (dz < 0.01 && cb.Distance(basecg) < 0.01)
 				return -1;
 		
-			Force6 fcb, fcg;
+			Force6D fcb, fcg;
 			GetMassForce(fcg, c0, basecg, mass, g);
 			double rho;
 			if (under.volume > 0) {
@@ -1821,8 +1821,8 @@ bool Surface::Archimede(double mass, Point3D &cg, const Point3D &c0, double rho,
 			} else
 				fcb.Reset();
 		
-			residual[0] = fcb.rx + fcg.rx;		// ∑ Froll = 0
-			residual[1] = fcb.ry + fcg.ry;		// ∑ Fpitch = 0
+			residual[0] = fcb.r.x + fcg.r.x;		// ∑ Froll = 0
+			residual[1] = fcb.r.y + fcg.r.y;		// ∑ Fpitch = 0
 			
 			if (abs(residual[0]) < 0.01 && abs(residual[1]) < 0.01)
 				return -1;
@@ -1835,8 +1835,8 @@ bool Surface::Archimede(double mass, Point3D &cg, const Point3D &c0, double rho,
 	droll = x[0];
 	dpitch = x[1];
 	
-	TransRot(0, 0, dz, droll, dpitch, 0, c0.x, c0.y, c0.z);
-	cg.TransRot(0, 0, dz, droll, dpitch, 0, c0.x, c0.y, c0.z);
+	TransRot(0, 0, dz, ToRad(droll), ToRad(dpitch), 0, c0.x, c0.y, c0.z);
+	cg.TransRot(0, 0, dz, ToRad(droll), ToRad(dpitch), 0, c0.x, c0.y, c0.z);
 	return true;
 }
 
@@ -2226,7 +2226,7 @@ void Surface::AddPolygonalPanel(Vector<Pointf> &bound, double panelWidth, bool a
 	}
 	Pointf avgp(avgx/bound.GetCount(), avgy/bound.GetCount());
 
-	Upp::Array<Pointf> delp;
+	Array<Pointf> delp;
 	delp.SetCount(bound.GetCount());
 	for (int i = 0; i < bound.GetCount(); ++i) 
 		delp[i] = bound[i]; 
@@ -2492,32 +2492,62 @@ char Surface::IsWaterPlaneMesh() const {
 		return 'x';	
 }
 
-void Force6::Add(const Direction3D &F, const Point3D &point, const Point3D &c0) {
-	Direction3D r = point - c0;
-	Direction3D M = r%F;
-	x += F.x;
-	y += F.y;
-	z += F.z;
-	rx += M.x;
-	ry += M.y;
-	rz += M.z;
+void ForceVector::TransRot(double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz) {
+	Affine3d aff;
+	GetTransform(aff, dx, dy, dz, ax, ay, az, cx, cy, cz);
+	point.TransRot(aff);
+	force.t.TransRot(aff);
 }
 
-Eigen::VectorXd C6ToVector(const double *c) {
-	Eigen::VectorXd v(6);
+void ForceVector::Print() {
+	force.Print();
+	point.Print();
+}
+
+// Just force, no moment
+void Force6D::AddLinear(const Direction3D &dir, const Point3D &point, const Point3D &c0) {
+	Direction3D R = point - c0;
+	Direction3D M = R%dir;
+	t += dir;
+	r += M;							// No moment added, just the generated by the leverage arm of the force
+}
+	
+void Force6D::Add(const Force6D &force, const Point3D &point, const Point3D &c0) {
+	Direction3D R = point - c0;
+	Direction3D M = R%force.t;
+	t += force.t;
+	r += M + force.r;
+}
+
+void Force6D::Add(const ForceVector &fv, const Point3D &c0) {
+	Direction3D R = fv.point - c0;	// Leverage arm
+	Direction3D M = R%fv.force.t;	// Moment generated by the leverage arm of the force
+	t += fv.force.t;
+	r += M + fv.force.r;
+}
+
+VectorXd C6ToVector(const double *c) {
+	VectorXd v(6);
 	std::copy(c, c+6, v.data());
 	return v;
 }
 
-void Vector6ToC(const Eigen::VectorXd &v, double *c) {
+VectorXd C6ToVector(const float *c) {
+	VectorXd v(6);
+	for (int i = 0; i < 6; ++i)
+		v[i] = c[i];
+	return v;
+}
+
+void Vector6ToC(const VectorXd &v, double *c) {
 	ASSERT(v.size() == 6);
 	std::copy(v.data(), v.data()+6, c);
 }
 
-void Print(const Force6 &f) {
-	Cout() << Format("\nx: %s. y: %s. z: %s. rx: %s. ry: %s. rz: %s", 
-		FDS(f.x, 10, true), FDS(f.y, 10, true), FDS(f.z, 10, true),
-		FDS(f.rx, 10, true),FDS(f.ry, 10, true),FDS(f.rz, 10, true));
+void Vector6ToC(const VectorXd &v, float *c) {
+	ASSERT(v.size() == 6);
+	for (int i = 0; i < 6; ++i)
+		c[i] = float(v[i]);
 }
 
 }

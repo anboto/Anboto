@@ -184,7 +184,7 @@ private:
 	String GetRelativePath(const String &fullPath);
 	String GetFileText();
 	
-	Upp::Array<FileData> fileList;
+	Array<FileData> fileList;
 	Vector<String> errorList;
 	String basePath;
 	long fileCount, folderCount;
@@ -207,7 +207,7 @@ public:
 	String ToString();
 	
 private:
-	Upp::Array<FileDiffData> diffList;
+	Array<FileDiffData> diffList;
 };
 
 String Replace(String str, String find, String replace); 
@@ -1251,7 +1251,7 @@ public:
 		
 protected:
 	String line;
-	Upp::Vector<String> fields;
+	Vector<String> fields;
 	FileInLine *in = nullptr;
 	
 	bool CheckId_nothrow(int i) const {

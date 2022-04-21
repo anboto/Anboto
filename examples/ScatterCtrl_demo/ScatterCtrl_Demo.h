@@ -126,7 +126,7 @@ public:
 	virtual ScatterCtrl &Scatter()	{return scatter;};
 
 private:
-	Upp::Array<Vector<Pointf> > series;
+	Array<Vector<Pointf> > series;
 };
 
 class Tab8_Secondary : public WithTab8Secondary<ScatterDemo> {

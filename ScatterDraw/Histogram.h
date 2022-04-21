@@ -27,7 +27,7 @@ public:
 	void Clear();
 	
 	Histogram &Create(DataSource &data, double min, double max, int numVals, bool isY = true);
-	Histogram &Create(Upp::Array<HistogramDataAxis> &dataAxis, bool isY = true);
+	Histogram &Create(Array<HistogramDataAxis> &dataAxis, bool isY = true);
 	Histogram &Create2D(const Vector<Vector<double> > &_ranges, const Vector<double> &data, double total);
 
 	Histogram &Normalize(double val = 1);

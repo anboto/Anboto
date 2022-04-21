@@ -94,7 +94,7 @@ static String GetIdaErrorMsg(int ret) {
 	}
 }
                 	
-void SolveDAE(const VectorXd &y, const VectorXd &dy, double dt, double maxt, Upp::Array<VectorXd> &res,  
+void SolveDAE(const VectorXd &y, const VectorXd &dy, double dt, double maxt, Array<VectorXd> &res,  
 		Function <bool(double t, Eigen::Index iiter, const double y[], const double dy[], double residual[])>Residual, int numZero,
 		Function <bool(double t, Eigen::Index iiter, const double y[], const double dy[], double residual[])>ResidualZero) {
 	ASSERT(y.size() == dy.size());
@@ -112,7 +112,7 @@ void SolveDAE(const VectorXd &y, const VectorXd &dy, double dt, double maxt, Upp
 }
 
 void SolveDAE(const VectorXd &y, const VectorXd &dy, double dt, double maxt, 
-		Upp::Array<VectorXd> &res, Upp::Array<VectorXd> &dres, 
+		Array<VectorXd> &res, Array<VectorXd> &dres, 
 		Function <bool(double t, Eigen::Index iiter, const double y[], const double dy[], double residual[])>Residual, int numZero,
 		Function <bool(double t, Eigen::Index iiter, const double y[], const double dy[], double residual[])>ResidualZero) {
 	ASSERT(y.size() == dy.size());

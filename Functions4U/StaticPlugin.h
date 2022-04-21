@@ -30,7 +30,7 @@ protected:
 		void (*Delete)(void *);
 	};
 	
-	static Upp::Array<PluginData>& Plugins();
+	static Array<PluginData>& Plugins();
 	
 public:
 	virtual ~StaticPlugin();

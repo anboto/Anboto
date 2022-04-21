@@ -1,7 +1,7 @@
-#define LAYOUTFILE <SysInfo_demo_gui/SysInfo_demo_gui.lay>
+#define LAYOUTFILE <examples/SysInfo_demo_gui/SysInfo_demo_gui.lay>
 #include <CtrlCore/lay.h>
 
-#define IMAGEFILE <SysInfo_demo_gui/SysInfo_demo_gui.iml>
+#define IMAGEFILE <examples/SysInfo_demo_gui/SysInfo_demo_gui.iml>
 #include <Draw/iml_header.h>
 
 struct SpecialFolders : WithSpecialFolders<StaticRect> {

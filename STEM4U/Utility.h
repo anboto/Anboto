@@ -171,7 +171,7 @@ typename Range::value_type SawTeethRatio(const Range &d) {
 	Scalar mean = Avg(d);
 	int numcrosses = 0;
 	for (int i = 1; i < d.size(); ++i) {
-		if (d[i] > mean && d[i-1] <= mean || d[i] < mean && d[i-1] >= mean) 
+		if ((d[i] > mean && d[i-1] <= mean) || (d[i] < mean && d[i-1] >= mean)) 
 			numcrosses++;
 	}
 	return Scalar(numcrosses)/(d.size()-1);

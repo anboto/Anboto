@@ -101,7 +101,7 @@ void TestPolynomial() {
 	
 	Rational gamma_n = gamma_n_num/gamma_n_den;
 	
-	Upp::Vector<Polynomial<Rational>> q;
+	UVector<Polynomial<Rational>> q;
 	
 	q << Polynomial<Rational>(1);
 	UppLog() << "\n" << q[0];
@@ -446,8 +446,8 @@ void TestXCorr() {
 	VectorXd R, lags;
 	
 	XCorr(x, y, R, lags);
-	Vector<double> realR = {0.1749,0.35513,0.54619,0.75389,0.98456,1.2452,1.5439,1.8896,2.2928,2.766,3.3234,2.8648,2.4935,2.1982,1.9699,1.8017,1.5026,1.2494,1.0343,0.85067,0.69298,0.55641,0.43679,0.33049,0.23425,0.14516,0.060494,0.046321,0.033559,0.02182,0.010746};
-	Vector<double> realLags = {-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+	UVector<double> realR = {0.1749,0.35513,0.54619,0.75389,0.98456,1.2452,1.5439,1.8896,2.2928,2.766,3.3234,2.8648,2.4935,2.1982,1.9699,1.8017,1.5026,1.2494,1.0343,0.85067,0.69298,0.55641,0.43679,0.33049,0.23425,0.14516,0.060494,0.046321,0.033559,0.02182,0.010746};
+	UVector<double> realLags = {-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 	VERIFY(CompareDecimals(R, realR, 4));
 	VERIFY(CompareDecimals(lags, realLags, 4));
 
@@ -504,8 +504,8 @@ void TestOthers() {
 		VERIFY(EqualDecimals(d2y, -2.666666666666, 10));
 	}
 	{
-		Vector<double> x = {0, 2, 4, 6};
-		Vector<double> y = {0, 8, 16, 32};
+		UVector<double> x = {0, 2, 4, 6};
+		UVector<double> y = {0, 8, 16, 32};
 		
 		double a, b;
 		LinearRegression(x, y, a, b);

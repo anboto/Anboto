@@ -183,12 +183,12 @@ public:
 		ScatterDraw *pscatter;
 		int index;
 	};
-	Upp::Array<DataSourceY> dataSourceYArr;
+	Array<DataSourceY> dataSourceYArr;
 	
 private:
 	ScatterCtrl *pscatter;
 	
-	Upp::Array <WithDataSeries <StaticRect> > series;
+	Array <WithDataSeries <StaticRect> > series;
 };
 
 class PropertiesDlg : public WithProperties<TopWindow> {
@@ -258,7 +258,7 @@ private:
 	void ArrayCopy();
 	void ArraySelect();
 	void OnArrayBar(Bar &menu);
-	Upp::Array<ExplicitEquation> equationTypes;
+	Array<ExplicitEquation> equationTypes;
 	UserEquation *userEquation;
 	//GridCtrlSource ds;
 	
@@ -292,7 +292,7 @@ public:
 
 private:
 	ScatterCtrl *pscatter;
-	Upp::Array<ProcessingTab> tabs;
+	Array<ProcessingTab> tabs;
 	WithProcessingLeft<StaticRect> list; 
 	WithProcessingRight<StaticRect> right;
 	Splitter splitter;

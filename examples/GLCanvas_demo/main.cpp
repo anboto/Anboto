@@ -17,7 +17,7 @@ GLCanvas_demo::GLCanvas_demo()
 			String header;
 			LoadStl(~filename, surf, isText, header);
 			surf.GetPanelParams();
-			surf.GetLimits();
+			surf.GetEnvelope();
 			surf.GetSurface();
 			surf.GetVolume();
 			canvas.SetEnv(surf.env);

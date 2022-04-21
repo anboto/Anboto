@@ -117,12 +117,12 @@ void NonLinearOptimization() {
 		VERIFY(VerifyIsApprox(lm.fvec.squaredNorm(), 5.64270823E+03));
 		
 		VERIFY(VerifyIsApprox(x[0], 1.2881396E+03) &&
-			    VerifyIsApprox(x[1], 1.4910792E+03) &&
-			    VerifyIsApprox(x[2], 5.8323836E+02) &&
-			    VerifyIsApprox(x[3], 7.5416644E+01) &&
-			    VerifyIsApprox(x[4], 9.6629502E-01) &&
-			    VerifyIsApprox(x[5], 3.9797285E-01) &&
-			    VerifyIsApprox(x[6], 4.9727297E-02));
+			    VerifyIsApprox(x[1], 1.4910793E+03) &&
+			    VerifyIsApprox(x[2], 5.8323841E+02) &&
+			    VerifyIsApprox(x[3], 7.5416654E+01) &&
+			    VerifyIsApprox(x[4], 9.6629508E-01) &&
+			    VerifyIsApprox(x[5], 3.9797288E-01) &&
+			    VerifyIsApprox(x[6], 4.9727312E-02));
 	}
 }
 

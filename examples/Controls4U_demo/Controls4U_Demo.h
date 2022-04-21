@@ -3,7 +3,7 @@
 #ifndef _Controls4U_Demo_Controls4U_Demo_h
 #define _Controls4U_Demo_Controls4U_Demo_h
 
-#define LAYOUTFILE <Controls4U_Demo/Controls4U_Demo.lay>
+#define LAYOUTFILE <examples/Controls4U_Demo/Controls4U_Demo.lay>
 #include <CtrlCore/lay.h>
 
 class EditFileFolder_Demo : public WithEditFileFolder<StaticRect> {

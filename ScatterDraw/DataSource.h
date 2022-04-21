@@ -162,7 +162,7 @@ public:
 	double IntegralY() 			{return Integral(&DataSource::y, &DataSource::x);}
 	double IntegralY(double from, double to, double n) 	{return Integral(from, to, n);}
 
-	Upp::Vector<Pointf> FFTY(double tSample, bool frequency = false, int type = FFT_TYPE::T_FFT, 
+	UVector<Pointf> FFTY(double tSample, bool frequency = false, int type = FFT_TYPE::T_FFT, 
 					int window = FFT_WINDOW::HAMMING, int numSub = 1, double overlapping = 0)  {
 		return FFT(&DataSource::y, tSample, frequency, type, window, numSub, overlapping);}
 	static int GetFFTWindowCount() 			  {return 3;}
@@ -554,13 +554,13 @@ public:
 template <class T>
 class ArrayY : public DataSource {
 private:
-	const Upp::Array<T> *yData = 0;
+	const Array<T> *yData = 0;
 	double x0 = 0, deltaX = 0;
 
 public:
 	ArrayY() {}
-	ArrayY(const Upp::Array<T> &_yData, double _x0 = 0, double _deltaX = 1) {Init(_yData, _x0, _deltaX);}
-	void Init(const Upp::Array<T> &_yData, double _x0 = 0, double _deltaX = 1) {
+	ArrayY(const Array<T> &_yData, double _x0 = 0, double _deltaX = 1) {Init(_yData, _x0, _deltaX);}
+	void Init(const Array<T> &_yData, double _x0 = 0, double _deltaX = 1) {
 		this->yData = &_yData;
 		this->x0 = _x0;
 		this->deltaX = _deltaX;
@@ -674,10 +674,10 @@ public:
 
 class ArrayXY : public DataSource {
 private:
-	const Upp::Array<double> *xData, *yData;
+	const Array<double> *xData, *yData;
 
 public:
-	ArrayXY(const Upp::Array<double> &_xData, const Upp::Array<double> &_yData) : xData(&_xData), yData(&_yData) {}
+	ArrayXY(const Array<double> &_xData, const Array<double> &_yData) : xData(&_xData), yData(&_yData) {}
 	virtual inline double x(int64 id) 		{return (*xData)[int(id)];}
 	virtual inline double y(int64 id) 		{return (*yData)[int(id)];}
 	virtual inline int64 GetCount() const	{return min(xData->GetCount(), yData->GetCount());}
@@ -700,10 +700,10 @@ public:
 
 class ArrayPointf : public DataSource {
 private:
-	const Upp::Array<Pointf> *data;
+	const Array<Pointf> *data;
 
 public:
-	ArrayPointf(const Upp::Array<Pointf> &_data) : data(&_data) {}
+	ArrayPointf(const Array<Pointf> &_data) : data(&_data) {}
 	virtual inline double y(int64 id) 		{return (*data)[int(id)].y;}
 	virtual inline double x(int64 id) 	 {return (*data)[int(id)].x;}
 	virtual inline int64 GetCount() const	{return data->GetCount();}

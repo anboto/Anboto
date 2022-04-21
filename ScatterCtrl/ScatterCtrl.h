@@ -401,8 +401,8 @@ private:
 	
 	bool highlighting = false;
 	
-	Upp::Array<MouseBehavior> mouseBehavior; 
-	Upp::Array<KeyBehavior> keyBehavior;
+	Array<MouseBehavior> mouseBehavior; 
+	Array<KeyBehavior> keyBehavior;
 	
 	void Paint0(Draw& w, const Size &sz);
 	

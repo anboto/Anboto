@@ -8,7 +8,7 @@
 
 using namespace Upp;
 
-#define LAYOUTFILE <GLCanvas_demo/GLCanvas_demo.lay>
+#define LAYOUTFILE <examples/GLCanvas_demo/GLCanvas_demo.lay>
 #include <CtrlCore/lay.h>
 
 class GLCanvas_demo : public WithGLCanvas_demoLayout<TopWindow> {

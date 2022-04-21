@@ -9,10 +9,10 @@ using namespace Upp;
 
 #include "SysInfo_demo_gui.h"
 
-#define IMAGEFILE <SysInfo_demo_gui/SysInfo_demo_gui.iml>
+#define IMAGEFILE <examples/SysInfo_demo_gui/SysInfo_demo_gui.iml>
 #define IMAGECLASS Images
 #include <Draw/iml.h>
-#define LAYOUTFILE <SysInfo_demo_gui/SysInfo_demo_gui.lay>
+#define LAYOUTFILE <examples/SysInfo_demo_gui/SysInfo_demo_gui.lay>
 	
 	
 GUI_APP_MAIN { 

@@ -53,8 +53,8 @@ Vector <double> &GetDashedArray(String dash) {
 	return pats.GetValues()[pos];
 }
 
-void ScatterDraw::ParseTextMultiline(const String &text, Upp::Font &fnt, Upp::Vector <String> &texts, 
-		Upp::Vector <Size> &sizes) {
+void ScatterDraw::ParseTextMultiline(const String &text, Upp::Font &fnt, UVector <String> &texts, 
+		UVector <Size> &sizes) {
 	Size ret(0, 0);
 	int npos = 0;
 	for (int pos = 0; npos != -1; pos = npos+1) {
@@ -70,7 +70,7 @@ void ScatterDraw::ParseTextMultiline(const String &text, Upp::Font &fnt, Upp::Ve
 	}
 }
 
-Size GetTextSizeMultiline(Upp::Vector <Size> &sizes) {
+Size GetTextSizeMultiline(UVector <Size> &sizes) {
 	Size ret(0, 0);
 	for (int i = 0; i < sizes.GetCount(); ++i) {
 		if (sizes[i].cx > ret.cx)

@@ -27,6 +27,12 @@
 
 namespace Upp {
 
+template <class T>
+using UVector = Upp::Vector<T>;
+
+template <class T>
+using UArray = Upp::Array<T>;
+
 template<typename _Scalar, ptrdiff_t nx = Eigen::Dynamic, ptrdiff_t ny = Eigen::Dynamic>
 struct NonLinearOptimizationFunctor {
 	typedef _Scalar Scalar;

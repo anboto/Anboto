@@ -4,8 +4,10 @@
 #define _GLCanvas_surface_h_
 
 #include <Eigen/Eigen.h>
+#include <Functions4U/Functions4U.h>
 
 namespace Upp {
+using namespace Eigen;
 
 const double EPS_XYZ = 0.001;
 
@@ -38,65 +40,70 @@ void Sort(T& a, T& b, T& c) {
 		Swap(b, c);
 }
 
-void GetTransform(Eigen::Affine3d &aff, double ax, double ay, double az, double cx, double cy, double cz);
-void GetTransform(Eigen::Affine3d &aff, double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz);	
+void GetTransform(Affine3d &aff, double ax, double ay, double az, double cx, double cy, double cz);
+void GetTransform(Affine3d &aff, double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz);	
 
-class Point3D : public Moveable<Point3D> {
+class Value3D : public Moveable<Value3D> {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
 	double x, y, z;
 	
-	Point3D() 									{}
-	Point3D(const Nuller&) 						{SetNull();}
-	Point3D(const Point3D &p) 					{Set(p);}
-	Point3D(const Eigen::Vector3d &p) 			{x = p(0);	y = p(1);	z = p(2);}
-	Point3D(double _x, double _y, double _z) 	{x = _x; y = _y; z = _z;}
+	Value3D() 									{}
+	Value3D(const Nuller&) 						{SetNull();}
+	Value3D(const Value3D &p) 					{Set(p);}
+	Value3D(const Vector3d &p) 					{Set(p);}
+	Value3D(double _x, double _y, double _z) 	{Set(_x, _y, _z);}
 	
 	void SetNull() 				{x = Null; y = 0;}
 	bool IsNullInstance() const	{return IsNull(x);}
 	
 	void Reset() 			{x = y = z = 0;}
 	
-	Point3D(bool positive)	{x = Null; y = positive ? 1 : -1;}
+	Value3D(bool positive)	{x = Null; y = positive ? 1 : -1;}
 	bool IsPosInf()			{return IsNull(x) && y == 1;}
 	bool IsNegInf()			{return IsNull(x) && y == -1;}
 	
-	void Set(const Point3D &p) 					{x = p.x;	y = p.y;	z = p.z;}
+	void Set(const Value3D &p) 					{x = p.x;	y = p.y;	z = p.z;}
+	void Set(const Vector3d &p) 				{x = p(0);	y = p(1);	z = p(2);}
 	void Set(double _x, double _y, double _z) 	{x = _x;  	y = _y;  	z = _z;}
 	
-	String ToString() const { return FormatDouble(x) + "," + FormatDouble(y) + "," + FormatDouble(z); }
+	inline Value3D operator=(const Value3D &p)	{Set(p);	return *this;}
+	inline Value3D operator=(const Vector3d &p)	{Set(p);	return *this;}
 	
-	inline bool IsSimilar(const Point3D &p, double similThres) const {
+	String ToString() const {return FormatDouble(x) + "," + FormatDouble(y) + "," + FormatDouble(z); }
+	void Print() 			{Cout() << "\n" << ToString();}
+	
+	inline bool IsSimilar(const Value3D &p, double similThres) const {
 		if (abs(p.x - x) < similThres && abs(p.y - y) < similThres && abs(p.z - z) < similThres)
 			return true;
 		return false;
 	}
 	#pragma GCC diagnostic ignored "-Wattributes"
-	friend bool operator==(const Point3D& a, const Point3D& b) {return a.IsSimilar(b, EPS_XYZ);}
-	friend bool operator!=(const Point3D& a, const Point3D& b) {return !a.IsSimilar(b, EPS_XYZ);}
+	friend bool operator==(const Value3D& a, const Value3D& b) {return a.IsSimilar(b, EPS_XYZ);}
+	friend bool operator!=(const Value3D& a, const Value3D& b) {return !a.IsSimilar(b, EPS_XYZ);}
 	#pragma GCC diagnostic warning "-Wattributes"
 	
 	void Translate(double dx, double dy, double dz);
-	void TransRot(const Eigen::Affine3d &quat);
+	void TransRot(const Affine3d &quat);
 	void TransRot(double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz);
 	void Rotate(double ax, double ay, double az, double cx, double cy, double cz);	
 		
 	// Dot product or scalar product
-	double dot(const Point3D& a) const {return x*a.x + y*a.y + z*a.z;}
+	double dot(const Value3D& a) const {return x*a.x + y*a.y + z*a.z;}
 	
 	// Cross product or vector product X (or wedge product ∧ in 3D) 
-	inline friend Point3D operator%(const Point3D& a, const Point3D& b) {return Point3D(a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x);}
+	inline friend Value3D operator%(const Value3D& a, const Value3D& b) {return Value3D(a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x);}
 	
-	inline friend Point3D operator+(const Point3D& a, const Point3D& b) {return Point3D(a.x+b.x, a.y+b.y, a.z+b.z);}
-	inline friend Point3D operator-(const Point3D& a, const Point3D& b) {return Point3D(a.x-b.x, a.y-b.y, a.z-b.z);}
-	inline friend Point3D operator*(const Point3D& a, double b) 		{return Point3D(a.x*b, a.y*b, a.z*b);}
+	inline friend Value3D operator+(const Value3D& a, const Value3D& b) {return Value3D(a.x+b.x, a.y+b.y, a.z+b.z);}
+	inline friend Value3D operator-(const Value3D& a, const Value3D& b) {return Value3D(a.x-b.x, a.y-b.y, a.z-b.z);}
+	inline friend Value3D operator*(const Value3D& a, double b) 		{return Value3D(a.x*b, a.y*b, a.z*b);}
 
-	inline void operator+=(const Point3D& a) {x += a.x; y += a.y; z += a.z;}
-	inline void operator-=(const Point3D& a) {x -= a.x; y -= a.y; z -= a.z;}
+	inline void operator+=(const Value3D& a) {x += a.x; y += a.y; z += a.z;}
+	inline void operator-=(const Value3D& a) {x -= a.x; y -= a.y; z -= a.z;}
 
 	double GetLength() const {return ::sqrt(x*x + y*y + z*z);}
-	Point3D &Normalize() {
+	Value3D &Normalize() {
 		double length = GetLength();
 		
 		if (length < 1e-10) 
@@ -108,18 +115,18 @@ public:
 		}
 		return *this;
 	}
-	double Distance(const Point3D &p)  		const {return ::sqrt(sqr(x-p.x) + sqr(y-p.y) + sqr(z-p.z));}
-	inline double Length(const Point3D &p) 	const {return Distance(p);}
-	double Manhattan(const Point3D &p) 		const {return abs(x-p.x) + abs(y-p.y) + abs(z-p.z);}
+	double Distance(const Value3D &p)  		const {return ::sqrt(sqr(x-p.x) + sqr(y-p.y) + sqr(z-p.z));}
+	inline double Length(const Value3D &p) 	const {return Distance(p);}
+	double Manhattan(const Value3D &p) 		const {return abs(x-p.x) + abs(y-p.y) + abs(z-p.z);}
 	double Manhattan() 				   		const {return abs(x) + abs(y) + abs(z);}
 	
-	double Angle(const Point3D &p) const {return acos(dot(p)/(GetLength()*p.GetLength()));}
+	double Angle(const Value3D &p) const {return acos(dot(p)/(GetLength()*p.GetLength()));}
 	
 	void SimX() {x = -x;}
 	void SimY() {y = -y;}
 	void SimZ() {z = -z;}
 	
-	void Mirror(const Point3D &p0) {
+	void Mirror(const Value3D &p0) {
 		x = 2*p0.x - x;
 		y = 2*p0.y - y;
 		z = 2*p0.z - z;
@@ -138,54 +145,128 @@ public:
 	}
 };
 
-typedef Point3D Direction3D;
+typedef Value3D Direction3D;
+typedef Value3D Point3D;
 
-
-class Force6 : public Moveable<Force6> {
+class Value6D {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
-	Force6() {}
-	Force6(const Force6 &f)				{Set(f);}
-	Force6(const Eigen::VectorXd &v)	{Set(v);}
+	Value6D() {}
+	Value6D(const Value6D &f)	{Set(f);}
+	Value6D(const VectorXd &v)	{Set(v);}
 	
-	void Set(const Force6 &f)	{x = f.x;	y = f.y;	z = f.z;	rx = f.rx;	ry = f.ry;	rz = f.rz;}
-	void Set(const Eigen::VectorXd &v) {
+	void Set(const Value6D &f)	{t.x = f.t.x;	t.y = f.t.y;	t.z = f.t.z;	r.x = f.r.x;	r.y = f.r.y;	r.z = f.r.z;}
+	void Set(const VectorXd &v) {
 		ASSERT(v.size() == 6);
-		x = v[0];	y = v[1];	z = v[2];	rx = v[3];	ry = v[4];	rz = v[5];
+		Set(v.data());
 	}
-		
-	void Reset() {x = y = z = rx = ry = rz = 0;}
+	template<typename T>
+	void Set(const T *v) {
+		t.x = v[0];	t.y = v[1];	t.z = v[2];	r.x = v[3];	r.y = v[4];	r.z = v[5];
+	}
+	template<typename T>
+	void Add(const T *v) {
+		t.x+= v[0];	t.y+= v[1];	t.z+= v[2];	r.x+= v[3];	r.y+= v[4];	r.z+= v[5];
+	}
+	void Add(const VectorXd &v) {
+		ASSERT(v.size() == 6);
+		Add(v.data());
+	}
+	void Set(double v0, double v1, double v2, double v3, double v4, double v5) {
+		t.x = v0;	t.y = v1;	t.z = v2;	r.x = v3;	r.y = v4;	r.z = v5;
+	}
+	void Reset() {t.Reset();	r.Reset();}
 	
-	void Add(const Direction3D &force, const Point3D &point, const Point3D &c0);
-	void operator*=(double v) 	{x *= v;	y *= v;		z *= v;		rx *= v;	ry *= v;	rz *= v;}
+	void operator*=(double v) 	{t.x *= v;	t.y *= v;		t.z *= v;		r.x *= v;	r.y *= v;	r.z *= v;}
 	
 	double& operator[](int id) {
 		ASSERT(id >= 0 && id < 6);
 		switch (id) {
-		case 0:	return x;
-		case 1:	return y;
-		case 2:	return z;
-		case 3:	return rx;
-		case 4:	return ry;
-		default:return rz;
+		case 0:	return t.x;
+		case 1:	return t.y;
+		case 2:	return t.z;
+		case 3:	return r.x;
+		case 4:	return r.y;
+		default:return r.z;
 		}
 	}
-	Eigen::VectorXd ToVector() const {
-		Eigen::VectorXd v(6);
+	void Print() {
+		Cout() << Format("\nx: %s. y: %s. z: %s. rx: %s. ry: %s. rz: %s", 
+			FDS(t.x, 10, true), FDS(t.y, 10, true), FDS(t.z, 10, true),
+			FDS(r.x, 10, true), FDS(r.y, 10, true), FDS(r.z, 10, true));
+	}
+	VectorXd ToVector() const {
+		VectorXd v(6);
 		ToC(v.data());
 		return v;
 	}
-	void ToC(double *v) const {
-		v[0] = x;	v[1] = y;	v[2] = z;	v[3] = rx;	v[4] = ry;	v[5] = rz;
+	template <typename T>
+	void ToC(T *v) const {
+		v[0] = T(t.x);	v[1] = T(t.y);	v[2] = T(t.z);	
+		v[3] = T(r.x);	v[4] = T(r.y);	v[5] = T(r.z);
 	}
-
-	double x, y, z, rx, ry, rz;
+	
+	Value3D t, r;
 };
 
-void Print(const Force6 &f);
-Eigen::VectorXd C6ToVector(const double *c);
-void Vector6ToC(const Eigen::VectorXd &v, double *c);
+class ForceVector;
+
+class Force6D : public Value6D {
+public:
+	Force6D() {}
+	Force6D(const VectorXd &v) : Value6D(v) {}
+	
+	void AddLinear(const Direction3D &dir, const Point3D &point, const Point3D &c0);	
+	void Add(const Force6D &force, const Point3D &point, const Point3D &c0);
+	void Add(const ForceVector &force, const Point3D &c0);
+};
+
+class ForceVector {
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	
+	ForceVector()						{}
+	void Set(double x, double y, double z, double fx, double fy, double fz, double rx, double ry, double rz) {
+		point.x = x;
+		point.y = y;
+		point.z = z;
+		force.t.x = fx;
+		force.t.y = fy;
+		force.t.z = fz;
+		force.r.x = rx;
+		force.r.y = ry;
+		force.r.z = rz;
+	}
+	
+	void TransRot(double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz);
+	void Print();
+	
+	Force6D force;
+	Point3D point;
+};
+
+class Velocity6D : public Value6D {
+public:
+	void Translate(const Point3D &from, const Point3D &to) {
+		Point3D rft = to - from;
+		t += r%rft;
+	}
+};
+
+class Acceleration6D : public Value6D {
+public:
+	void Translate(const Point3D &from, const Point3D &to, const Velocity6D &vel) {
+		Point3D rft = to - from;
+		t += r%rft + vel.r%(vel.r%rft);
+	}
+};
+
+void Print(const Value6D &f);
+VectorXd C6ToVector(const double *c);
+VectorXd C6ToVector(const float *c);
+void Vector6ToC(const VectorXd &v, double *c);
+void Vector6ToC(const VectorXd &v, float *c);
 
 
 double Length(const Point3D &p1, const Point3D &p2);
@@ -252,7 +333,7 @@ public:
 		to.Translate(dx, dy, dz);
 	}
 	
-	void TransRot(const Eigen::Affine3d &quat) {
+	void TransRot(const Affine3d &quat) {
 		from.TransRot(quat);
 		to.TransRot(quat);
 	}
@@ -267,7 +348,7 @@ Direction3D GetNormal(const Point3D &a, const Point3D &b, const Point3D &c);
 
 Point3D Intersection(const Direction3D &lineVector, const Point3D &linePoint, const Direction3D &planeNormal, const Point3D &planePoint);
 
-void TranslateForce(const Point3D &from, const Eigen::VectorXd &ffrom, Point3D &to, Eigen::VectorXd &fto);
+void TranslateForce(const Point3D &from, const VectorXd &ffrom, Point3D &to, VectorXd &fto);
 	
 bool PointInSegment(const Point3D &p, const Segment3D &seg);
 bool SegmentInSegment(const Segment3D &in, double in_len, const Segment3D &seg);
@@ -432,14 +513,14 @@ public:
 	void GetVolume();
 	int VolumeMatch(double ratioWarning, double ratioError) const;
 	Point3D GetCenterOfBuoyancy() const;
-	void GetInertia33(Eigen::Matrix3d &inertia, const Point3D &center, bool refine = false) const;
-	void GetInertia66(Eigen::MatrixXd &inertia, const Point3D &center, bool refine) const;
-	void GetHydrostaticForce(Force6 &f, const Point3D &c0, double rho, double g) const;
-	void GetHydrostaticForceNormalized(Force6 &f, const Point3D &c0) const;
-	void GetHydrostaticForceCB(Force6 &f, const Point3D &c0, const Point3D &cb, double rho, double g) const;
-	void GetHydrostaticForceCBNormalized(Force6 &f, const Point3D &c0, const Point3D &cb) const;
-	static void GetMassForce(Force6 &f, const Point3D &c0, const Point3D &cg, const double mass, const double g);
-	void GetHydrostaticStiffness(Eigen::MatrixXd &c, const Point3D &c0, const Point3D &cg, 
+	void GetInertia33(Matrix3d &inertia, const Point3D &center, bool refine = false) const;
+	void GetInertia66(MatrixXd &inertia, const Point3D &center, bool refine) const;
+	void GetHydrostaticForce(Force6D &f, const Point3D &c0, double rho, double g) const;
+	void GetHydrostaticForceNormalized(Force6D &f, const Point3D &c0) const;
+	void GetHydrostaticForceCB(Force6D &f, const Point3D &c0, const Point3D &cb, double rho, double g) const;
+	void GetHydrostaticForceCBNormalized(Force6D &f, const Point3D &c0, const Point3D &cb) const;
+	static void GetMassForce(Force6D &f, const Point3D &c0, const Point3D &cg, const double mass, const double g);
+	void GetHydrostaticStiffness(MatrixXd &c, const Point3D &c0, const Point3D &cg, 
 				const Point3D &cb, double rho, double g, double mass);
 	double GetWaterPlaneArea() const;
 	static Vector<Point3D> GetClosedPolygons(Vector<Segment3D> &segs);
@@ -571,15 +652,15 @@ public:
 	static double GetSurface(const SurfaceX &surf, bool (*Fun)(double,double,double));
 	static double GetVolume(const SurfaceX &surf, bool (*Fun)(double,double,double));
 	
-	static void TransRot(SurfaceX &surf, const SurfaceX &surf0, const Eigen::Affine3d &quat); 
+	static void TransRot(SurfaceX &surf, const SurfaceX &surf0, const Affine3d &quat); 
 	
-	static void GetTransformFast(Eigen::MatrixXd &mat, double dx, double dy, double dz, double ax, double ay, double az);
-	static void TransRotFast(double &x, double &y, double &z, double x0, double y0, double z0, const Eigen::MatrixXd &mat);
+	static void GetTransformFast(MatrixXd &mat, double dx, double dy, double dz, double ax, double ay, double az);
+	static void TransRotFast(double &x, double &y, double &z, double x0, double y0, double z0, const MatrixXd &mat);
 	static void TransRotFast(double &x, double &y, double &z, double x0, double y0, double z0,
 						 	 double dx, double dy, double dz, double ax, double ay, double az);
 	
-	static void GetTransform(Eigen::Affine3d &aff, double dx, double dy, double dz, double ax, double ay, double az);
-	static void TransRot(double &x, double &y, double &z, double x0, double y0, double z0, const Eigen::Affine3d &quat);
+	static void GetTransform(Affine3d &aff, double dx, double dy, double dz, double ax, double ay, double az);
+	static void TransRot(double &x, double &y, double &z, double x0, double y0, double z0, const Affine3d &quat);
 	static void TransRot(double &x, double &y, double &z, double x0, double y0, double z0,
 						 double dx, double dy, double dz, double ax, double ay, double az);
 	
@@ -587,9 +668,9 @@ private:
 	const Surface *parent = nullptr;
 
 public:
-	Eigen::VectorXd surfaces;	// (panels)
-	Eigen::MatrixXd centroids;	// (panels, 3)
-	Eigen::MatrixXd normals;	// (panels, 3)
+	VectorXd surfaces;	// (panels)
+	MatrixXd centroids;	// (panels, 3)
+	MatrixXd normals;	// (panels, 3)
 };
 
 void LoadStl(String fileName, Surface &surf, bool &isText, String &header);

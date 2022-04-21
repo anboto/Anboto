@@ -61,9 +61,9 @@ bool GetMemoryInfo(int &memoryLoad, uint64 &totalPhys, uint64 &freePhys, uint64 
 // name: Window name
 // fileName: Window process program file name
 // title: Window title (caption)
-void GetWindowsList(Upp::Array<int64> &wid, Upp::Array<int64> &pid, Upp::Array<String> &name, 
-					Upp::Array<String> &fileName, Upp::Array<String> &title, bool getAll = true);
-Upp::Array<int64> GetWindowsList();
+void GetWindowsList(Array<int64> &wid, Array<int64> &pid, Array<String> &name, 
+					Array<String> &fileName, Array<String> &title, bool getAll = true);
+Array<int64> GetWindowsList();
 
 Rect GetDesktopRect();
 	
@@ -81,8 +81,8 @@ int Window_GetStatus(int64 windowId);
 
 /////////////////////////////////////////////////////////////////////
 // Process list
-bool GetProcessList(Upp::Array<int64> &pid, Upp::Array<String> &pNames);
-Upp::Array<int64> GetProcessList();
+bool GetProcessList(Array<int64> &pid, Array<String> &pNames);
+Array<int64> GetProcessList();
 String GetProcessName(int64 pid);
 String GetProcessFileName(int64 processID);
 

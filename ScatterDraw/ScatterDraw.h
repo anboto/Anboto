@@ -508,10 +508,10 @@ public:
 														{return AddSeries<EigenVector>(xData, yData);}
 	ScatterDraw &AddSeries(Vector<double> &xData, Vector<double> &yData)
 														{return AddSeries<VectorXY>(xData, yData);}
-	ScatterDraw &AddSeries(Upp::Array<double> &xData, Upp::Array<double> &yData)
+	ScatterDraw &AddSeries(Array<double> &xData, Array<double> &yData)
 														{return AddSeries<ArrayXY>(xData, yData);}		
 	ScatterDraw &AddSeries(Vector<Pointf> &points)		{return AddSeries<VectorPointf>(points);}
-	ScatterDraw &AddSeries(Upp::Array<Pointf> &points)	{return AddSeries<ArrayPointf>(points);}
+	ScatterDraw &AddSeries(Array<Pointf> &points)		{return AddSeries<ArrayPointf>(points);}
 	template <class Y>
 	ScatterDraw &AddSeries(Vector<Vector <Y> > &data, int idx, int idy, 
 		Vector<int> &idsx, Vector<int> &idsy, Vector<int> &idsFixed, bool useCols = true, int beginData = 0, int numData = Null) {
@@ -562,7 +562,7 @@ public:
 	template <class Y>
 	ScatterDraw &AddSeries(Vector<Y> &yData, double x0, double deltaX)		{return _AddSeries(new VectorY<Y>(yData, x0, deltaX));}
 	template <class Y>
-	ScatterDraw &AddSeries(Upp::Array<Y> &yData, double x0, double deltaX)	{return _AddSeries(new ArrayY<Y>(yData, x0, deltaX));}
+	ScatterDraw &AddSeries(Array<Y> &yData, double x0, double deltaX)		{return _AddSeries(new ArrayY<Y>(yData, x0, deltaX));}
 	template <class X, class Y>
 	ScatterDraw &AddSeries(VectorMap<X, Y> &data)	{return _AddSeries(new VectorMapXY<X, Y>(data));}
 	template <class X, class Y>
@@ -574,9 +574,9 @@ public:
 	ScatterDraw &InsertSeries(int index, double *yData, int numData, double x0 = 0, double deltaX = 1);
 	ScatterDraw &InsertSeries(int index, double *xData, double *yData, int numData);
 	ScatterDraw &InsertSeries(int index, Vector<double> &xData, Vector<double> &yData);
-	ScatterDraw &InsertSeries(int index, Upp::Array<double> &xData, Upp::Array<double> &yData);
+	ScatterDraw &InsertSeries(int index, Array<double> &xData, Array<double> &yData);
 	ScatterDraw &InsertSeries(int index, Vector<Pointf> &points);
-	ScatterDraw &InsertSeries(int index, Upp::Array<Pointf> &points);
+	ScatterDraw &InsertSeries(int index, Array<Pointf> &points);
 	ScatterDraw &InsertSeries(int index, double (*function)(double));
 	ScatterDraw &InsertSeries(int index, Pointf (*function)(double), int np, double from = 0, double to = 1);
 	ScatterDraw &InsertSeries(int index, PlotExplicFunc &function);
@@ -607,7 +607,7 @@ public:
 	template <class Y>
 	ScatterDraw &InsertSeries(int index, Vector<Y> &yData, double x0, double deltaX)		{return _InsertSeries(index, new VectorY<Y>(yData, x0, deltaX));}
 	template <class Y>
-	ScatterDraw &InsertSeries(int index, Upp::Array<Y> &yData, double x0, double deltaX)	{return _InsertSeries(index, new ArrayY<Y>(yData, x0, deltaX));}
+	ScatterDraw &InsertSeries(int index, Array<Y> &yData, double x0, double deltaX)	{return _InsertSeries(index, new ArrayY<Y>(yData, x0, deltaX));}
 	template <class X, class Y>
 	ScatterDraw &InsertSeries(int index, VectorMap<X, Y> &data)	{return _InsertSeries(index, new VectorMapXY<X, Y>(data));}
 	template <class X, class Y>
@@ -1175,7 +1175,7 @@ protected:
 	ZoomStyle zoomStyleX = TO_CENTER, 
 			  zoomStyleY = TO_CENTER;	
 	
-	Upp::Array<ScatterSeries> series;
+	Array<ScatterSeries> series;
 	
 	bool showLegend = true;
 	
@@ -1253,7 +1253,7 @@ private:
 	double responsivenessFactor = 1;
 	
 	static void ParseTextMultiline(const String &text, Upp::Font &fnt, 
-								   Upp::Vector <String> &texts, Upp::Vector <Size> &sizes);
+								   UVector <String> &texts, UVector <Size> &sizes);
 	
 	void SetXYMinLinkedEach(double xmin, double xmin0, double ymin, double ymin0, double ymin2, double ymin20);
 	void SetRangeLinkedEach(double rx, double rx0, double ry, double ry0, double ry2, double ry20);
@@ -1430,8 +1430,8 @@ bool ScatterDraw::PlotTexts(T& w, bool boldX, bool boldY) {
 				
 				if (!gridLabelX.IsEmpty()) {
 					if (drawXReticleNumbers) {
-						Upp::Vector <String> texts;
-						Upp::Vector <Size> sizes;
+						UVector <String> texts;
+						UVector <Size> sizes;
 						ParseTextMultiline(gridLabelX, fontXNum, texts, sizes);
 						for (int ii = 0; ii < texts.GetCount(); ++ii) {
 							int cy = ii == 0 ? 0 : sizes[ii - 1].cy;

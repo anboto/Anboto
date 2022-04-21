@@ -27,7 +27,7 @@ public:
 		SetAxis(args...);
 	}
 		
-	Upp::Vector<int> &GetAxisDim()	{return axisDim;};
+	Vector<int> &GetAxisDim()	{return axisDim;};
 	int GetIndex(const Vector<int> &index) const {
 		ASSERT_(index[0] >= 0 && index[0] < axisDim[0], Format("index[0]=%d", index[0]));
 		int ret = index[0];

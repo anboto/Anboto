@@ -31,7 +31,7 @@ public:
 	virtual double f(Vector <double> ) 		{NEVER(); return Null;}
 	virtual double x(int64 ) 				{NEVER(); return Null;}
 	virtual double y(int64 ) 				{NEVER(); return Null;}	
-	double x(double y, double x0);
+	double x_from_y(double y, double x0);
 	virtual String GetName() = 0;
 	virtual String GetFullName()			{return GetName();}
 	virtual String GetEquation(int numDigits = 3) = 0;

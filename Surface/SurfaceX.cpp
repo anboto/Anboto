@@ -11,8 +11,6 @@
 namespace Upp {
 using namespace Eigen;
 
-
-
 void SurfaceX::Load(const Surface &p) {
 	parent = &p;
 	
@@ -75,14 +73,14 @@ double SurfaceX::GetVolume(const SurfaceX &surf, bool (*Fun)(double,double,doubl
 	return vz;
 }
 
-void SurfaceX::GetTransformFast(Eigen::MatrixXd &mat, double dx, double dy, double dz, double ax, double ay, double az) {
+void SurfaceX::GetTransformFast(MatrixXd &mat, double dx, double dy, double dz, double ax, double ay, double az) {
     double ax2 = sqr(ax);
     double ay2 = sqr(ay);
     double az2 = sqr(az);
     double sq_o1o2o3 = ax2 + ay2 + az2;
     double sqrt_o1o2o3 = sqrt(1 + sq_o1o2o3);
 
-	Eigen::MatrixXd rotMat = Eigen::MatrixXd::Zero(4, 4);
+	MatrixXd rotMat = MatrixXd::Zero(4, 4);
     rotMat(0,0) = ax2*sqrt_o1o2o3 + ay2 + az2;
     rotMat(1,0) = az*sq_o1o2o3 + ax*ay*(sqrt_o1o2o3-1);
     rotMat(2,0) = -ay*sq_o1o2o3 + ax*az*(sqrt_o1o2o3-1);
@@ -96,7 +94,7 @@ void SurfaceX::GetTransformFast(Eigen::MatrixXd &mat, double dx, double dy, doub
         rotMat *= (1/(sq_o1o2o3*sqrt_o1o2o3));
     rotMat(3,3) = 1;
     
-    mat = Eigen::MatrixXd::Zero(4, 4);
+    mat = MatrixXd::Zero(4, 4);
     mat(0,0) = mat(1,1) = mat(2,2) = mat(3,3) = 1;
     mat(0,3) = dx;
     mat(1,3) = dy;
@@ -106,8 +104,8 @@ void SurfaceX::GetTransformFast(Eigen::MatrixXd &mat, double dx, double dy, doub
         mat *= rotMat;
 }
 
-void SurfaceX::TransRotFast(double &x, double &y, double &z, double x0, double y0, double z0, const Eigen::MatrixXd &mat) {
-    Eigen::VectorXd position(4);
+void SurfaceX::TransRotFast(double &x, double &y, double &z, double x0, double y0, double z0, const MatrixXd &mat) {
+    VectorXd position(4);
     position << x0, y0, z0, 1;
     
 	position = mat*position;
@@ -118,36 +116,36 @@ void SurfaceX::TransRotFast(double &x, double &y, double &z, double x0, double y
 
 void SurfaceX::TransRotFast(double &x, double &y, double &z, double x0, double y0, double z0,
 					 double dx, double dy, double dz, double ax, double ay, double az) {
-	Eigen::MatrixXd mat;		
+	MatrixXd mat;		
 	GetTransformFast(mat, dx, dy, dz, ax, ay, az);
 	TransRotFast(x, y, z, x0, y0, z0, mat);
 }
 
-void SurfaceX::GetTransform(Eigen::Affine3d &aff, double dx, double dy, double dz, double ax, double ay, double az) {
-	Eigen::Vector3d d(dx, dy, dz);	
-	aff = Eigen::Translation3d(d) *
-		  Eigen::AngleAxisd(ax, Eigen::Vector3d::UnitX()) *
-		  Eigen::AngleAxisd(ay, Eigen::Vector3d::UnitY()) *
-		  Eigen::AngleAxisd(az, Eigen::Vector3d::UnitZ());
+void SurfaceX::GetTransform(Affine3d &aff, double dx, double dy, double dz, double ax, double ay, double az) {
+	Vector3d d(dx, dy, dz);	
+	aff = Translation3d(d) *
+		  AngleAxisd(ax, Vector3d::UnitX()) *
+		  AngleAxisd(ay, Vector3d::UnitY()) *
+		  AngleAxisd(az, Vector3d::UnitZ());
 }
 
-void SurfaceX::TransRot(double &x, double &y, double &z, double x0, double y0, double z0, const Eigen::Affine3d &quat) {
-	Eigen::Vector3d pnt0(x0, y0, z0);	
-	Eigen::Vector3d pnt = quat * pnt0;
+void SurfaceX::TransRot(double &x, double &y, double &z, double x0, double y0, double z0, const Affine3d &quat) {
+	Vector3d pnt0(x0, y0, z0);	
+	Vector3d pnt = quat * pnt0;
 
 	x = pnt[0];
 	y = pnt[1];
 	z = pnt[2];
 }
 
-void SurfaceX::TransRot(SurfaceX &surf, const SurfaceX &surf0, const Eigen::Affine3d &quat) {
+void SurfaceX::TransRot(SurfaceX &surf, const SurfaceX &surf0, const Affine3d &quat) {
 	surf.centroids = quat * surf0.centroids.colwise().homogeneous();
 	surf.normals = quat * surf0.normals.colwise().homogeneous();
 }
 
 void SurfaceX::TransRot(double &x, double &y, double &z, double x0, double y0, double z0,
 					 double dx, double dy, double dz, double ax, double ay, double az) {
-	Eigen::Affine3d aff;		
+	Affine3d aff;		
 	GetTransform(aff, dx, dy, dz, ax, ay, az);
 	TransRot(x, y, z, x0, y0, z0, aff);
 }

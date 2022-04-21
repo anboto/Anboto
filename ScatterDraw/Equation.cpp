@@ -97,7 +97,7 @@ double ExplicitEquation::R2Y(DataSource &serie, double mean) {
 
 int ExplicitEquation::maxFitFunctionEvaluations = 2000;
 
-double ExplicitEquation::x(double y, double x0) {
+double ExplicitEquation::x_from_y(double y, double x0) {
 	Eigen::VectorXd x(1);
 	x[0] = x0;
 	if (!SolveNonLinearEquations(x, [&](const Eigen::VectorXd &x, Eigen::VectorXd &residual)->int {

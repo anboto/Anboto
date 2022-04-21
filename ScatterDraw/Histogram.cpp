@@ -50,7 +50,7 @@ Histogram &Histogram::Create2D(const Vector<Vector<double> > &_ranges, const Vec
 	return *this;
 }
 	
-Histogram &Histogram::Create(Upp::Array<HistogramDataAxis> &dataAxis, bool isY) {
+Histogram &Histogram::Create(Array<HistogramDataAxis> &dataAxis, bool isY) {
 	Clear();
 	
 	int numAxis = dataAxis.GetCount();
