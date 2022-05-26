@@ -67,20 +67,21 @@ void EditFileFolder::Init() {
 	InsertFrame(1, butFolder);
 	isLoad = true;
 	histInd = -1;
-	pfs = 0;
+//	pfs = 0;
 	Dropping(false);
 }
-
+/*
 void EditFileFolder::InitFs() {
 	if (pfs)
 		return;
 	pfs = new FileSel_();
+	pfs->NoExeIcons();
 	pfs->Asking(!isLoad);
-}
+}*/
 
 EditFileFolder::~EditFileFolder() {
-	if (pfs)
-		delete pfs;
+//	if (pfs)
+//		delete pfs;
 }
 
 EditFileFolder &EditFileFolder::UseOpenFolder(bool use) {
@@ -148,10 +149,14 @@ EditFileFolder &EditFileFolder::UseGo(bool use) {
 }
 
 void EditFileFolder::DoBrowse() {
-	InitFs();
-	FileSel_ &fs = *pfs;
+//	InitFs();
+	FileSel_ fs;
 	
 	String s = GetData();
+	fs.Set(s);
+	
+	SetFileSel(fs);
+		
 	if (!s.IsEmpty()) {
 		if (DirectoryExists(AppendFileNameX(fs.GetBaseDir(), s))) 
 			fs.PreSelect(s);
@@ -182,9 +187,13 @@ void EditFileFolder::SetData(const Value& data) {
 }
 
 void EditFileFolder::DoGo(bool add) {
-	InitFs();
+//	InitFs();
+//	FileSel_ fs;
+
 	String path = GetData(); 
-	pfs->Set(path);			
+/*	fs.Set(path);			
+	SetFileSel(fs);*/
+	
 	if (!IsRootFolder(path))
 		butUp.Enable(true);
 	else

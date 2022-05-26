@@ -105,6 +105,18 @@ void LinSpaced(Range &v, int n, typename Range::value_type min, typename Range::
 	}
 }
 
+template <typename T>
+void Arange(Eigen::Matrix<T, Eigen::Dynamic, 1> &v, T min, T max, T step) {
+	int num = int((max - min)/step)+1;
+	v.LinSpaced(int((max - min)/step)+1, min, min + (num-1)*step);
+}
+
+template <class Range>
+void Arange(Range &v, typename Range::value_type min, typename Range::value_type max, typename Range::value_type step) {
+	int num = int((max - min)/step)+1;
+	LinSpaced(v, int((max - min)/step)+1, min, min + (num-1)*step);
+}
+
 
 template <class Range>
 void CircShift(const Range& in, int len, Range &out) {
@@ -142,23 +154,55 @@ inline T Avg(const Eigen::Matrix<T, Eigen::Dynamic, 1> &d) {
 }
 
 template <class Range>
-typename Range::value_type R2(const Range &serie, const Range &serie0, typename Range::value_type mean = Null) {
+typename Range::value_type R2(const Range &serie, const Range &serie0, typename Range::value_type meanserie = Null) {
 	using Scalar = typename Range::value_type;
 	
-	if (IsNull(mean))
-		mean = Avg(serie);
+	if (IsNull(meanserie))
+		meanserie = Avg(serie);
 	Scalar sse = 0, sst = 0;
 	auto sz = min(serie.size(), serie0.size());
 	for (auto i = 0; i < sz; ++i) {
 		auto y = serie[i];
 		auto err = y - serie0(i);
 		sse += err*err;
-		auto d = y - mean;
+		auto d = y - meanserie;
 		sst += d*d;
 	}
 	if (sst < 1E-50 || sse > sst)
 		return 0;
 	return 1 - sse/sst;
+}
+
+template <class Range>
+typename Range::value_type R2(const Range &tserie, const Range &serie, const Range &tserie0, const Range &serie0, typename Range::value_type meanserie = Null) {
+	using Scalar = typename Range::value_type;
+	
+	Range nserie0;
+	Resample(tserie0, serie0, tserie, nserie0);
+	
+	return R2(serie, nserie0, meanserie);
+}
+
+template <class Range>
+typename Range::value_type RMSE(const Range &serie, const Range &serie0) {
+	using Scalar = typename Range::value_type;
+	
+	Scalar ret = 0;
+	auto sz = min(serie.size(), serie0.size());
+	for (auto i = 0; i < sz; ++i) 
+		ret += sqr(serie[i] - serie0[i]);
+
+	return sqrt(ret/sz);
+}
+
+template <class Range>
+typename Range::value_type RMSE(const Range &tserie, const Range &serie, const Range &tserie0, const Range &serie0) {
+	using Scalar = typename Range::value_type;
+	
+	Range nserie0;
+	Resample(tserie0, serie0, tserie, nserie0);
+	
+	return R2(serie, nserie0);
 }
 
 template <class Range>

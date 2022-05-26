@@ -48,4 +48,20 @@ bool SolveNonLinearEquations(VectorXd &y, Function <int(const VectorXd &b, Vecto
 	return true;
 }
 
+double SolveNonLinearEquation(double y, Function <double(double b)> Residual, double xtol, int maxfev, double factor) {
+	VectorXd x(1), res;
+	x[0] = y;
+	
+	auto Residual2 = [&](const VectorXd &b, VectorXd &residual)->int {
+		residual[0] = Residual(b[0]);
+       	if (IsNull(residual[0]))
+       		return 1;
+       	return 0;
+	};
+	if (SolveNonLinearEquations(x, Residual2, xtol, maxfev, factor))
+		return x[0];
+
+	return Null;		
+}
+
 }

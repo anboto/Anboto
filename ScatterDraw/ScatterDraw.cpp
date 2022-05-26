@@ -235,19 +235,19 @@ ScatterDraw &ScatterDraw::SetRange(double rx, double ry, double ry2) {
 ScatterDraw &ScatterDraw::SetMajorUnits(double ux, double uy, double uy2) {
 	if (!IsNull(ux)) {
 		xMajorUnit = ux;
-		xMajorUnitNum = int(xRange/ux);
+		xMajorUnitNum = max(3, int(xRange/ux));
 		AdjustMinUnitX();
 	}
 	if (!IsNull(uy)) {
 		yMajorUnit = uy;
 		yMajorUnit2 = uy*yRange2/yRange;
-		yMajorUnitNum = int(yRange/uy);
+		yMajorUnitNum = max(3, int(yRange/uy));
 		AdjustMinUnitY();
 		AdjustMinUnitY2();
 	} else if (!IsNull(uy2)) {
 		yMajorUnit2 = uy2;
 		yMajorUnit = uy2*yRange/yRange2;
-		yMajorUnitNum = int(yRange/yMajorUnit);
+		yMajorUnitNum = max(3, int(yRange/yMajorUnit));
 		AdjustMinUnitY();
 		AdjustMinUnitY2();
 	}

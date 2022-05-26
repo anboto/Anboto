@@ -742,6 +742,7 @@ void PainterCanvas::Load(String fileName) {
 	if (IsNull(fileName)) {
 		FileSel fs;
 		
+		fs.NoExeIcons();
 		fs.Type("Image files", "*.png; *.jpg; *.tif; *.bmp");
 		fs.Type("All files", "*.*");
 	    if(!fs.ExecuteOpen(t_("Loading background image"))) {
@@ -766,6 +767,7 @@ void PainterCanvas::SaveToFile(String fileName) {
 	if (IsNull(fileName)) {
 		FileSel fs;
 		
+		fs.NoExeIcons();
 		fs.Type("PNG file", "*.png");
 		fs.Type("JPEG file", "*.jpg");
 	    if(!fs.ExecuteSaveAs(t_("Saving background image to PNG or JPEG file"))) {

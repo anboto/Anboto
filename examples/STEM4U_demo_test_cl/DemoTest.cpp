@@ -389,21 +389,21 @@ void TestSeaWaves() {
 	double depth = 50;
 	double H = 2;
 	
-	SeaWaves::rho = 1028;
+	double rho = 1028, g = 9.81;
 	
 	double waveNumber  = SeaWaves::WaveNumber(T, depth, false);
 	UppLog() << "\n" << Format("Wave number: %f rad/m", waveNumber);
 	double waveNumberE = SeaWaves::WaveNumber(T, depth, true);
 	UppLog() << "\n" << Format("Wave number (exact): %f rad/m", waveNumberE);
-	double waveLength = SeaWaves::WaveLength(T, depth);
+	double waveLength = SeaWaves::WaveLength(T, depth, g);
 	UppLog() << "\n" << Format("Wave length: %f m", waveLength);
-	double c = SeaWaves::Celerity(T, depth);		
+	double c = SeaWaves::Celerity(T, depth, g);		
 	UppLog() << "\n" << Format("Celerity: %f m/s", c);
-	double gc = SeaWaves::GroupCelerity(T, depth);
+	double gc = SeaWaves::GroupCelerity(T, depth, g);
 	UppLog() << "\n" << Format("Group celerity: %f m/s", gc);
-	SeaWaves::SEA_TYPE seaType = SeaWaves::GetSeaType(T, depth);
+	SeaWaves::SEA_TYPE seaType = SeaWaves::GetSeaType(T, depth, g);
 	UppLog() << "\n" << Format("Sea: %s", seaType == SeaWaves::SHALLOW ? "shallow" : seaType == SeaWaves::INTERMEDIATE ? "intermediate" : "deep");
-	double power = SeaWaves::Power(T, H, depth);
+	double power = SeaWaves::Power(T, H, depth, g, rho);
 	UppLog() << "\n" << Format("Power: %f kW/m", power);
 		
 	double Tz = 12;
@@ -420,8 +420,8 @@ void TestSeaWaves() {
 	{
 		SeaWaves waves;
 		
-		double Tp =	12, Hs = 2;
-		waves.Init(Tp, Hs);
+		double Hs = 2, Tp =	12, h = 70;
+		waves.Init(Tp, Hs, 0, h);
 		double x = 100, y = 100, z = -10, t = 10;
 		waves.Calc(x, y, z, t);
 		UppLog() << "\n" << Format("Sea data for Hs: %.2f m, Tp; %.2f s, at x: %.2f m, y: %.2f m, z: %.2f m, t: %.3f s", Hs, Tp, x, y, z, t);
@@ -434,8 +434,17 @@ void TestSeaWaves() {
 		VERIFY(abs(waves.az - 0.00269468) < 0.000001);
 		UppLog() << "\n" << Format("p: %.3f Pa = %.3f Pa", waves.p, waves.Pressure(x, y, z, t));
 		VERIFY(abs(waves.p - waves.Pressure(x, y, z, t)) < 0.000001);
+		
+		double duration = 60*60, deltaT = 0.1;
+		VectorXd t_, et;
+		VERIFY(waves.GetZSurf(t_, et, 0, 0, duration, deltaT));
+		
+		WaveParam param;
+		SeaWaves::GetWaveParam(param, et, deltaT, h, g, rho);
+		Cout() << Format("\nWave obtained %s", param.ToString());
 	}
 }
+
 
 void TestXCorr() {
 	VectorXd n, y;

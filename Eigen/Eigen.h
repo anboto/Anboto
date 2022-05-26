@@ -33,6 +33,9 @@ using UVector = Upp::Vector<T>;
 template <class T>
 using UArray = Upp::Array<T>;
 
+template <class T>
+using UIndex = Upp::Index<T>;
+
 template<typename _Scalar, ptrdiff_t nx = Eigen::Dynamic, ptrdiff_t ny = Eigen::Dynamic>
 struct NonLinearOptimizationFunctor {
 	typedef _Scalar Scalar;
@@ -65,7 +68,8 @@ bool NonLinearOptimization(Eigen::VectorXd &y, Eigen::Index numData,
 			double xtol = Null, double ftol = Null, int maxfev = Null);
 bool SolveNonLinearEquations(Eigen::VectorXd &y, Function <int(const Eigen::VectorXd &b, Eigen::VectorXd &residual)> Residual,
 			double xtol = Null, int maxfev = Null, double factor = Null);
-
+double SolveNonLinearEquation(double y, Function <double(double b)> Residual, double xtol = Null, int maxfev = Null, double factor = Null);
+	
 template <class T>
 void Xmlize(XmlIO &xml, Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &mat) {
 	Size_<int64> sz(mat.cols(), mat.rows());
@@ -225,6 +229,8 @@ template <typename T>
 void ResizeConservative(Vector<T> &v, size_t len) {v.SetCount(int(len));}
 template <typename T>
 void ResizeConservative(Vector<T> &v, size_t len, const T& init) {v.SetCount(int(len), init);}
+template <typename T>
+void Clear(Vector<T> &v) {v.Clear();}
 
 template <typename T>
 void Resize(Eigen::Matrix<T, Eigen::Dynamic, 1> &v, size_t len) {v.resize(len);}
@@ -239,6 +245,10 @@ void ResizeConservative(Eigen::Matrix<T, Eigen::Dynamic, 1> &v, size_t len, cons
 	if (len > len0)
 		std::fill(&v[len0], v.data() + len, init);	
 }
+template <typename T>
+void Clear(Eigen::Matrix<T, Eigen::Dynamic, 1> &v) {v.resize(0);}
+template <typename T>
+void Clear(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &m) {m.resize(0, 0);}
 
 template <typename T>
 void PrePad(Eigen::Matrix<T, Eigen::Dynamic, 1> &v, size_t len, const T& init) {
@@ -264,6 +274,8 @@ template <typename T>
 void ResizeConservative(std::vector<T> &v, size_t len) {v.resize(len);}
 template <typename T>
 void ResizeConservative(std::vector<T> &v, size_t len, const T& init) {v.resize(len, init);}
+template <typename T>
+void Clear(std::vector<T> &v) {v.clear();}
 
 #define PostPad ResizeConservative
 

@@ -1521,11 +1521,11 @@ void ScatterDraw::Plot(T& w) {
 			w.DrawRect(0, 0, plotW, plotH, plotAreaColor);
 		else {
 			ImageBuffer out_image(plotW, plotH);
-			Upp::Fill(~out_image, plotAreaColor, out_image.GetLength());
+			Upp::Fill(~out_image, plotAreaColor, int(out_image.GetLength()));
 
 			double deltaz = surfMaxZ - surfMinZ;
 			if (deltaz == 0) 
-				Upp::Fill(~out_image, GetRainbowColor(0, surfRainbow, 0), out_image.GetLength());	
+				Upp::Fill(~out_image, GetRainbowColor(0, surfRainbow, 0), int(out_image.GetLength()));	
 			else {
 				CoWork co;
 				for (int ix = 0; ix < plotW; ++ix) {

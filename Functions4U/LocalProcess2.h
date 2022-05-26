@@ -83,6 +83,57 @@ public:
 	virtual ~LocalProcess2()                                                                 { Kill(); }
 };
 
+class LocalProcessSet {
+public:
+	void SetMaxProcesses(int n)	{mxProcess = n;}
+	int GetCount()				{return processes.size();}
+	
+	void Add(String cmdline, String dir = Null, Function<void(String&)> WhenLog = Null, String envptr = Null) {
+		Process &p = processes.Insert(0);
+		p.cmdline = cmdline;
+		p.dir = dir;
+		p.envptr = envptr;
+		p.WhenLog = WhenLog;
+		p.isPending = true;
+	}
+	void Perform() {
+		while (processes.size() > 0) {
+			for (int i = processes.size()-1; i >= 0; --i) {
+				Process &p = processes[i];
+				if (p.isPending) {
+					if (nmProcess < mxProcess) {
+						p.process.Start(p.cmdline, p.envptr, p.dir);
+						nmProcess++;
+						p.isPending = false;
+						Cout() << "\nProcess added: " << nmProcess;
+					}
+				} else {
+					if (p.process.IsRunning()) {
+						String str;
+						if (p.process.Read(str)) 
+							p.WhenLog(str);
+					} else {
+						processes.Remove(i);
+						nmProcess--;
+						Cout() << "\nProcess removed: " << nmProcess;
+					}
+				}
+			}
+			Sleep(100);
+		}
+	}
+	
+private:
+	struct Process {
+		LocalProcess2 process;
+		String cmdline, dir, envptr; 
+		Function<void(String&)> WhenLog;
+		bool isPending;
+	};
+	Array<Process> processes;
+	int mxProcess = 1, nmProcess = 0;
+};
+
 }
 
 #endif

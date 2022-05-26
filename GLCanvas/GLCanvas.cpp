@@ -135,10 +135,13 @@ void GLCanvas::SaveToFile(String fileName) {
 	
 	if (IsNull(fileName)) {
 		FileSel fs;
+		
+		fs.NoExeIcons();
 		fs.Type(Format(t_("%s bitmap file"), "jpeg"), "*.jpg");
 		fs.Type(Format(t_("%s bitmap file"), "png"), "*.png");
 		fs.Type(Format(t_("%s vector file"), "pdf"), "*.pdf");
 		fs.AllFilesType();
+		
 		if (!defaultFileName.IsEmpty())
 			fs = defaultFileName;
 		else

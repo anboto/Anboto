@@ -39,9 +39,7 @@ void Sort(T& a, T& b, T& c) {
 	if (b > c) 
 		Swap(b, c);
 }
-
-void GetTransform(Affine3d &aff, double ax, double ay, double az, double cx, double cy, double cz);
-void GetTransform(Affine3d &aff, double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz);	
+	
 
 class Value3D : public Moveable<Value3D> {
 public:
@@ -71,8 +69,7 @@ public:
 	inline Value3D operator=(const Value3D &p)	{Set(p);	return *this;}
 	inline Value3D operator=(const Vector3d &p)	{Set(p);	return *this;}
 	
-	String ToString() const {return FormatDouble(x) + "," + FormatDouble(y) + "," + FormatDouble(z); }
-	void Print() 			{Cout() << "\n" << ToString();}
+	String ToString() const {return Format("x: %s. y: %s. z: %s", FDS(x, 10, true), FDS(y, 10, true), FDS(z, 10, true));}
 	
 	inline bool IsSimilar(const Value3D &p, double similThres) const {
 		if (abs(p.x - x) < similThres && abs(p.y - y) < similThres && abs(p.z - z) < similThres)
@@ -102,9 +99,9 @@ public:
 	inline void operator+=(const Value3D& a) {x += a.x; y += a.y; z += a.z;}
 	inline void operator-=(const Value3D& a) {x -= a.x; y -= a.y; z -= a.z;}
 
-	double GetLength() const {return ::sqrt(x*x + y*y + z*z);}
+	double Length() const {return ::sqrt(x*x + y*y + z*z);}
 	Value3D &Normalize() {
-		double length = GetLength();
+		double length = Length();
 		
 		if (length < 1e-10) 
 			Reset();
@@ -120,7 +117,7 @@ public:
 	double Manhattan(const Value3D &p) 		const {return abs(x-p.x) + abs(y-p.y) + abs(z-p.z);}
 	double Manhattan() 				   		const {return abs(x) + abs(y) + abs(z);}
 	
-	double Angle(const Value3D &p) const {return acos(dot(p)/(GetLength()*p.GetLength()));}
+	double Angle(const Value3D &p) const {return acos(dot(p)/(Length()*p.Length()));}
 	
 	void SimX() {x = -x;}
 	void SimY() {y = -y;}
@@ -148,6 +145,11 @@ public:
 typedef Value3D Direction3D;
 typedef Value3D Point3D;
 
+void GetTransform(Affine3d &aff, double ax, double ay, double az, double cx, double cy, double cz);
+void GetTransform(Affine3d &aff, double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz);	
+
+void TransRot(const Point3D &pos, const Point3D &ref, VectorXd &x, VectorXd &y, VectorXd &z, VectorXd &rx, VectorXd &ry, VectorXd &rz);
+
 class Value6D {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -155,6 +157,9 @@ public:
 	Value6D() {}
 	Value6D(const Value6D &f)	{Set(f);}
 	Value6D(const VectorXd &v)	{Set(v);}
+	template<typename T>
+	Value6D(const T *v)			{Set(v);}
+	Value6D(double v0, double v1, double v2, double v3, double v4, double v5) {Set(v0, v1, v2, v3, v4, v5);}
 	
 	void Set(const Value6D &f)	{t.x = f.t.x;	t.y = f.t.y;	t.z = f.t.z;	r.x = f.r.x;	r.y = f.r.y;	r.z = f.r.z;}
 	void Set(const VectorXd &v) {
@@ -191,8 +196,8 @@ public:
 		default:return r.z;
 		}
 	}
-	void Print() {
-		Cout() << Format("\nx: %s. y: %s. z: %s. rx: %s. ry: %s. rz: %s", 
+	String ToString() const {
+		return Format("x: %s. y: %s. z: %s. rx: %s. ry: %s. rz: %s", 
 			FDS(t.x, 10, true), FDS(t.y, 10, true), FDS(t.z, 10, true),
 			FDS(r.x, 10, true), FDS(r.y, 10, true), FDS(r.z, 10, true));
 	}
@@ -207,6 +212,8 @@ public:
 		v[3] = T(r.x);	v[4] = T(r.y);	v[5] = T(r.z);
 	}
 	
+	static Value6D Zero() {return Value6D(0, 0, 0, 0, 0, 0);}
+	
 	Value3D t, r;
 };
 
@@ -216,17 +223,27 @@ class Force6D : public Value6D {
 public:
 	Force6D() {}
 	Force6D(const VectorXd &v) : Value6D(v) {}
+	Force6D(double v0, double v1, double v2, double v3, double v4, double v5) : Value6D(v0, v1, v2, v3, v4, v5) {}
 	
 	void AddLinear(const Direction3D &dir, const Point3D &point, const Point3D &c0);	
 	void Add(const Force6D &force, const Point3D &point, const Point3D &c0);
 	void Add(const ForceVector &force, const Point3D &c0);
+	
+	static Force6D Zero() {
+		Force6D f;
+		f.Zero();
+		return f;
+	}
 };
 
 class ForceVector {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
-	ForceVector()						{}
+	ForceVector() {}
+	ForceVector(double x, double y, double z, double fx, double fy, double fz, double rx, double ry, double rz) {
+		Set(x, y, z, fx, fy, fz, rx, ry, rz);
+	}
 	void Set(double x, double y, double z, double fx, double fy, double fz, double rx, double ry, double rz) {
 		point.x = x;
 		point.y = y;
@@ -239,30 +256,43 @@ public:
 		force.r.z = rz;
 	}
 	
-	void TransRot(double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz);
-	void Print();
+	ForceVector &TransRot(double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz);
+	ForceVector &TransRot(const Affine3d &aff);
+	String ToString() const {return "From: " + point.ToString() + ". Value: " + force.ToString();}
 	
 	Force6D force;
 	Point3D point;
 };
 
+// For dummies: https://dynref.engr.illinois.edu/rkg.html
 class Velocity6D : public Value6D {
 public:
+	template<typename T>
+	Velocity6D(const T *v) {Set(v);}
+	
 	void Translate(const Point3D &from, const Point3D &to) {
-		Point3D rft = to - from;
-		t += r%rft;
+		Direction3D rpq = to - from;
+		Translate(rpq);
+	}
+	void Translate(const Direction3D &rpq) {
+		t += r%rpq;
 	}
 };
 
 class Acceleration6D : public Value6D {
 public:
+	template<typename T>
+	Acceleration6D(const T *v) {Set(v);}
+	
 	void Translate(const Point3D &from, const Point3D &to, const Velocity6D &vel) {
-		Point3D rft = to - from;
-		t += r%rft + vel.r%(vel.r%rft);
+		Direction3D rpq = to - from;
+		Translate(rpq, vel);
+	}
+	void Translate(const Direction3D &rpq, const Velocity6D &vel) {
+		t += r%rpq + vel.r%(vel.r%rpq);
 	}
 };
 
-void Print(const Value6D &f);
 VectorXd C6ToVector(const double *c);
 VectorXd C6ToVector(const float *c);
 void Vector6ToC(const VectorXd &v, double *c);
@@ -515,11 +545,11 @@ public:
 	Point3D GetCenterOfBuoyancy() const;
 	void GetInertia33(Matrix3d &inertia, const Point3D &center, bool refine = false) const;
 	void GetInertia66(MatrixXd &inertia, const Point3D &center, bool refine) const;
-	void GetHydrostaticForce(Force6D &f, const Point3D &c0, double rho, double g) const;
-	void GetHydrostaticForceNormalized(Force6D &f, const Point3D &c0) const;
-	void GetHydrostaticForceCB(Force6D &f, const Point3D &c0, const Point3D &cb, double rho, double g) const;
-	void GetHydrostaticForceCBNormalized(Force6D &f, const Point3D &c0, const Point3D &cb) const;
-	static void GetMassForce(Force6D &f, const Point3D &c0, const Point3D &cg, const double mass, const double g);
+	Force6D GetHydrostaticForce(const Point3D &c0, double rho, double g) const;
+	Force6D GetHydrostaticForceNormalized(const Point3D &c0) const;
+	Force6D GetHydrostaticForceCB(const Point3D &c0, const Point3D &cb, double rho, double g) const;
+	Force6D GetHydrostaticForceCBNormalized(const Point3D &c0, const Point3D &cb) const;
+	static Force6D GetMassForce(const Point3D &c0, const Point3D &cg, const double mass, const double g);
 	void GetHydrostaticStiffness(MatrixXd &c, const Point3D &c0, const Point3D &cg, 
 				const Point3D &cb, double rho, double g, double mass);
 	double GetWaterPlaneArea() const;

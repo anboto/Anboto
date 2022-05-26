@@ -32,14 +32,15 @@ protected:
 	FrameRight<Button> butBrowseRight, butFolder;
 	FrameRight<Button> butGo;
 	
-	FileSel_ *pfs;
+	//FileSel_ *pfs;
+	//FileSel_ fs;
 	bool isFile, isLoad;
 	String title;
 	
 	Vector <String> history;
 	int histInd;
 	
-	void InitFs();
+	//void InitFs();
 	
 	void DoLeft(), DoRight(), DoUp();
 		
@@ -48,19 +49,25 @@ public:
 	virtual ~EditFileFolder();
 	
 	void Init();
-	void ClearTypes()								{InitFs();	pfs->ClearTypes();}
-	void Type(const char *name, const char *ext)	{InitFs();	pfs->Type(name, ext);}
-	void ActiveType(int type)						{InitFs();	pfs->ActiveType(type);}	
-	void AllFilesType()								{InitFs();	pfs->AllFilesType();}
-	void ActiveDir(const String& d) 				{InitFs();	pfs->ActiveDir(d);}
-	void MkDirOption(bool b)						{InitFs();	pfs->MkDirOption(b);}
-	void BaseDir(const char *dir)					{InitFs();	pfs->BaseDir(dir);}
+	void ClearTypes()								{/*InitFs();	*/names.Clear();	exts.Clear();}
+	Vector<String> names, exts;
+	void Type(const char *name, const char *ext)	{/*InitFs();	*/names << name;	exts << ext;}
+	int activeType = Null;
+	void ActiveType(int type)						{/*InitFs();	*/activeType = type;}	
+	bool allFilesType = false;
+	void AllFilesType()								{/*InitFs();	*/allFilesType = true;}
+	String activeDir;
+	void ActiveDir(const String& d) 				{/*InitFs();	*/activeDir = d;}
+	bool mkDirOption = false;
+	void MkDirOption(bool b)						{/*InitFs();	*/mkDirOption = b;}
+	String baseDir;
+	void BaseDir(const char *dir)					{/*InitFs();	*/baseDir = dir;}
 	String Get() const                           	{return GetData();}
 	operator const char *() const					{return Get();}
 	const String operator~() const   				{return Get();}
 	void Set(const String& s) {
-		InitFs();	
-		pfs->Set(s); 
+		//InitFs();	
+		//fs.Set(s); 
 		EditString::SetData(s); 
 		AddHistory();
 	}
@@ -131,6 +138,22 @@ public:
 			if (list.GetCount() > 0)
 				SetData(list[0]);
 		}
+	}
+private:
+	void SetFileSel(FileSel_ &fs) {
+		if (!names.IsEmpty()) {
+			for (int i = 0; i < names.size(); ++i) 
+				fs.Type(names[i], exts[i]);
+		}
+		if (!IsNull(activeType))
+			fs.ActiveType(activeType);
+		if (allFilesType)
+			fs.AllFilesType();
+		if (!activeDir.IsEmpty())
+			fs.ActiveDir(activeDir);
+		fs.MkDirOption(mkDirOption);
+		if (!baseDir.IsEmpty())
+			fs.BaseDir(baseDir);
 	}
 };
 

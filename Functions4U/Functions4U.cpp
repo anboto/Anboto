@@ -315,40 +315,68 @@ bool IsFolder(const char *fileName) {
 	return false;
 }
 
-bool GetRelativePath(String from, String path, String& ret, bool normalize) {
+String GetRelativePath(String from, String path, bool normalize) {
+	String ret, dir_seps;
+	String creplace = DIR_SEP == '\\' ? "/" : "\\";
 	if (normalize) {
-		String creplace = DIR_SEP == '\\' ? "/" : "\\";
 		from.Replace(creplace, DIR_SEPS);
 		path.Replace(creplace, DIR_SEPS);
 		if (!PLATFORM_PATH_HAS_CASE) {
 			from = ToLower(from);
 			path = ToLower(path);
 		}
+		dir_seps = DIR_SEPS;
+	} else {
+		bool seplinux = from.Find('/') >= 0 || path.Find('/') >= 0;
+		bool sepwindows = from.Find('\\') >= 0 || path.Find('\\') >= 0;
+		if (seplinux && sepwindows) {
+			dir_seps = DIR_SEPS;	
+			from.Replace(creplace, DIR_SEPS);
+			from.Replace(creplace, DIR_SEPS);
+		} else if (seplinux) 
+			dir_seps = "/";	
+		else
+			dir_seps = "\\";	
 	}
-	ret.Clear();
 	int pos_from = 0, pos_path = 0;
 	bool first = true;
 	while (!IsNull(pos_from)) {
-		String f_from = Tokenize2(from, DIR_SEPS, pos_from);
-		String f_path = Tokenize2(path, DIR_SEPS, pos_path);
+		String f_from = Tokenize2(from, dir_seps, pos_from);
+		String f_path = Tokenize2(path, dir_seps, pos_path);
 		if (f_from != f_path) {
 			if (first) 
-				return false;
+				return String::GetVoid();
 			ret << f_path;	
 			String fileName = path.Mid(pos_path);
 			if (!fileName.IsEmpty()) 
-				ret << DIR_SEPS << fileName;	
+				ret << dir_seps << fileName;	
 			while (!IsNull(pos_from)) {
-				ret.Insert(0, String("..") + DIR_SEPS);
-				Tokenize2(from, DIR_SEPS, pos_from);		
+				ret.Insert(0, String("..") + dir_seps);
+				Tokenize2(from, dir_seps, pos_from);		
 			}
-			ret.Insert(0, String("..") + DIR_SEPS);
-			return true;
+			ret.Insert(0, String("..") + dir_seps);
+			return ret;
 		}
 		first = false;
 	}
-	ret = path.Mid(pos_path);
-	return true;
+	return path.Mid(pos_path);
+}
+
+String GetAbsolutePath(String from, String relative) {
+	from = Trim(from);
+	relative = Trim(relative);
+	if (!relative.StartsWith("."))
+		return relative;
+	while (!from.IsEmpty() && !relative.IsEmpty()) {
+		if (relative.StartsWith("./") || relative.StartsWith(".\\")) 
+			relative = relative.Mid(2);
+		else if (relative.StartsWith("../") || relative.StartsWith("..\\")) {
+			relative = relative.Mid(3);
+			from = GetUpperFolder(from);
+		} else
+			break;
+	}
+	return AppendFileNameX(from, relative);
 }
 
 bool SetReadOnly(const char *path, bool readOnly) {

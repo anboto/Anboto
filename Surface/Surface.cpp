@@ -17,7 +17,7 @@ Point3D GetCentroid(const Point3D &a, const Point3D &b) {
 }
 
 Point3D GetCentroid(const Point3D &a, const Point3D &b, const Point3D &c) {
-	return Point3D(avg(a.x, b.x,c.x), avg(a.y, b.y, c.y), avg(a.z, b.z, c.z));	
+	return Point3D(avg(a.x, b.x, c.x), avg(a.y, b.y, c.y), avg(a.z, b.z, c.z));	
 }
 
 Direction3D GetNormal(const Point3D &a, const Point3D &b, const Point3D &c) {
@@ -76,6 +76,17 @@ void Point3D::TransRot(const Affine3d &quat) {
 	x = pnt[0];
 	y = pnt[1];
 	z = pnt[2];
+}
+
+void TransRot(const Point3D &pos, const Point3D &ref, VectorXd &x, VectorXd &y, VectorXd &z, VectorXd &rx, VectorXd &ry, VectorXd &rz) {
+	ASSERT((x.size() == y.size()) && (y.size() == z.size()) && (z.size() == rx.size()) && (rx.size() == ry.size()) && (ry.size() == rz.size()));
+	for (int i = 0; i < x.size(); ++i) {
+		Point3D ps = clone(pos);
+		ps.TransRot(x[i], y[i], z[i], rx[i], ry[i], rz[i], ref.x, ref.y, ref.z);
+		x[i] = ps.x;
+		y[i] = ps.y;
+		z[i] = ps.z;
+	}
 }
 
 void GetTransform(Affine3d &aff, double ax, double ay, double az, double cx, double cy, double cz) {
@@ -1039,7 +1050,7 @@ void Surface::GetVolume() {
 }
 
 int Surface::VolumeMatch(double ratioWarning, double ratioError) const {
-	if (volumex == 0 && volumey == 0 && volumez == 0)
+	if (volumex == 0 || volumey == 0 || volumez == 0)
 		return 0;
 	if ((volumex == 0 && !Between(volume/volumex, 1-ratioError, 1+ratioError)) ||
 		(volumey == 0 && !Between(volume/volumey, 1-ratioError, 1+ratioError)) ||
@@ -1072,11 +1083,13 @@ Point3D Surface::GetCenterOfBuoyancy() const {
 		}
 	}
 	
-	xb /= 2*volumex;
-	yb /= 2*volumey;
-	zb /= 2*volumez;
-	
-	return Point3D(xb, yb, zb);
+	if (volumex > 0 && volumey > 0 && volumez > 0) {
+		xb /= 2*volumex;
+		yb /= 2*volumey;
+		zb /= 2*volumez;
+		return Point3D(xb, yb, zb);
+	} else
+		return Null;
 }
 
 static void CalcDet(const Matrix3d &A, Vector3d &diag, Vector3d &offd, double &volume) {
@@ -1163,57 +1176,97 @@ void Surface::GetInertia66(MatrixXd &inertia, const Point3D &center, bool refine
 	inertia(1, 3) = inertia(3, 1) = -cz;
 }	
 
-void Surface::GetHydrostaticForce(Force6D &f, const Point3D &c0, double rho, double g) const {
-	GetHydrostaticForceNormalized(f, c0);	
+Force6D Surface::GetHydrostaticForce(const Point3D &c0, double rho, double g) const {
+	Force6D f = GetHydrostaticForceNormalized(c0);	
+	
 	f *= rho*g; 
+	
+	return f;
 }
 	
-void Surface::GetHydrostaticForceNormalized(Force6D &f, const Point3D &c0) const {
-	f.Reset();				
-				
-	for (int ip = 0; ip < panels.GetCount(); ++ip) {	
-		const Panel &panel = panels[ip];
-		
-		double p;
-		Direction3D f0, f1;
-		
-		p = panel.centroid0.z*panel.surface0;
-		f0.x = p*panel.normal0.x;
-		f0.y = p*panel.normal0.y;
-		f0.z = p*panel.normal0.z;
-		
-		f.AddLinear(f0, panel.centroid0, c0);
+
+static void AddTrianglePressure(Force6D &f, const Point3D &centroid, const Point3D &normal, 
+	double surface, const Point3D &c0, const Point3D &p1, const Point3D &p2, const Point3D &p3) {
+	Direction3D f0, f1;
+	double p;
 	
-		p = panel.centroid1.z*panel.surface1;
-		f1.x = p*panel.normal1.x;
-		f1.y = p*panel.normal1.y;
-		f1.z = p*panel.normal1.z;
-		
-		f.AddLinear(f1, panel.centroid1, c0);
-	}
+	p = centroid.z*surface*.75;
+	f0.x = p*normal.x;
+	f0.y = p*normal.y;
+	f0.z = p*normal.z;
+	f.AddLinear(f0, centroid, c0);	
+	
+	p = p1.z*surface*.25/3;
+	f1.x = p*normal.x;
+	f1.y = p*normal.y;
+	f1.z = p*normal.z;
+	f.AddLinear(f1, p1, c0);	
+
+	p = p2.z*surface*.25/3;
+	f1.x = p*normal.x;
+	f1.y = p*normal.y;
+	f1.z = p*normal.z;
+	f.AddLinear(f1, p2, c0);
+	
+	p = p3.z*surface*.25/3;
+	f1.x = p*normal.x;
+	f1.y = p*normal.y;
+	f1.z = p*normal.z;
+	f.AddLinear(f1, p3, c0);
+}
+
+Force6D Surface::GetHydrostaticForceNormalized(const Point3D &c0) const {
+	Force6D f;
+	
+	f.Reset();				
+	
+	for (int ip = 0; ip < panels.size(); ++ip) {	
+		const Panel &panel = panels[ip];
+
+		const Point3D &p0 = nodes[panel.id[0]];
+		const Point3D &p1 = nodes[panel.id[1]];
+		const Point3D &p2 = nodes[panel.id[2]];
+		const Point3D &p3 = nodes[panel.id[3]];
+	
+		AddTrianglePressure(f, panel.centroid0, panel.normal0, panel.surface0, c0, p0, p1, p2);
+		if (!panel.IsTriangle())
+			AddTrianglePressure(f, panel.centroid1, panel.normal1, panel.surface1, c0, p2, p3, p0);
+	}	
+	return f;
 }		
 
-void Surface::GetHydrostaticForceCB(Force6D &f, const Point3D &c0, const Point3D &cb, double rho, double g) const {
-	GetHydrostaticForceCBNormalized(f, c0, cb);	
+Force6D Surface::GetHydrostaticForceCB(const Point3D &c0, const Point3D &cb, double rho, double g) const {
+	Force6D f = GetHydrostaticForceCBNormalized(c0, cb);	
+	
 	f *= rho*g; 
+	
+	return f;
 }
 
-void Surface::GetHydrostaticForceCBNormalized(Force6D &f, const Point3D &c0, const Point3D &cb) const {
+Force6D Surface::GetHydrostaticForceCBNormalized(const Point3D &c0, const Point3D &cb) const {
+	Force6D f;
+	
 	f.Reset();
 	
-	if (volume == 0)
-		return;
+	if (volume < EPS_XYZ)
+		return f;
 	
 	f.AddLinear(Direction3D(0, 0, volume), cb, c0);		
+	
+	return f;
 }	
 
-void Surface::GetMassForce(Force6D &f, const Point3D &c0, const Point3D &cg, const double mass, const double g) {
+Force6D Surface::GetMassForce(const Point3D &c0, const Point3D &cg, const double mass, const double g) {
+	Force6D f;
+	
 	f.Reset();
 	
 	if (mass == 0)
-		return;
+		return f;
 		
-	f.AddLinear(Direction3D(0, 0, mass*g), cg, c0);
+	f.AddLinear(Direction3D(0, 0, -mass*g), cg, c0);
+	
+	return f;
 }													
 
 double Surface::GetWaterPlaneArea() const {
@@ -1231,10 +1284,11 @@ double Surface::GetWaterPlaneArea() const {
 
 void Surface::GetHydrostaticStiffness(MatrixXd &c, const Point3D &c0, const Point3D &cg, 
 				const Point3D &cb, double rho, double g, double mass) {
+	if (volume < EPS_XYZ) {
+		c.resize(0, 0);
+		return;	
+	}	
 	c.setConstant(6, 6, 0);
-	
-	if (volume < EPS_XYZ)
-		return;
 	
 	if (IsNull(mass))
 		mass = rho*volume;
@@ -1812,12 +1866,12 @@ bool Surface::Archimede(double mass, Point3D &cg, const Point3D &c0, double rho,
 			if (dz < 0.01 && cb.Distance(basecg) < 0.01)
 				return -1;
 		
-			Force6D fcb, fcg;
-			GetMassForce(fcg, c0, basecg, mass, g);
+			Force6D fcb;
+			Force6D fcg = GetMassForce(c0, basecg, mass, g);
 			double rho;
 			if (under.volume > 0) {
 				rho = mass/under.volume;
-				under.GetHydrostaticForceCB(fcb, c0, cb, rho, g);
+				fcb = under.GetHydrostaticForceCB(c0, cb, rho, g);
 			} else
 				fcb.Reset();
 		
@@ -2492,16 +2546,17 @@ char Surface::IsWaterPlaneMesh() const {
 		return 'x';	
 }
 
-void ForceVector::TransRot(double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz) {
+ForceVector &ForceVector::TransRot(double dx, double dy, double dz, double ax, double ay, double az, double cx, double cy, double cz) {
 	Affine3d aff;
 	GetTransform(aff, dx, dy, dz, ax, ay, az, cx, cy, cz);
-	point.TransRot(aff);
-	force.t.TransRot(aff);
+	TransRot(aff);
+	return *this;
 }
 
-void ForceVector::Print() {
-	force.Print();
-	point.Print();
+ForceVector &ForceVector::TransRot(const Affine3d &aff) {
+	point.TransRot(aff);
+	force.t.TransRot(aff);
+	return *this;
 }
 
 // Just force, no moment

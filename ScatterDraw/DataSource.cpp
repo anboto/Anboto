@@ -107,6 +107,16 @@ Pointf DataSource::MaxSubDataImp(Getdatafun getdataY, Getdatafun getdataX, int64
 			continue;
 		p << Pointf(Membercall(getdataX)(i), Membercall(getdataY)(i));
 	}
+	bool isequal = true;					// If all p.y are the same, there is no max
+	for (int i = 1; i < p.size(); ++i) {
+		if (p[i].y != p[0].y) {
+			isequal = false;
+			break;
+		}
+	}
+	if (isequal)
+		return Null;
+	
 	VectorPointf pf(p);
 	PolynomialEquation2 polyFit;
 	if (ExplicitEquation::NoError != polyFit.Fit(pf))
@@ -815,7 +825,7 @@ void Resample(const VectorXd &x, const VectorXd &y, VectorXd &rrx, VectorXd &rry
 		rry = clone(y);
 		return;
 	}
-	double range = x[x.size()-1] - x[0];
+	double range = x(last) - x(0);
 	if (!IsNum(srate)) 
 		srate = range/(x.size()-1);
 	int num = int(range/srate) + 1;
@@ -827,6 +837,18 @@ void Resample(const VectorXd &x, const VectorXd &y, VectorXd &rrx, VectorXd &rry
 	}
 	rrx = pick(rx);
 	rry = pick(ry);
+}
+
+void Resample(const VectorXd &x, const VectorXd &y, const VectorXd &xmaster, VectorXd &rry) {
+	VectorXd rx, ry;
+		
+	if (x.size() == 0 || y.size() == 0)
+		return;
+	
+	int sz = int(xmaster.size());
+	rry.resize(sz);
+	for (int i = 0; i < sz; ++i) 
+		rry[i] = LinearInterpolate(xmaster[i], x, y);
 }
 
 void Resample(const VectorXd &x, const VectorXd &y, const VectorXd &z, 
@@ -841,7 +863,7 @@ void Resample(const VectorXd &x, const VectorXd &y, const VectorXd &z,
 		rrz = clone(z);
 		return;
 	}	
-	double range = x[x.size()-1] - x[0];
+	double range = x(last) - x(0);
 	if (!IsNum(srate)) 
 		srate = range/(x.size()-1);
 	int num = int(range/srate) + 1;

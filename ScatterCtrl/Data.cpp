@@ -141,6 +141,9 @@ void DataDlg::ArraySaveToFile(String fileName) {
 		return;
 	
 	FileSel fileToSave;
+	
+	fileToSave.NoExeIcons();
+	
 	GuiLock __;
 	if (IsNull(fileName)) {
 		String name = pscatter->GetTitle() + " " + pscatter->GetLegend(series[index].scatterIndex);

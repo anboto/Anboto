@@ -31,35 +31,40 @@ void FilesDemo() {
 	{
 		String from = "/books/technology/computers"; 
 		String path = "/books/biology/mammals";
-		String ret;
-		if (!GetRelativePath(from, path, ret))
+		String ret = GetRelativePath(from, path, false);
+		if (ret.IsVoid())
 			ret = "Null";
-		Cout() << "\nGetRelativePath(\"" << from << "\", \"" << path << "\")\n= \"" << ret << "\" (should be: \"../../biology/mammals\")";
+		UppLog() << "\nGetRelativePath(\"" << from << "\", \"" << path << "\")\n= \"" << ret << "\"";
+		VERIFY(ret == "../../biology/mammals");
 	}
 	{
 		String from = "/books/technology/computers";
 		String path = "/books/technology/computers";
-		String ret;
-		if (!GetRelativePath(from, path, ret))
+		String ret = GetRelativePath(from, path, false);
+		if (ret.IsVoid())
 			ret = "Null";
-		Cout() << "\nGetRelativePath(\"" << from << "\", \"" << path << "\")\n= \"" << ret << "\" (should be: \"\")";
+		UppLog() << "\nGetRelativePath(\"" << from << "\", \"" << path << "\")\n= \"" << ret << "\"";
+		VERIFY(ret == "");
 	}
 	{
 		String from = "/books/technology/computers";
 		String path = "/books2/biology/mammals";
-		String ret;
-		if (!GetRelativePath(from, path, ret))
+		String ret = GetRelativePath(from, path, false);
+		if (ret.IsVoid())
 			ret = "Null";
-		Cout() << "\nGetRelativePath(\"" << from << "\", \"" << path << "\")\n= \"" << ret << "\" (should be: \"../../../books2/biology/mammals\")";
+		UppLog() << "\nGetRelativePath(\"" << from << "\", \"" << path << "\")\n= \"" << ret << "\"";
+		VERIFY(ret == "../../../books2/biology/mammals");
 	}
 	{
 		String from = "c:/books/technology/computers";
 		String path = "y:/books2/biology/mammals";
-		String ret;
-		if (!GetRelativePath(from, path, ret))
+		String ret = GetRelativePath(from, path, false);
+		if (ret.IsVoid())
 			ret = "Null";
-		Cout() << "\nGetRelativePath(\"" << from << "\", \"" << path << "\")\n= \"" << ret << "\" (should be: Null)";
+		UppLog() << "\nGetRelativePath(\"" << from << "\", \"" << path << "\")\n= \"" << ret << "\"";
+		VERIFY(ret == "Null");
 	}
+	UppLog() << "\n";
 	
 	String filename1 = AppendFileNameX(GetExeFolder(), "Demo", "file1.txt");
 	RealizePath(filename1);

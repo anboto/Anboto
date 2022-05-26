@@ -105,8 +105,7 @@ void SurfaceX::GetTransformFast(MatrixXd &mat, double dx, double dy, double dz, 
 }
 
 void SurfaceX::TransRotFast(double &x, double &y, double &z, double x0, double y0, double z0, const MatrixXd &mat) {
-    VectorXd position(4);
-    position << x0, y0, z0, 1;
+    Vector4d position = {x0, y0, z0, 1};
     
 	position = mat*position;
 	x = position[0];

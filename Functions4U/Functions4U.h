@@ -82,7 +82,8 @@ String GetNextFolder(const String &folder, const String &lastFolder);
 String FileRealName(const char *fileName);
 bool IsFile(const char *fileName);
 bool IsFolder(const char *fileName);
-bool GetRelativePath(String from, String path, String& ret, bool normalize = true);
+String GetRelativePath(String from, String path, bool normalize = true);
+String GetAbsolutePath(String from, String relative);
 	
 bool IsSymLink(const char *path);
 
@@ -246,14 +247,30 @@ String RemovePunctuation(String str);
 
 template<typename T>	
 inline T ToRad(T angle)	{
-	static_assert(std::is_floating_point<T>::value, "Type T has to be floating point");
+	static_assert(std::is_floating_point<T>::value, "Type has to be floating point");
 	return angle*M_PI/180.;
 }
+template <class Range>
+Range ToRadArray(const Range& r) {
+	Range ret(r.size());
+	for (int i = 0; i < r.size(); i++)
+		ret[i] = ToRad(r[i]); 
+	return ret;
+}
+
 template<typename T>
 inline T ToDeg(T angle)	{
-	static_assert(std::is_floating_point<T>::value, "Type T has to be floating point");
+	static_assert(std::is_floating_point<T>::value, "Type has to be floating point");
 	return angle*180./M_PI;
 }
+template <class Range>
+Range ToDegArray(const Range& r) {
+	Range ret(r.size());
+	for (int i = 0; i < r.size(); i++)
+		ret[i] = ToDeg(r[i]); 
+	return ret;
+}
+
 template<typename T>
 inline T atan2_360(T y, T x) {
 	static_assert(std::is_floating_point<T>::value, "Type T has to be floating point");

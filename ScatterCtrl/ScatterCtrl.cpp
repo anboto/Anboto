@@ -156,6 +156,8 @@ void ScatterCtrl::LoadControl() {
 	GuiLock __;
 	
 	FileSel fs;
+	
+	fs.NoExeIcons();
 	fs.Type(Format(t_("%s data file"), "json"), "*.json");
 	fs.Type(Format(t_("%s data file"), "xml"), "*.xml");
 	fs.Type(Format(t_("%s data file"), "bin"), "*.bin");
@@ -219,6 +221,8 @@ void ScatterCtrl::SaveControl() {
 	GuiLock __; 
 
 	FileSel fs;
+	
+	fs.NoExeIcons();
 	fs.Type(Format(t_("%s data file"), "json"), "*.json");
 	fs.Type(Format(t_("%s data file"), "xml"), "*.xml");
 	fs.Type(Format(t_("%s data file"), "bin"), "*.bin");
@@ -1036,6 +1040,8 @@ bool ScatterCtrl::SaveToFile(String fileName) {
 	
 	if (IsNull(fileName)) {
 		FileSel fs;
+		
+		fs.NoExeIcons();
 		fs.Type(Format(t_("%s bitmap file"), "jpeg"), "*.jpg");
 		fs.Type(Format(t_("%s bitmap file"), "png"), "*.png");
 		fs.Type(Format(t_("%s vector file"), "pdf"), "*.pdf");
@@ -1093,6 +1099,8 @@ bool ScatterCtrl::SaveToFileData(String fileName) {
 	
 	if (IsNull(fileName)) {
 		FileSel fs;
+		
+		fs.NoExeIcons();
 		fs.Type(Format(t_("%s comma separated file"), "csv"), "*.csv");
 		fs.AllFilesType();
 		if (!GetTitle().IsEmpty())
