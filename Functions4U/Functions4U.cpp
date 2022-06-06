@@ -647,10 +647,8 @@ String GetExtExecutable(const String _ext)
 	SaveFile(file, "   ");
 	if (!FileExists(file)) 
 		return "";
-	HINSTANCE ret;
-	WString fileW(file);
-	WCHAR exe[1024];
-	ret = FindExecutableW((LPCWSTR)fileW.Begin(), NULL, exe);
+	WCHAR exe[MAX_PATH];
+	HINSTANCE ret = FindExecutableW(ToSystemCharsetW(file), NULL, exe);
 	if (reinterpret_cast<uint64>(ret) > 32)
 		exeFile = WString(exe).ToString();
 	DeleteFile(file);

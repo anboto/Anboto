@@ -32,8 +32,8 @@ public:
 	double rho; 	//	Water density (kg/m2) 
 	double g; 		//	Gravity (m/s2)
 
-	SeaWaves() : rho(1024), g(9.81), Tp(-1) {}
-	SeaWaves(double _rho, double _g) : rho(_rho), g(_g) {}
+	SeaWaves() : rho(1024), g(9.81), nf(0) {}
+	SeaWaves(double _rho, double _g) : rho(_rho), g(_g), nf(0) {}
 	
 	// Calculation results	
 	double zSurf; 		// Free surface at x, y
@@ -45,11 +45,10 @@ public:
 	bool Init(double _Tp, double _Hs, double _dirM = 0, double _h = 70, int _nd = 15, int _nf = 600, 
 				double gamma = 3.3, double disp_ang = M_PI/3., int seed = 123456, double fmin = -1, double fmax = -1);
 	bool Calc(double x, double y, double z, double t);	
-	bool CalcWheeler(double x, double y, double z, double t);	
 	double ZSurf(double x, double y, double t);
 	double Pressure(double x, double y, double z, double t);
-	double PressureWheeler(double x, double y, double z, double t);
-	
+	double ZWheelerStretching(double z, double et);
+		
 	void Clear();
 	
 	static double Power(double Te, double Hs, double h, double g, double rho);
@@ -76,6 +75,8 @@ public:
 	
 	void Xmlize(XmlIO& xml) 	{Ize(xml);}
 	void Jsonize(JsonIO& json) 	{Ize(json);}
+	
+	int GetNf() 				{return nf;}
 	
 private:
 	double Tp; 		// Peak period (s)

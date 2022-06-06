@@ -12,16 +12,31 @@
 namespace Upp {
 using namespace Eigen;
 
-Point3D GetCentroid(const Point3D &a, const Point3D &b) {
-	return Point3D(avg(a.x, b.x), avg(a.y, b.y), avg(a.z, b.z));	
+Value3D Middle(const Value3D &a, const Value3D &b) {
+	return Value3D(avg(a.x, b.x), avg(a.y, b.y), avg(a.z, b.z));	
 }
 
-Point3D GetCentroid(const Point3D &a, const Point3D &b, const Point3D &c) {
-	return Point3D(avg(a.x, b.x, c.x), avg(a.y, b.y, c.y), avg(a.z, b.z, c.z));	
+Value3D WeightedMean(const Value3D &a, double va, const Value3D &b, double vb) {
+	ASSERT (va >= 0 && vb >= 0);
+	double t = va + vb;
+	return Value3D((a.x*va+b.x*vb)/t, (a.y*va+b.y*vb)/t, (a.z*va+b.z*vb)/t);	
 }
 
-Direction3D GetNormal(const Point3D &a, const Point3D &b, const Point3D &c) {
+Value3D Centroid(const Value3D &a, const Value3D &b, const Value3D &c) {
+	return Value3D(avg(a.x, b.x, c.x), avg(a.y, b.y, c.y), avg(a.z, b.z, c.z));	
+}
+
+Direction3D Normal(const Value3D &a, const Value3D &b, const Value3D &c) {
 	return Direction3D((a - b) % (b - c)).Normalize();
+}
+
+double Area(const Value3D &p0, const Value3D &p1, const Value3D &p2) {
+	double l01 = Distance(p0, p1);
+	double l12 = Distance(p1, p2);
+	double l02 = Distance(p0, p2);
+
+	double s = (l01 + l12 + l02)/2;
+	return sqrt(max(s*(s - l01)*(s - l12)*(s - l02), 0.)); 
 }
 
 Point3D Intersection(const Direction3D &lineVector, const Point3D &linePoint, const Point3D &planePoint, const Direction3D &planeNormal) {
@@ -34,8 +49,16 @@ Point3D Intersection(const Direction3D &lineVector, const Point3D &linePoint, co
 	return linePoint + lineVector*factor;	
 }
 
-double Length(const Point3D &p1, const Point3D &p2) {
-	return p1.Length(p2);
+double Manhattan(const Value3D &p1, const Value3D &p2) {
+	return abs(p1.x-p2.x) + abs(p1.y-p2.y) + abs(p1.z-p2.z);
+}
+
+double Length(const Value3D &p1, const Value3D &p2) {
+	return ::sqrt(sqr(p1.x-p2.x) + sqr(p1.y-p2.y) + sqr(p1.z-p2.z));
+}
+
+double Distance(const Value3D &p1, const Value3D &p2) {
+	return Length(p1, p2);
 }
 
 void TranslateForce(const Point3D &from, const VectorXd &ffrom, Point3D &to, VectorXd &fto) {
@@ -167,8 +190,8 @@ bool Segment3D::SegmentIn(const Segment3D &in, double in_len) const {
 
 
 bool PointInSegment(const Point3D &p, const Segment3D &seg) {
-	double dpa = p.Distance(seg.from);
-	double dpb = p.Distance(seg.to);
+	double dpa = Distance(p, seg.from);
+	double dpb = Distance(p, seg.to);
 	double dab = seg.Length();
 	
 	return abs(dpa + dpb - dab) < EPS_XYZ;
@@ -177,13 +200,13 @@ bool PointInSegment(const Point3D &p, const Segment3D &seg) {
 bool SegmentInSegment(const Segment3D &in, double in_len, const Segment3D &seg) {
 	double seg_len = seg.Length();
 	
-	double seg_from_in_from = seg.from.Distance(in.from);
-	double in_to_seg_to = in.to.Distance(seg.to);
+	double seg_from_in_from = Distance(seg.from, in.from);
+	double in_to_seg_to 	= Distance(in.to, seg.to);
 	if (abs(seg_from_in_from + in_len + in_to_seg_to - seg_len) < EPS_XYZ)
 		return true;
 
-	double seg_from_in_to = seg.from.Distance(in.to);
-	double in_from_seg_to = in.from.Distance(seg.to);
+	double seg_from_in_to = Distance(seg.from, in.to);
+	double in_from_seg_to = Distance(in.from, seg.to);
 	if (abs(seg_from_in_to + in_len + in_from_seg_to - seg_len) < EPS_XYZ)
 		return true;
 	
@@ -250,14 +273,14 @@ bool Surface::FixSkewed(int ipanel) {
 	Point3D &p2 = nodes[id2];
 	Point3D &p3 = nodes[id3];
 	if (id0 != id3) {		// Is not triangular 
-		Direction3D normal301 = GetNormal(p3, p0, p1);
-		Direction3D normal012 = GetNormal(p0, p1, p2);
-		Direction3D normal123 = GetNormal(p1, p2, p3);
-		Direction3D normal230 = GetNormal(p2, p3, p0);
+		Direction3D normal301 = Normal(p3, p0, p1);
+		Direction3D normal012 = Normal(p0, p1, p2);
+		Direction3D normal123 = Normal(p1, p2, p3);
+		Direction3D normal230 = Normal(p2, p3, p0);
 		double d0  = normal301.Manhattan();
-		double d01 = normal301.Manhattan(normal012);
-		double d02 = normal301.Manhattan(normal123);
-		double d03 = normal301.Manhattan(normal230);
+		double d01 = Manhattan(normal301, normal012);
+		double d02 = Manhattan(normal301, normal123);
+		double d03 = Manhattan(normal301, normal230);
 		
 		int numg = 0;
 		if (d0 < d01)
@@ -316,7 +339,7 @@ void Surface::DetectTriBiP(Vector<Panel> &panels, int &numTri, int &numBi, int &
 
 void Surface::TriangleToQuad(Panel &pan) {
 	panels << pan;
-	TriangleToQuad(panels.GetCount() - 1);
+	TriangleToQuad(panels.size() - 1);
 }
 
 void Surface::TriangleToQuad(int ipanel) {
@@ -328,10 +351,10 @@ void Surface::TriangleToQuad(int ipanel) {
 	Point3D &p1 = nodes[id1];
 	Point3D &p2 = nodes[id2];
 		
-	Point3D p012= GetCentroid(p0, p1, p2);	nodes.Add(p012);	int id012= nodes.GetCount()-1;
-	Point3D p01 = GetCentroid(p0, p1);		nodes.Add(p01);		int id01 = nodes.GetCount()-1;
-	Point3D p12 = GetCentroid(p1, p2);		nodes.Add(p12);		int id12 = nodes.GetCount()-1;
-	Point3D p20 = GetCentroid(p2, p0);		nodes.Add(p20);		int id20 = nodes.GetCount()-1;
+	Point3D p012= Centroid(p0, p1, p2);	nodes.Add(p012);	int id012= nodes.size()-1;
+	Point3D p01 = Middle(p0, p1);		nodes.Add(p01);		int id01 = nodes.size()-1;
+	Point3D p12 = Middle(p1, p2);		nodes.Add(p12);		int id12 = nodes.size()-1;
+	Point3D p20 = Middle(p2, p0);		nodes.Add(p20);		int id20 = nodes.size()-1;
 	
 	panels.Remove(ipanel, 1);
 	Panel &pan0 = panels.Add();	pan0.id[0] = id0;	pan0.id[1] = id01;	pan0.id[2] = id012;	pan0.id[3] = id20;
@@ -341,9 +364,9 @@ void Surface::TriangleToQuad(int ipanel) {
 
 int Surface::RemoveDuplicatedPanels(Vector<Panel> &_panels) {		
 	int num = 0;
-	for (int i = 0; i < _panels.GetCount()-1; ++i) {
+	for (int i = 0; i < _panels.size()-1; ++i) {
 		Panel &panel = _panels[i];
-		for (int j = _panels.GetCount()-1; j >= i+1; --j) {
+		for (int j = _panels.size()-1; j >= i+1; --j) {
 			if (panel == _panels[j]) {
 				num++;
 				_panels.Remove(j, 1);
@@ -492,7 +515,7 @@ void Surface::GetSegments() {
 	}
 	avgLenSegment = 0;
 	for (const auto &s : segments)
-		avgLenSegment += nodes[s.inode0].Distance(nodes[s.inode1]);
+		avgLenSegment += Distance(nodes[s.inode0], nodes[s.inode1]);
 	avgLenSegment /= segments.GetCount();
 }
 	
@@ -714,15 +737,6 @@ void Panel::ShiftNodes(int shift) {
 		throw t_("ShiftNodes value not implemented");
 }
 
-double Panel::GetSurface(const Point3D &p0, const Point3D &p1, const Point3D &p2) {
-	double l01 = p0.Distance(p1);
-	double l12 = p1.Distance(p2);
-	double l02 = p0.Distance(p2);
-
-	double s = (l01 + l12 + l02)/2;
-	return sqrt(max(s*(s - l01)*(s - l12)*(s - l02), 0.)); 
-}
-
 bool Surface::SameOrderPanel(int ip0, int ip1, int in0, int in1) {
 	bool first0in0 = panels[ip0].FirstNodeIs0(in0, in1);
 	bool first1in0 = panels[ip1].FirstNodeIs0(in0, in1);
@@ -874,13 +888,13 @@ void Surface::GetPanelParams(Panel &panel) const {
 	const Point3D &p2 = nodes[panel.id[2]];
 	const Point3D &p3 = nodes[panel.id[3]];
 	
-	panel.surface0 = panel.GetSurface(p0, p1, p2);
-	panel.centroid0 = GetCentroid(p0, p1, p2);
-	panel.normal0 = GetNormal(p0, p1, p2);
+	panel.surface0  = Area(p0, p1, p2);
+	panel.centroid0 = Centroid(p0, p1, p2);
+	panel.normal0   = Normal(p0, p1, p2);
 	if (!panel.IsTriangle()) {
-		panel.surface1 = panel.GetSurface(p2, p3, p0);
-		panel.centroid1 = GetCentroid(p2, p3, p0);
-		panel.normal1 = GetNormal(p2, p3, p0);
+		panel.surface1  = Area(p2, p3, p0);
+		panel.centroid1 = Centroid(p2, p3, p0);
+		panel.normal1   = Normal(p2, p3, p0);
 		double surf = panel.surface0 + panel.surface1;
 		panel.centroidPaint.x = (panel.centroid0.x*panel.surface0 + panel.centroid1.x*panel.surface1)/surf;
 		panel.centroidPaint.y = (panel.centroid0.y*panel.surface0 + panel.centroid1.y*panel.surface1)/surf;
@@ -916,7 +930,7 @@ void Surface::GetPanelParams() {
 	}	
 }
 
-double Surface::GetSurface() {
+double Surface::GetArea() {
 	surface = 0;
 	if (panels.size() == 0) {
 		avgFacetSideLen = 0;
@@ -928,7 +942,7 @@ double Surface::GetSurface() {
 	return surface;
 }
 
-double Surface::GetSurfaceXProjection(bool positive, bool negative) const {
+double Surface::GetAreaXProjection(bool positive, bool negative) const {
 	double area = 0;
 	
 	for (int ip = 0; ip < panels.size(); ++ip) {
@@ -953,7 +967,7 @@ double Surface::GetSurfaceXProjection(bool positive, bool negative) const {
 	return area;
 }
 
-double Surface::GetSurfaceYProjection(bool positive, bool negative) const {
+double Surface::GetAreaYProjection(bool positive, bool negative) const {
 	double area = 0;
 	
 	for (int ip = 0; ip < panels.GetCount(); ++ip) {
@@ -978,7 +992,7 @@ double Surface::GetSurfaceYProjection(bool positive, bool negative) const {
 	return area;
 }
 
-double Surface::GetSurfaceZProjection(bool positive, bool negative) const {
+double Surface::GetAreaZProjection(bool positive, bool negative) const {
 	double area = 0;
 	
 	for (int ip = 0; ip < panels.GetCount(); ++ip) {
@@ -1003,7 +1017,7 @@ double Surface::GetSurfaceZProjection(bool positive, bool negative) const {
 	return area;
 }
 
-Pointf Surface::GetSurfaceZProjectionCG() const {
+Pointf Surface::GetAreaZProjectionCG() const {
 	double area = 0;
 	Pointf ret(0, 0);
 	
@@ -1184,35 +1198,26 @@ Force6D Surface::GetHydrostaticForce(const Point3D &c0, double rho, double g) co
 	return f;
 }
 	
-
 static void AddTrianglePressure(Force6D &f, const Point3D &centroid, const Point3D &normal, 
 	double surface, const Point3D &c0, const Point3D &p1, const Point3D &p2, const Point3D &p3) {
-	Direction3D f0, f1;
+	Direction3D f0;
 	double p;
 	
 	p = centroid.z*surface*.75;
-	f0.x = p*normal.x;
-	f0.y = p*normal.y;
-	f0.z = p*normal.z;
+	f0.Set(p*normal.x, p*normal.y, p*normal.z);
 	f.AddLinear(f0, centroid, c0);	
 	
 	p = p1.z*surface*.25/3;
-	f1.x = p*normal.x;
-	f1.y = p*normal.y;
-	f1.z = p*normal.z;
-	f.AddLinear(f1, p1, c0);	
+	f0.Set(p*normal.x, p*normal.y, p*normal.z);
+	f.AddLinear(f0, p1, c0);	
 
 	p = p2.z*surface*.25/3;
-	f1.x = p*normal.x;
-	f1.y = p*normal.y;
-	f1.z = p*normal.z;
-	f.AddLinear(f1, p2, c0);
+	f0.Set(p*normal.x, p*normal.y, p*normal.z);
+	f.AddLinear(f0, p2, c0);
 	
 	p = p3.z*surface*.25/3;
-	f1.x = p*normal.x;
-	f1.y = p*normal.y;
-	f1.z = p*normal.z;
-	f.AddLinear(f1, p3, c0);
+	f0.Set(p*normal.x, p*normal.y, p*normal.z);
+	f.AddLinear(f0, p3, c0);
 }
 
 Force6D Surface::GetHydrostaticForceNormalized(const Point3D &c0) const {
@@ -1234,6 +1239,121 @@ Force6D Surface::GetHydrostaticForceNormalized(const Point3D &c0) const {
 	}	
 	return f;
 }		
+
+static void AddTriangleDynPressure(Force6D &f, const Point3D &centroid, const Point3D &normal, 
+	double surface, const Point3D &c0, const Point3D &p0, const Point3D &p1, const Point3D &p2,
+	double etcentroid, double et0, double et1, double et2, 
+	Function<double(double x, double y)> GetZSurf,
+	Function<double(double x, double y, double z, double et)> GetPress) {
+		
+	Direction3D f0;
+	double p;
+	
+	if (GetZSurf) {		// Clips the triangle if it has vertexes out of the water
+		Vector<const Point3D *> pup, pdown;
+		Vector<double> etup, etdown;
+		if (p0.z > et0) {
+			pup << &p0;
+			etup << et0;
+		} else {
+			pdown << &p0;
+			etdown << et0;
+		}
+		if (p1.z > et1) {
+			pup << &p1;
+			etup << et1;
+		} else {
+			pdown << &p1;
+			etdown << et1;
+		}
+		if (p2.z > et2) {
+			pup << &p2;
+			etup << et2;
+		} else {
+			pdown << &p2;
+			etdown << et2;
+		}
+		if (pup.size() == 3)
+			return;
+		else if (pup.size() == 2) {
+			Point3D p00 = WeightedMean(*pdown[0], pup[0]->z - etup[0], *pup[0], etdown[0] - pdown[0]->z);
+			Point3D p01 = WeightedMean(*pdown[0], pup[1]->z - etup[1], *pup[1], etdown[0] - pdown[0]->z);
+			Point3D centroid = Centroid(*pdown[0], p00, p01);
+			double surface =  Area(*pdown[0], p00, p01);
+			AddTriangleDynPressure(f, centroid, normal, surface, c0, *pdown[0], p00, p01, 
+					GetZSurf(centroid.x, centroid.y), etdown[0], p00.z, p01.z, Null, GetPress);		// Inside the water... don't clip
+			return;
+		} else if (pup.size() == 1) {
+			Point3D p00 = WeightedMean(*pdown[0], pup[0]->z - etup[0], *pup[0], etdown[0] - pdown[0]->z);
+			Point3D p01 = WeightedMean(*pdown[1], pup[0]->z - etup[0], *pup[0], etdown[1] - pdown[1]->z);
+			Point3D centroid1 = Centroid(*pdown[0], p00, p01);
+			Point3D centroid2 = Centroid(*pdown[0], *pdown[1], p01);
+			double surface1 =  Area(*pdown[0], p00, p01);
+			double surface2 =  Area(*pdown[0], *pdown[1], p01);
+			AddTriangleDynPressure(f, centroid1, normal, surface1, c0, *pdown[0], p00, p01, 		// Both triangles inside the water... don't clip
+					GetZSurf(centroid1.x, centroid1.y), etdown[0], p00.z, p01.z, Null, GetPress);
+			AddTriangleDynPressure(f, centroid2, normal, surface2, c0, *pdown[0], *pdown[1], p01, 
+					GetZSurf(centroid2.x, centroid2.y), etdown[0], etdown[1], p01.z, Null, GetPress);
+			return;	
+		}
+	}
+	
+	p = GetPress(centroid.x, centroid.y, centroid.z, etcentroid)*surface*.75;
+	f0.Set(p*normal.x, p*normal.y, p*normal.z);
+	f.AddLinear(f0, centroid, c0);	
+	
+	p = GetPress(p0.x, p0.y, p0.z, et0)*surface*.25/3;
+	f0.Set(p*normal.x, p*normal.y, p*normal.z);
+	f.AddLinear(f0, p0, c0);	
+
+	p = GetPress(p1.x, p1.y, p1.z, et1)*surface*.25/3;
+	f0.Set(p*normal.x, p*normal.y, p*normal.z);
+	f.AddLinear(f0, p1, c0);
+	
+	p = GetPress(p2.x, p2.y, p2.z, et2)*surface*.25/3;
+	f0.Set(p*normal.x, p*normal.y, p*normal.z);
+	f.AddLinear(f0, p2, c0);
+}
+
+Force6D Surface::GetHydrodynamicForce(const Point3D &c0, bool clip,
+						Function<double(double x, double y)> GetZSurf,
+						Function<double(double x, double y, double z, double et)> GetPress) const {
+	Force6D f;
+
+	f.Reset();				
+
+	VectorXd et(nodes.size());
+	for (int ip = 0; ip < nodes.size(); ++ip) 
+		et(ip) = GetZSurf(nodes[ip].x, nodes[ip].y);
+	
+	if (!clip)
+		GetZSurf = Null;
+		
+	for (int ip = 0; ip < panels.size(); ++ip) {	
+		const Panel &panel = panels[ip];
+		
+		int id0 = panel.id[0];
+		int id1 = panel.id[1];
+		int id2 = panel.id[2];
+		int id3 = panel.id[3];
+		
+		const Point3D &p0 = nodes[id0];
+		const Point3D &p1 = nodes[id1];
+		const Point3D &p2 = nodes[id2];
+		const Point3D &p3 = nodes[id3];
+		
+		AddTriangleDynPressure(f, panel.centroid0, panel.normal0, panel.surface0, c0, 
+					p0, p1, p2, 
+					GetZSurf(panel.centroid0.x, panel.centroid0.y), et(id0), et(id1), et(id2), 
+						GetZSurf, GetPress);
+		if (!panel.IsTriangle())
+			AddTriangleDynPressure(f, panel.centroid1, panel.normal1, panel.surface1, c0, 
+					p2, p3, p0, 
+					GetZSurf(panel.centroid1.x, panel.centroid1.y), et(id2), et(id3), et(id0), 
+						GetZSurf, GetPress);
+	}
+	return f;
+}
 
 Force6D Surface::GetHydrostaticForceCB(const Point3D &c0, const Point3D &cb, double rho, double g) const {
 	Force6D f = GetHydrostaticForceCBNormalized(c0, cb);	
@@ -1377,8 +1497,6 @@ void Surface::CutZ(const Surface &orig, int factor) {
 					const Point3D &from = nodes[origPanelid[ids[i]]];
 					const Point3D &to   = nodes[origPanelid[ids[i+1]]];
 					if (abs(from.z) <= EPS_XYZ && abs(to.z) <= EPS_XYZ) {
-						//nodeFrom << origPanelid[ids[i]];
-						//nodeTo << origPanelid[ids[i+1]];
 						segWL.from = from;
 						segWL.to = to;	
 					} else if ((from.z)*factor <= 0 && (to.z)*factor <= 0) {
@@ -1533,7 +1651,7 @@ void Surface::CutX(const Surface &orig, int factor) {
 					break;
 				}
 			}
-			if (pos == nodeTo.GetCount()) {
+			if (pos == nodeTo.size()) {
 				nodeFrom << nFrom;
 				nodeTo << nTo;
 			} else if (pos >= 0) {
@@ -1542,17 +1660,17 @@ void Surface::CutX(const Surface &orig, int factor) {
 			}
 			
 			Panel panel;
-			if (nodeFrom.GetCount() == 3) {
+			if (nodeFrom.size() == 3) {
 				panel.id[0] = nodeFrom[0];
 				panel.id[1] = nodeFrom[1];
 				panel.id[2] = nodeFrom[2];
 				panel.id[3] = nodeFrom[2];
-			} else if (nodeFrom.GetCount() == 4) {
+			} else if (nodeFrom.size() == 4) {
 				panel.id[0] = nodeFrom[0];
 				panel.id[1] = nodeFrom[1];
 				panel.id[2] = nodeFrom[2];
 				panel.id[3] = nodeFrom[3];
-			} else if (nodeFrom.GetCount() == 5) {
+			} else if (nodeFrom.size() == 5) {
 				panel.id[0] = nodeFrom[0];
 				panel.id[1] = nodeFrom[1];
 				panel.id[2] = nodeFrom[2];
@@ -1577,7 +1695,7 @@ void Surface::CutY(const Surface &orig, int factor) {
 	
 	factor *= -1;
 	
-	for (int ip = 0; ip < orig.panels.GetCount(); ++ip) {
+	for (int ip = 0; ip < orig.panels.size(); ++ip) {
 		const int &id0 = orig.panels[ip].id[0];
 		const int &id1 = orig.panels[ip].id[1];
 		const int &id2 = orig.panels[ip].id[2];
@@ -1614,11 +1732,11 @@ void Surface::CutY(const Surface &orig, int factor) {
 							if ((from.y)*factor < 0) {
 								nodeFrom << origPanelid[ids[i]];
 								nodes << inter;
-								nodeTo << nodes.GetCount() - 1;
+								nodeTo << nodes.size() - 1;
 							} else {
 								nodeTo << origPanelid[ids[i+1]];
 								nodes << inter;
-								nodeFrom << nodes.GetCount() - 1;
+								nodeFrom << nodes.size() - 1;
 							}
 						}
 					}
@@ -1626,9 +1744,9 @@ void Surface::CutY(const Surface &orig, int factor) {
 			}
 			
 			int pos = -1, nFrom, nTo;
-			for (int i = 0; i < nodeFrom.GetCount(); ++i) {
+			for (int i = 0; i < nodeFrom.size(); ++i) {
 				int i_1 = i + 1;
-				if (i_1 >= nodeFrom.GetCount())
+				if (i_1 >= nodeFrom.size())
 					i_1 = 0;
 				if (nodeTo[i] != nodeFrom[i_1]) {
 					pos = i+1;
@@ -1637,7 +1755,7 @@ void Surface::CutY(const Surface &orig, int factor) {
 					break;
 				}
 			}
-			if (pos == nodeTo.GetCount()) {
+			if (pos == nodeTo.size()) {
 				nodeFrom << nFrom;
 				nodeTo << nTo;
 			} else if (pos >= 0) {
@@ -1646,17 +1764,17 @@ void Surface::CutY(const Surface &orig, int factor) {
 			}
 			
 			Panel panel;
-			if (nodeFrom.GetCount() == 3) {
+			if (nodeFrom.size() == 3) {
 				panel.id[0] = nodeFrom[0];
 				panel.id[1] = nodeFrom[1];
 				panel.id[2] = nodeFrom[2];
 				panel.id[3] = nodeFrom[2];
-			} else if (nodeFrom.GetCount() == 4) {
+			} else if (nodeFrom.size() == 4) {
 				panel.id[0] = nodeFrom[0];
 				panel.id[1] = nodeFrom[1];
 				panel.id[2] = nodeFrom[2];
 				panel.id[3] = nodeFrom[3];
-			} else if (nodeFrom.GetCount() == 5) {
+			} else if (nodeFrom.size() == 5) {
 				panel.id[0] = nodeFrom[0];
 				panel.id[1] = nodeFrom[1];
 				panel.id[2] = nodeFrom[2];
@@ -1676,14 +1794,14 @@ void Surface::CutY(const Surface &orig, int factor) {
 }
 
 void Surface::Join(const Surface &orig) {
-	int num = nodes.GetCount();
-	int numOrig = orig.nodes.GetCount();
+	int num = nodes.size();
+	int numOrig = orig.nodes.size();
 	nodes.SetCount(num + numOrig);
 	for (int i = 0; i < numOrig; ++i)
 		nodes[num+i] = orig.nodes[i];
 	
-	int numPan = panels.GetCount();
-	int numPanOrig = orig.panels.GetCount();
+	int numPan = panels.size();
+	int numPanOrig = orig.panels.size();
 	panels.SetCount(numPan + numPanOrig);
 	for (int i = 0; i < numPanOrig; ++i) {
 		Panel &pan = panels[numPan+i];
@@ -1704,15 +1822,15 @@ void Surface::Join(const Surface &orig) {
 }
 	
 void Surface::Translate(double dx, double dy, double dz) {
-	for (int i = 0; i < nodes.GetCount(); ++i) 
+	for (int i = 0; i < nodes.size(); ++i) 
 		nodes[i].Translate(dx, dy, dz); 
 	
-	for (int i = 0; i < skewed.GetCount(); ++i) 
+	for (int i = 0; i < skewed.size(); ++i) 
 		skewed[i].Translate(dx, dy, dz);
 	
-	for (int i = 0; i < segTo1panel.GetCount(); ++i) 
+	for (int i = 0; i < segTo1panel.size(); ++i) 
 		segTo1panel[i].Translate(dx, dy, dz);
-	for (int i = 0; i < segTo3panel.GetCount(); ++i) 
+	for (int i = 0; i < segTo3panel.size(); ++i) 
 		segTo3panel[i].Translate(dx, dy, dz);
 	
 	//pos += Point3D(dx, dy, dz);
@@ -1722,15 +1840,15 @@ void Surface::Rotate(double a_x, double a_y, double a_z, double c_x, double c_y,
 	Affine3d quat;
 	GetTransform(quat, a_x, a_y, a_z, c_x, c_y, c_z);
 	
-	for (int i = 0; i < nodes.GetCount(); ++i) 
+	for (int i = 0; i < nodes.size(); ++i) 
 		nodes[i].TransRot(quat);
 
-	for (int i = 0; i < skewed.GetCount(); ++i) 
+	for (int i = 0; i < skewed.size(); ++i) 
 		skewed[i].TransRot(quat);
 	
-	for (int i = 0; i < segTo1panel.GetCount(); ++i) 
+	for (int i = 0; i < segTo1panel.size(); ++i) 
 		segTo1panel[i].TransRot(quat);
-	for (int i = 0; i < segTo3panel.GetCount(); ++i) 
+	for (int i = 0; i < segTo3panel.size(); ++i) 
 		segTo3panel[i].TransRot(quat);
 	
 	//angle += Point3D(a_x, a_y, a_z);
@@ -1740,15 +1858,15 @@ void Surface::TransRot(double dx, double dy, double dz, double ax, double ay, do
 	Affine3d quat;
 	GetTransform(quat, dx, dy, dz, ax, ay, az, cx, cy, cz);
 	
-	for (int i = 0; i < nodes.GetCount(); ++i) 
+	for (int i = 0; i < nodes.size(); ++i) 
 		nodes[i].TransRot(quat);
 
-	for (int i = 0; i < skewed.GetCount(); ++i) 
+	for (int i = 0; i < skewed.size(); ++i) 
 		skewed[i].TransRot(quat);
 	
-	for (int i = 0; i < segTo1panel.GetCount(); ++i) 
+	for (int i = 0; i < segTo1panel.size(); ++i) 
 		segTo1panel[i].TransRot(quat);
-	for (int i = 0; i < segTo3panel.GetCount(); ++i) 
+	for (int i = 0; i < segTo3panel.size(); ++i) 
 		segTo3panel[i].TransRot(quat);
 }
 
@@ -1863,7 +1981,7 @@ bool Surface::Archimede(double mass, Point3D &cg, const Point3D &c0, double rho,
 			Point3D cb = under.GetCenterOfBuoyancy();
 			basecg.Translate(0, 0, dz);
 			
-			if (dz < 0.01 && cb.Distance(basecg) < 0.01)
+			if (dz < 0.01 && Distance(cb, basecg) < 0.01)
 				return -1;
 		
 			Force6D fcb;

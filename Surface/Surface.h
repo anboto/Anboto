@@ -112,11 +112,8 @@ public:
 		}
 		return *this;
 	}
-	double Distance(const Value3D &p)  		const {return ::sqrt(sqr(x-p.x) + sqr(y-p.y) + sqr(z-p.z));}
-	inline double Length(const Value3D &p) 	const {return Distance(p);}
-	double Manhattan(const Value3D &p) 		const {return abs(x-p.x) + abs(y-p.y) + abs(z-p.z);}
-	double Manhattan() 				   		const {return abs(x) + abs(y) + abs(z);}
-	
+	double Manhattan() const {return abs(x) + abs(y) + abs(z);}
+
 	double Angle(const Value3D &p) const {return acos(dot(p)/(Length()*p.Length()));}
 	
 	void SimX() {x = -x;}
@@ -299,7 +296,14 @@ void Vector6ToC(const VectorXd &v, double *c);
 void Vector6ToC(const VectorXd &v, float *c);
 
 
-double Length(const Point3D &p1, const Point3D &p2);
+double Distance(const Value3D &p1, const Value3D &p2);
+double Length(const Value3D &p1, const Value3D &p2);
+double Manhattan(const Value3D &p1, const Value3D &p2);
+Value3D Middle(const Value3D &a, const Value3D &b);
+Value3D WeightedMean(const Value3D &a, double va, const Value3D &b, double vb);
+Value3D Centroid(const Value3D &a, const Value3D &b, const Value3D &c);
+Direction3D Normal(const Value3D &a, const Value3D &b, const Value3D &c);
+double Area(const Value3D &p0, const Value3D &p1, const Value3D &p2);
 
 class Segment3D : public Moveable<Segment3D> {
 public:
@@ -336,7 +340,7 @@ public:
 		from.SimZ();
 		to.SimZ();
 	}
-	double Length() const {return from.Distance(to);}
+	double Length() const {return Upp::Length(from, to);}
 	double Dx()	const 	  {return to.x - from.x;}
 	double Dy()	const 	  {return to.y - from.y;}	
 	double Dz()	const 	  {return to.z - from.z;}
@@ -371,10 +375,6 @@ public:
 
 void DeleteVoidSegments(Vector<Segment3D> &segs);
 void DeleteDuplicatedSegments(Vector<Segment3D> &segs);
-	
-Point3D GetCentroid(const Point3D &a, const Point3D &b);
-Point3D GetCentroid(const Point3D &a, const Point3D &b, const Point3D &c);
-Direction3D GetNormal(const Point3D &a, const Point3D &b, const Point3D &c);
 
 Point3D Intersection(const Direction3D &lineVector, const Point3D &linePoint, const Direction3D &planeNormal, const Point3D &planePoint);
 
@@ -450,7 +450,6 @@ public:
 	void ShiftNodes(int shift);
 	inline int GetNumNodes() const	{return IsTriangle() ? 3 : 4;}
 	bool FirstNodeIs0(int in0, int in1) const;
-	static double GetSurface(const Point3D &p0, const Point3D &p1, const Point3D &p2);
 	
 	String ToString() const { return FormatInt(id[0]) + "," + FormatInt(id[1]) + "," + FormatInt(id[2]) + "," + FormatInt(id[3]); }
 
@@ -533,11 +532,11 @@ public:
 	const VolumeEnvelope &GetEnvelope(); 
 	void GetPanelParams();
 	String CheckErrors() const;
-	double GetSurface();
-	double GetSurfaceXProjection(bool positive, bool negative) const;
-	double GetSurfaceYProjection(bool positive, bool negative) const;
-	double GetSurfaceZProjection(bool positive, bool negative) const;
-	Pointf GetSurfaceZProjectionCG() const;
+	double GetArea();
+	double GetAreaXProjection(bool positive, bool negative) const;
+	double GetAreaYProjection(bool positive, bool negative) const;
+	double GetAreaZProjection(bool positive, bool negative) const;
+	Pointf GetAreaZProjectionCG() const;
 	void GetSegments();
 	double GetAvgLenSegment()	{return avgLenSegment;}
 	void GetVolume();
@@ -552,6 +551,8 @@ public:
 	static Force6D GetMassForce(const Point3D &c0, const Point3D &cg, const double mass, const double g);
 	void GetHydrostaticStiffness(MatrixXd &c, const Point3D &c0, const Point3D &cg, 
 				const Point3D &cb, double rho, double g, double mass);
+	Force6D GetHydrodynamicForce(const Point3D &c0, bool clip, Function<double(double x, double y)> GetZSurf,
+						Function<double(double x, double y, double z, double et)> GetPress) const;
 	double GetWaterPlaneArea() const;
 	static Vector<Point3D> GetClosedPolygons(Vector<Segment3D> &segs);
 	static Array<Pointf> Point3dto2D(const Vector<Point3D> &bound);

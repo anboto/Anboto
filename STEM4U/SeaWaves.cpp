@@ -76,9 +76,14 @@ bool SeaWaves::JONSWAP_Spectrum_test(double Hm0, double Tp, double gamma) {
 
 bool SeaWaves::Init(double Tp, double Hs, double dirM, double h, int nd, int nf, double gamma, 
 					double disp_ang, int seed, double fmin, double fmax) {
-	if(!(Tp > 0 && nd > 0 && nf > 0 && gamma >= 1))
+	if (nf == 0) {
+		Clear();
+		return true;
+	}
+	if(!(nd > 0 && gamma >= 1)) {
+		Clear();
 		return false;
-	
+	}
 	this->Tp = Tp; 				
 	this->dirM = dirM; 			
 	this->Hs = Hs;             	
@@ -199,97 +204,88 @@ bool SeaWaves::Calc(double x, double y, double z, double t) {
 	
     zSurf = dzSurf = vx = vy = vz = ax = ay = az = 0;
 	
-	p = -rho*g*z;    
+	p = -z;    
 	
 	for (int ifr = 0; ifr < nf; ifr++) {
+		double w = 2*M_PI*frec[ifr];
     	for (int id = 0; id < nd; id++) {
-    		double f = frec[ifr];
     		double sindirsd = sin(dirs[id]);
     		double cosdirsd = cos(dirs[id]);
-    		double aux = k[ifr]*(cosdirsd*x + sindirsd*y) - 2*M_PI*f*t + ph(id, ifr);
-    		double cosaux = cos(aux);
-    		double sinaux = sin(aux);
+    		double kwtph = k[ifr]*(cosdirsd*x + sindirsd*y) - w*t + ph(id, ifr);
+    		double cosaux = cos(kwtph);
+    		double sinaux = sin(kwtph);
     		
-	        double AUXsl = A(id, ifr)*cosaux;         
-            zSurf += AUXsl;
-            dzSurf += 2*M_PI*f*A(id, ifr)*sinaux;         
+	        double et = A(id, ifr)*cosaux;         
+            zSurf += et;
+            dzSurf += w*A(id, ifr)*sinaux;         
 	        
-	        double kp     = cosh(k[ifr]*(h+z))/cosh(k[ifr]*h);
+	        double kp     = cosh(k[ifr]*(h+z))/cosh(k[ifr]*h);	// Pressure response factor
 	        double kp_sin = sinh(k[ifr]*(h+z))/cosh(k[ifr]*h);
 	
-	        double AUXvh = g*A(id, ifr)*k[ifr]/(2*M_PI*f)*kp*cosaux;         
+	        double AUXvh = g*A(id, ifr)*k[ifr]/w*kp*cosaux;         
 	        vx += AUXvh*cosdirsd;
 	        vy += AUXvh*sindirsd;
 	        
-	        vz += g*A(id, ifr)*k[ifr]/(2*M_PI*f)*kp_sin*sinaux;
+	        vz += g*A(id, ifr)*k[ifr]/w*kp_sin*sinaux;
 	        
-	        double AUXah = g*A(id, ifr)*pow((k[ifr]),2)/(2*M_PI*f)*kp*sinaux;
+	        double AUXah = g*A(id, ifr)*sqr(k[ifr])/w*kp*sinaux;
 	        ax += AUXah*cosdirsd;
 	        ay += AUXah*sindirsd;
 	    
-	        az += -g*A(id, ifr)*pow((k[ifr]),2)/(2*M_PI*f)*kp_sin*cosaux;         
+	        az += -g*A(id, ifr)*sqr(k[ifr])/w*kp_sin*cosaux;         
 	        
-	   		p += rho*g*kp*AUXsl;	
+	   		p += kp*et;	
     	}
 	}
 	if (p < 0)
 		p = 0;
+	else
+		p *= rho*g;
+		
 	return true;
 }
 
 double SeaWaves::ZSurf(double x, double y, double t) {
-	ASSERT(frec.size() > 0);
+	if (nf == 0) 
+		return 0;
 	
     double zSurf = 0;
-	for (int ifr = 0; ifr < nf; ifr++) 
+	for (int ifr = 0; ifr < nf; ifr++) {
+		double w = 2*M_PI*frec[ifr];
     	for (int id = 0; id < nd; id++) 
-	        zSurf += A(id, ifr)*cos(k[ifr]*cos(dirs[id])*x + k[ifr]*sin(dirs[id])*y 
-	        						  - 2*M_PI*frec[ifr]*t + ph(id, ifr));  
+	        zSurf += A(id, ifr)*cos(k[ifr]*cos(dirs[id])*x 
+	        		+ k[ifr]*sin(dirs[id])*y - w*t + ph(id, ifr));  
+	}
     return zSurf;
 }
 
-
-bool SeaWaves::CalcWheeler(double x, double y, double z, double t) {	
-	double et = ZSurf(x, y, t);
-	if (z > et)
-		return false;
-	
-	double zp = h*(h + z)/(h + et) - h;
-	
-	return Calc(x, y, zp, t);
-}
-	
 double SeaWaves::Pressure(double x, double y, double z, double t) {
 	ASSERT(frec.size() > 0);
 	
 	if (z > 0)
-		return Null;
+		return 0;
 			
-	double p = -rho*g*z;  
-	for (int f = 0; f < nf; f++) {
-    	for (int d = 0 ; d < nd; d++) {
-	        double KP    = cosh(k[f]*(h+z))/cosh(k[f]*h);	
-    		double AUXsl = A(d, f)*cos(k[f]*cos(dirs[d])*x + k[f]*sin(dirs[d])*y - 2*M_PI*frec[f]*t + ph(d, f));         
-    		p += rho*g*KP*AUXsl;	
+	double p = -z;  
+	for (int ifr = 0; ifr < nf; ifr++) {
+		double w = 2*M_PI*frec[ifr];
+    	for (int id = 0; id < nd; id++) {
+	        double kp = cosh(k[ifr]*(h+z))/cosh(k[ifr]*h);		// Pressure response factor
+    		double et = A(id, ifr)*cos(k[ifr]*cos(dirs[id])*x 	// Z surf
+    								 + k[ifr]*sin(dirs[id])*y - w*t + ph(id, ifr));         
+    		p += kp*et;	
     	}
 	}
 	if (p < 0)
-		p = 0;
-    return p;
-}
-
-double SeaWaves::PressureWheeler(double x, double y, double z, double t) {
-	double et = ZSurf(x, y, t);
-	if (z > et)
 		return 0;
 	
-	double zp = h*(z - et)/(h + et);		//   h*(h + z)/(h + et) - h;
-	
-	return Pressure(x, y, zp, t);	
+    return p*rho*g;
 }
-	
+
+double SeaWaves::ZWheelerStretching(double z, double et) {
+	return h*(z - et)/(h + et);		//   h*(h + z)/(h + et) - h;
+}
+
 void SeaWaves::Clear() {
-	Tp = -1;	
 	nd = nf = 0;
 	Upp::Clear(A);
 	Upp::Clear(frec);
