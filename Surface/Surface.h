@@ -180,7 +180,8 @@ public:
 	}
 	void Reset() {t.Reset();	r.Reset();}
 	
-	void operator*=(double v) 	{t.x *= v;	t.y *= v;		t.z *= v;		r.x *= v;	r.y *= v;	r.z *= v;}
+	void operator+=(const Value6D &v) 	{t.x += v.t.x;	t.y += v.t.y;	t.z += v.t.z;	r.x += v.r.x;	r.y += v.r.y;	r.z += v.r.z;}
+	void operator*=(double v) 			{t.x *= v;		t.y *= v;		t.z *= v;		r.x *= v;		r.y *= v;		r.z *= v;}
 	
 	double& operator[](int id) {
 		ASSERT(id >= 0 && id < 6);
@@ -542,8 +543,8 @@ public:
 	void GetVolume();
 	int VolumeMatch(double ratioWarning, double ratioError) const;
 	Point3D GetCenterOfBuoyancy() const;
-	void GetInertia33(Matrix3d &inertia, const Point3D &center, bool refine = false) const;
-	void GetInertia66(MatrixXd &inertia, const Point3D &center, bool refine) const;
+	void GetInertia33(Matrix3d &inertia, const Point3D &cg, bool refine = false) const;
+	void GetInertia66(MatrixXd &inertia, const Point3D &cg, bool refine) const;
 	Force6D GetHydrostaticForce(const Point3D &c0, double rho, double g) const;
 	Force6D GetHydrostaticForceNormalized(const Point3D &c0) const;
 	Force6D GetHydrostaticForceCB(const Point3D &c0, const Point3D &cb, double rho, double g) const;

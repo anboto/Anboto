@@ -565,13 +565,7 @@ void ScatterDraw::ScatterBasicSeries::Init(int index) {
 }
 
 ScatterDraw &ScatterDraw::AddSeries(DataSource &data) {
-	ScatterSeries &s = series.Add();
-	s.Init(series.GetCount()-1);
-	s.SetDataSource(&data, false);
-	if (sequentialXAll)
-		s.sequential = true;
-	Refresh();
-	return *this;	
+	return _AddSeries(&data);
 }
 
 ScatterDraw &ScatterDraw::_AddSeries(DataSource *data) {
@@ -580,6 +574,7 @@ ScatterDraw &ScatterDraw::_AddSeries(DataSource *data) {
 	s.SetDataSource(data);
 	if (sequentialXAll)
 		s.sequential = true;
+	OnAddSeries();	
 	Refresh();
 	return *this;	
 }
@@ -630,6 +625,7 @@ ScatterDraw &ScatterDraw::_InsertSeries(int index, DataSource *data) {
 	ScatterSeries &s = series.Insert(index);
 	s.Init(index);
 	s.SetDataSource(data);
+	OnAddSeries();
 	Refresh();	
 	return *this;
 }
@@ -1210,6 +1206,7 @@ bool ScatterDraw::RemoveSeries(int index) {
 
 ScatterDraw& ScatterDraw::RemoveAllSeries() {
 	series.Clear();
+	OnAddSeries();
 	Refresh();
 	return *this;
 }
@@ -1570,7 +1567,9 @@ void ScatterDraw::AddId(Vector<Vector<int>> &idGroups, int id) {
 }
 
 String ScatterDraw::GetCSV() {
-	String ret = GetTitle() + "\n";
+	String ret;
+	if (!GetTitle().IsEmpty())	
+		ret << GetTitle() + "\n";
 	Vector<Vector<int>> idGroups;
 	for (int i = 0; i < series.GetCount(); ++i) {
 		const ScatterSeries &serie = series[i]; 
@@ -1582,6 +1581,7 @@ String ScatterDraw::GetCSV() {
 		}
 	}
 	String sep = GetDefaultCSVSeparator();
+	sep.Replace("\t", "	");
 	for (int i = 0; i < idGroups.size(); i++) {
 		for (int ii = 0; ii < idGroups[i].size(); ii++) {
 			const ScatterSeries &serie = series[idGroups[i][ii]];

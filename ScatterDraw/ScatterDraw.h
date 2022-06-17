@@ -1127,6 +1127,7 @@ public:
 protected:
 	ScatterDraw &_AddSeries(DataSource *data);
 	virtual void Refresh() {};
+	Function<void()> OnAddSeries;
 
 	int mode{MD_ANTIALIASED};
 	Color graphColor = SColorPaper();	

@@ -131,11 +131,11 @@ bool SeaWaves::Init(double Tp, double Hs, double dirM, double h, int nd, int nf,
 			else
 				sigma_f = 0.09;	     
 	
-			Sf_f[f] = beta*pow(Hs, 2)*pow(Tp,-4)*pow(frec[f], -5)*exp(-1.25*pow(Tp*frec[f], -4)) 
+			Sf_f[f] = beta*sqr(Hs)*pow(Tp,-4)*pow(frec[f], -5)*exp(-1.25*pow(Tp*frec[f], -4)) 
 						  *pow(gamma, exp(-pow((Tp*frec[f]-1), 2)/2/pow(sigma_f, 2)));
 		}
 	} else 
-		Sf_f[0] = 1/2.*pow(Hs/2., 2);
+		Sf_f[0] = 1/2.*sqr(Hs/2.);
 	
 	if (nd > 1) {
 	    double dirmin = dirM - disp_ang; 	
@@ -254,7 +254,7 @@ double SeaWaves::ZSurf(double x, double y, double t) {
 		double w = 2*M_PI*frec[ifr];
     	for (int id = 0; id < nd; id++) 
 	        zSurf += A(id, ifr)*cos(k[ifr]*cos(dirs[id])*x 
-	        		+ k[ifr]*sin(dirs[id])*y - w*t + ph(id, ifr));  
+	        	   + k[ifr]*sin(dirs[id])*y - w*t + ph(id, ifr));  
 	}
     return zSurf;
 }
@@ -262,7 +262,7 @@ double SeaWaves::ZSurf(double x, double y, double t) {
 double SeaWaves::Pressure(double x, double y, double z, double t) {
 	ASSERT(frec.size() > 0);
 	
-	if (z > 0)
+	if (z >= 0)
 		return 0;
 			
 	double p = -z;  
@@ -270,19 +270,19 @@ double SeaWaves::Pressure(double x, double y, double z, double t) {
 		double w = 2*M_PI*frec[ifr];
     	for (int id = 0; id < nd; id++) {
 	        double kp = cosh(k[ifr]*(h+z))/cosh(k[ifr]*h);		// Pressure response factor
-    		double et = A(id, ifr)*cos(k[ifr]*cos(dirs[id])*x 	// Z surf
-    								 + k[ifr]*sin(dirs[id])*y - w*t + ph(id, ifr));         
+    		double et = A(id, ifr)*cos(k[ifr]*cos(dirs[id])*x 	// Z surf component
+    				  + k[ifr]*sin(dirs[id])*y - w*t + ph(id, ifr));         
     		p += kp*et;	
     	}
 	}
-	if (p < 0)
-		return 0;
-	
     return p*rho*g;
 }
 
 double SeaWaves::ZWheelerStretching(double z, double et) {
-	return h*(z - et)/(h + et);		//   h*(h + z)/(h + et) - h;
+	if (et < z)
+		return 0;
+	//return z;
+	return h*(z - et)/(h + et);		// h*(h + z)/(h + et) - h;
 }
 
 void SeaWaves::Clear() {
@@ -324,7 +324,7 @@ bool SeaWaves::SaveZSurf(double x, double y, String filename, double duration, d
 	String out;
 	out << "time" << separator << "fs\n";					
 	for (int i = 0; i < t.size(); ++i) 
-		out << t[i] << separator << et[i] << "\n";					
+		out << t[i] << separator << Format("%.10f", et[i]) << "\n";					
 	return SaveFile(filename, out);
 }
 

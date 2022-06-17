@@ -182,7 +182,7 @@ LAYOUT(ProcessingTab, 504, 320)
 END_LAYOUT
 
 LAYOUT(ProcessingTabFitLeft, 356, 324)
-	ITEM(Upp::ScatterCtrl, scatter, SetPlotAreaLeftMargin(60).SetPlotAreaBottomMargin(50).ShowContextMenu(true).ShowPropertiesDlg(true).ShowProcessDlg(true).ShowButtons(true).HSizePosZ(0, 1).VSizePosZ(0, 20))
+	ITEM(ScatterCtrl, scatter, SetPlotAreaLeftMargin(60).SetPlotAreaBottomMargin(50).ShowContextMenu(true).ShowPropertiesDlg(true).ShowProcessDlg(true).ShowButtons(true).HSizePosZ(0, 1).VSizePosZ(0, 20))
 	ITEM(Upp::Label, comments, HSizePosZ(0, 4).BottomPosZ(1, 19))
 END_LAYOUT
 
@@ -257,7 +257,7 @@ LAYOUT(ProcessingTabFitRight, 324, 560)
 END_LAYOUT
 
 LAYOUT(ProcessingTabOpLeft, 428, 328)
-	ITEM(Upp::ScatterCtrl, scatter, SetPlotAreaLeftMargin(60).SetPlotAreaBottomMargin(50).ShowContextMenu(true).ShowPropertiesDlg(true).ShowProcessDlg(true).ShowButtons(true).HSizePosZ(0, 0).VSizePosZ(0, 0))
+	ITEM(ScatterCtrl, scatter, SetPlotAreaLeftMargin(60).SetPlotAreaBottomMargin(50).ShowContextMenu(true).ShowPropertiesDlg(true).ShowProcessDlg(true).ShowButtons(true).HSizePosZ(0, 0).VSizePosZ(0, 0))
 END_LAYOUT
 
 LAYOUT(ProcessingTabOpRight, 112, 76)
@@ -269,7 +269,7 @@ LAYOUT(ProcessingTabOpRight, 112, 76)
 END_LAYOUT
 
 LAYOUT(ProcessingTabFrequencyLeft, 428, 420)
-	ITEM(Upp::ScatterCtrl, scatter, SetPlotAreaLeftMargin(60).SetPlotAreaBottomMargin(40).ShowContextMenu(true).ShowPropertiesDlg(true).ShowProcessDlg(true).ShowButtons(true).HSizePosZ(0, 0).VSizePosZ(0, 20))
+	ITEM(ScatterCtrl, scatter, SetPlotAreaLeftMargin(60).SetPlotAreaBottomMargin(40).ShowContextMenu(true).ShowPropertiesDlg(true).ShowProcessDlg(true).ShowButtons(true).HSizePosZ(0, 0).VSizePosZ(0, 20))
 	ITEM(Upp::Label, comments, HSizePosZ(0, 4).BottomPosZ(1, 19))
 END_LAYOUT
 
@@ -302,7 +302,7 @@ LAYOUT(ProcessingTabFrequencyRight, 128, 424)
 END_LAYOUT
 
 LAYOUT(ProcessingTabBestFitLeft, 432, 428)
-	ITEM(Upp::ScatterCtrl, scatter, SetPlotAreaLeftMargin(60).SetPlotAreaBottomMargin(50).ShowContextMenu(true).ShowPropertiesDlg(true).ShowProcessDlg(true).ShowButtons(true).HSizePosZ(0, 0).VSizePosZ(0, 0))
+	ITEM(ScatterCtrl, scatter, SetPlotAreaLeftMargin(60).SetPlotAreaBottomMargin(50).ShowContextMenu(true).ShowPropertiesDlg(true).ShowProcessDlg(true).ShowButtons(true).HSizePosZ(0, 0).VSizePosZ(0, 0))
 END_LAYOUT
 
 LAYOUT(ProcessingTabBestFitRight, 332, 428)
@@ -317,7 +317,7 @@ LAYOUT(ProcessingTabBestFitRight, 332, 428)
 END_LAYOUT
 
 LAYOUT(ProcessingTabHistogramLeft, 428, 420)
-	ITEM(Upp::ScatterCtrl, scatter, SetPlotAreaLeftMargin(60).SetPlotAreaBottomMargin(40).ShowContextMenu(true).ShowPropertiesDlg(true).ShowProcessDlg(true).ShowButtons(true).HSizePosZ(0, 0).VSizePosZ(0, 20))
+	ITEM(ScatterCtrl, scatter, SetPlotAreaLeftMargin(60).SetPlotAreaBottomMargin(40).ShowContextMenu(true).ShowPropertiesDlg(true).ShowProcessDlg(true).ShowButtons(true).HSizePosZ(0, 0).VSizePosZ(0, 20))
 	ITEM(Upp::Label, comments, HSizePosZ(0, 4).BottomPosZ(1, 19))
 END_LAYOUT
 

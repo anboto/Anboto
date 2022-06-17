@@ -1106,9 +1106,9 @@ Point3D Surface::GetCenterOfBuoyancy() const {
 		return Null;
 }
 
-static void CalcDet(const Matrix3d &A, Vector3d &diag, Vector3d &offd, double &volume) {
+static void CalcDet(const Matrix3d &A, Vector3d &diag, Vector3d &offd, double &vol) {
 	double d = A.determinant();  	// vol of tiny parallelepiped= d * dr * ds * dt (the 3 partials of my tetral triple integral equation)
-	volume += d;                   	// add vol of current tetra (note it could be negative - that's ok we need that sometimes)
+	vol += d;                   	// add vol of current tetra (note it could be negative - that's ok we need that sometimes)
 	for (int j = 0; j < 3; j++) {
 		int j1 = (j + 1) % 3;
 		int j2 = (j + 2) % 3;
@@ -1121,34 +1121,35 @@ static void CalcDet(const Matrix3d &A, Vector3d &diag, Vector3d &offd, double &v
 }
 
 // From https://github.com/melax/sandbox
-void Surface::GetInertia33(Matrix3d &inertia, const Point3D &center, bool refine) const {
-	double volume = 0;                  
+// Unitary matrix. It needs to be multiplied by the mass
+void Surface::GetInertia33(Matrix3d &inertia, const Point3D &cg, bool refine) const {
+	double vol = 0;                  
 	Vector3d diag(0, 0, 0);             // accumulate matrix main diagonal integrals [x*x, y*y, z*z]
 	Vector3d offd(0, 0, 0);             // accumulate matrix off-diagonal  integrals [y*z, x*z, x*y]
 	
-	for (int ip = 0; ip < panels.GetCount(); ++ip) {
+	for (int ip = 0; ip < panels.size(); ++ip) {
 		const Panel &panel = panels[ip];
 		Matrix3d A;
 		
-		Point3D r0 = nodes[panel.id[0]] - center;
-		Point3D r1 = nodes[panel.id[1]] - center;
-		Point3D r2 = nodes[panel.id[2]] - center;
-		Point3D r3 = nodes[panel.id[3]] - center;
+		Point3D r0 = nodes[panel.id[0]] - cg;
+		Point3D r1 = nodes[panel.id[1]] - cg;
+		Point3D r2 = nodes[panel.id[2]] - cg;
+		Point3D r3 = nodes[panel.id[3]] - cg;
 		
 		A.row(0) << r0.x, r0.y, r0.z;
 		A.row(1) << r1.x, r1.y, r1.z;
 		A.row(2) << r2.x, r2.y, r2.z;
 		
-		CalcDet(A, diag, offd, volume);
+		CalcDet(A, diag, offd, vol);
 		
 		A.row(1) << r2.x, r2.y, r2.z;
 		A.row(2) << r3.x, r3.y, r3.z;
 		
-		CalcDet(A, diag, offd, volume);
+		CalcDet(A, diag, offd, vol);
 	}
-	volume /= 6;
-	diag /= volume*60;  
-	offd /= volume*120;
+	vol /= 6;
+	diag /= vol*60;  
+	offd /= vol*120;
 	inertia << 	diag[1] + diag[2], -offd[2], 		  -offd[1],
 				-offd[2], 		   diag[0] + diag[2], -offd[0],
 				-offd[1], 		   -offd[0], 		  diag[0] + diag[1];
@@ -1163,31 +1164,30 @@ void Surface::GetInertia33(Matrix3d &inertia, const Point3D &center, bool refine
 	}
 }
 
-void Surface::GetInertia66(MatrixXd &inertia, const Point3D &center, bool refine) const {
+void Surface::GetInertia66(MatrixXd &inertia, const Point3D &cg, bool refine) const {
 	inertia = MatrixXd::Zero(6,6);	
 	Matrix3d inertia3;
-	GetInertia33(inertia3, center, refine);
+	GetInertia33(inertia3, cg, refine);
 	inertia.bottomRightCorner(3, 3) = inertia3;
 	inertia(0, 0) = inertia(1, 1) = inertia(2, 2) = 1;
 	
-	double cx = center.x, 
-		   cy = center.y,
-		   cz = center.z;
+	Point3D c = clone(cg);
+	
 	if (refine) {
-		double mx = max(max(abs(cx), abs(cy)), abs(cz));
-		if (abs(cx) < 1E-10 || abs(mx/cx) > 1E5)
-			cx = 0;
-		if (abs(cy) < 1E-10 || abs(mx/cy) > 1E5)
-			cy = 0;
-		if (abs(cz) < 1E-10 || abs(mx/cz) > 1E5)
-			cz = 0;		
+		double mx = max(max(abs(c.x), abs(c.y)), abs(c.z));
+		if (abs(c.x) < 1E-10 || abs(mx/c.x) > 1E5)
+			c.x = 0;
+		if (abs(c.y) < 1E-10 || abs(mx/c.y) > 1E5)
+			c.y = 0;
+		if (abs(c.z) < 1E-10 || abs(mx/c.z) > 1E5)
+			c.z = 0;		
 	} 
-	inertia(1, 5) = inertia(5, 1) =  cx;
-	inertia(2, 4) = inertia(4, 2) = -cx;
-	inertia(0, 5) = inertia(5, 0) = -cy;
-	inertia(2, 3) = inertia(3, 2) =  cy;
-	inertia(0, 4) = inertia(4, 0) =  cz;
-	inertia(1, 3) = inertia(3, 1) = -cz;
+	inertia(1, 5) = inertia(5, 1) =  c.x;
+	inertia(2, 4) = inertia(4, 2) = -c.x;
+	inertia(0, 5) = inertia(5, 0) = -c.y;
+	inertia(2, 3) = inertia(3, 2) =  c.y;
+	inertia(0, 4) = inertia(4, 0) =  c.z;
+	inertia(1, 3) = inertia(3, 1) = -c.z;
 }	
 
 Force6D Surface::GetHydrostaticForce(const Point3D &c0, double rho, double g) const {

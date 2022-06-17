@@ -1222,6 +1222,7 @@ ScatterCtrl::ScatterCtrl() {
 	processButton.SetImage(ScatterImg::chart_curve_edit()).SetLabel(t_("Data Analysis"));
 	processButton.WhenAction = [=] {DoProcessing();};
 	processButton.Tip(t_("Data processing dialog"));	
+	processButton.Disable();
 	
 	posx += buttonWidthProcess;
 	int buttonWidthData = 80;
@@ -1230,6 +1231,7 @@ ScatterCtrl::ScatterCtrl() {
 	dataButton.SetImage(ScatterImg::Database()).SetLabel(t_("View Data"));
 	dataButton.WhenAction = [=] {DoShowData();};
 	dataButton.Tip(t_("Show raw data table"));
+	dataButton.Disable();
 	
 	posx += buttonWidthData;
 	int buttonWidthProperties = 80;
@@ -1264,6 +1266,11 @@ ScatterCtrl::ScatterCtrl() {
 	AddKeyBehavior(true,  false, false, K_F, 		true, 	ScatterCtrl::ZOOM_FIT);
 	
 	AddInstance(this);
+	
+	OnAddSeries = [&] {
+		processButton.Enable(ScatterDraw::GetCount() > 0);
+		dataButton.Enable(ScatterDraw::GetCount() > 0);
+	};
 }
 
 }
