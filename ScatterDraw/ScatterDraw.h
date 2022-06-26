@@ -246,7 +246,9 @@ protected:
 			ASSERT(ismagic);
 			return !ismagic;
 		}
-		virtual ~ScatterSeries() noexcept		{DeletePD();}
+		virtual ~ScatterSeries() noexcept {
+			DeletePD();
+		}
 		void SerializeData(bool ser = true) 	{serializeData = ser;}
 		void SerializeFormat(bool ser = false) 	{serializeFormat = ser;}
 		void Xmlize(XmlIO& xio) 				{XmlizeByJsonize(xio, *this);}
@@ -293,8 +295,9 @@ protected:
 				data[int(i)].y = pD->y(i);
 			}
 		}
+		bool IsUsed()	{return pD && owns;}
 		void DeletePD() {
-			if(pD && owns) {
+			if(IsUsed()) {
 				delete pD;
 				pD = 0;
 			}
@@ -376,6 +379,8 @@ public:
 	Upp::Font GetLabelsFont() 	{return labelsFont;};
 	ScatterDraw& SetLabelsColor(const Color& colorLabels);
 	Upp::Color GetLabelsColor() {return labelsColor;};
+	ScatterDraw& SetGridFont(const Upp::Font& fontGrid);
+	Upp::Font GetGridFont() 	{return reticleFont;};
 	
 	ScatterDraw& SetPlotAreaMargin(int hLeft, int hRight, int vTop, int vBottom);
 	ScatterDraw& SetPlotAreaLeftMargin(int margin);	
@@ -440,7 +445,7 @@ public:
 	Color& GetLegendFillColor() 							{return legendFillColor;}
 	Color& GetLegendBorderColor() 							{return legendBorderColor;}
 	
-	ScatterDraw& SetMode(int _mode = MD_ANTIALIASED)		{this->mode = _mode; Refresh(); return *this;};
+	ScatterDraw& SetMode(int _mode = MD_ANTIALIASED)		{mode = _mode; Refresh(); return *this;};
 	int GetMode()											{return mode;};
 	
 	ScatterDraw &ZoomToFit(bool horizontal, bool vertical, double factorH, double factorV);
@@ -1125,11 +1130,11 @@ public:
 	String VariableFormatZ(double d) const  {return FormatDoubleAutosize(d, GetSurfMaxZ()-GetSurfMinZ());}
 		
 protected:
-	ScatterDraw &_AddSeries(DataSource *data);
+	ScatterDraw &_AddSeries(DataSource *data, bool owns = true);
 	virtual void Refresh() {};
 	Function<void()> OnAddSeries;
 
-	int mode{MD_ANTIALIASED};
+	int mode = MD_ANTIALIASED;
 	Color graphColor = SColorPaper();	
 	String title;
 	Upp::Font titleFont = Arial(20);

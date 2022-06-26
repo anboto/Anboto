@@ -18,8 +18,7 @@ Array<ScatterWindow> ScatterWindowPool::pool;
 	
 #ifdef PLATFORM_WIN32
 
-void ScatterCtrl::SaveAsMetafile(const char* file)
-{
+void ScatterCtrl::SaveAsMetafile(const char* file) {
 	GuiLock __;
 	WinMetaFileDraw wmfd;	
 	wmfd.Create(saveSize.cx, saveSize.cy, "ScatterCtrl", "chart", file);
@@ -28,8 +27,7 @@ void ScatterCtrl::SaveAsMetafile(const char* file)
 	wmfd.Close();	
 }
 
-void ScatterCtrl::SaveToClipboard(bool saveAsMetafile) 
-{
+void ScatterCtrl::SaveToClipboard(bool saveAsMetafile)  {
 	GuiLock __;
 	if (saveAsMetafile) {
 		WinMetaFileDraw wmfd;	
@@ -46,8 +44,7 @@ void ScatterCtrl::SaveToClipboard(bool saveAsMetafile)
 }
 #else
 
-void ScatterCtrl::SaveToClipboard(bool) 
-{
+void ScatterCtrl::SaveToClipboard(bool) {
 	GuiLock __;
 	ScatterDraw::SetSize(saveSize);
 	Image img = GetImage();

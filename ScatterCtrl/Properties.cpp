@@ -164,6 +164,8 @@ void TextsTab::Init(ScatterCtrl& scatter) {
 	butFontLabel.WhenAction = [=]{OnFontLabel();};
 	colorLabel <<= scatter.GetLabelsColor();
 	colorLabel.WhenAction = [=]{Change();};
+	butFontGrid.SetImage(ScatterImgP::ColorA);
+	butFontGrid.WhenAction = [=]{OnFontGrid();};
 	
 	Change();
 }
@@ -191,6 +193,19 @@ void TextsTab::OnFontLabel() {
 
 void TextsTab::OnChangeFontLabel(Font font) {
 	pscatter->SetLabelsFont(font);
+	pscatter->Refresh();
+}
+
+void TextsTab::OnFontGrid() {
+	FontSelect fontSelect;
+	
+	fontSelect.Set(pscatter->GetGridFont());
+	fontSelect.WhenAction = [=](Font f) {OnChangeFontGrid(f);};
+	fontSelect.Execute(butFontGrid);
+}
+
+void TextsTab::OnChangeFontGrid(Font font) {
+	pscatter->SetGridFont(font);
 	pscatter->Refresh();
 }
 	
@@ -243,6 +258,9 @@ void LegendTab::Init(ScatterCtrl& scatter) {
 	
 	rowSpacing <<= scatter.GetLegendRowSpacing();
 	rowSpacing.WhenAction = [=] {Change();};
+	
+	butFontLegend.SetImage(ScatterImgP::ColorA);
+	butFontLegend.WhenAction = [=]{OnFontLegend();};
 	
 	Change();
 }
@@ -297,6 +315,19 @@ void LegendTab::Change() {
     
 	scatter.SetModify();
 	scatter.Refresh();
+}
+
+void LegendTab::OnFontLegend() {
+	FontSelect fontSelect;
+	
+	fontSelect.Set(pscatter->GetLegendFont());
+	fontSelect.WhenAction = [=](Font f) {OnChangeFontLegend(f);};
+	fontSelect.Execute(butFontLegend);
+}
+
+void LegendTab::OnChangeFontLegend(Font font) {
+	pscatter->SetLegendFont(font);
+	pscatter->Refresh();
 }
 
 void GeneralTab::Init(ScatterCtrl& scatter) {

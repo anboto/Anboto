@@ -662,19 +662,28 @@ Vector<double> DataSource::SortData(Getdatafun getdata) {
 
 Vector<double> DataSource::Percentile(Getdatafun getdata, double rate) {
 	ASSERT(rate >= 0 && rate <= 1);
+
 	Vector<double> data = SortData(getdata);
-	int num = int(data.GetCount()*rate) + 1;
-	if (num < data.GetCount())
-		data.Remove(num, data.GetCount()-num);
+	int num = int(data.size()*rate) + 1;
+	if (num < data.size())
+		data.Remove(num, data.size()-num);
 	return data;
 }
 
-double DataSource::PercentileVal(Getdatafun getdata, double rate) {
+double DataSource::PercentileVal(Getdatafun getdata, double rate, double mn, double mx) {
 	ASSERT(rate >= 0 && rate <= 1);
 	
-	Vector<double> data = SortData(getdata);
-	int num = int(data.GetCount()*rate);
-	return LinearInterpolate<double>(data.GetCount()*rate, num, num+1, data[num-1], data[num]);
+	Vector<double> raw, data;
+	
+	Copy(getdata, raw);
+	for (int i = 0; i < raw.size(); ++i)
+		if (Between(raw[i], mn, mx))
+			data << raw[i];
+	
+	Sort(data);
+	
+	int num = int(data.size()*rate);
+	return LinearInterpolate<double>(data.size()*rate, num, num+1, data[num-1], data[num]);
 }
 
 Vector<Pointf> DataSource::Derivative(Getdatafun getdataY, Getdatafun getdataX, int orderDer, int orderAcc) {

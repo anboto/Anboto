@@ -265,9 +265,13 @@ public:
 	ScatterCtrl& SetTitleColor(const Upp::Color& colorTitle)	{ScatterDraw::SetTitleColor(colorTitle);	return *this;};
 	ScatterCtrl& SetLabelsFont(const Upp::Font& fontLabels) 	{ScatterDraw::SetLabelsFont(fontLabels); 	return *this;};
 	ScatterCtrl& SetLabelsColor(const Upp::Color& colorLabels)	{ScatterDraw::SetLabelsColor(colorLabels);	return *this;};
+	ScatterCtrl& SetLegendFont(const Upp::Font& fontLegend) 	{ScatterDraw::SetLegendFont(fontLegend); 	return *this;};
+	ScatterCtrl& SetReticleFont(const Upp::Font& fontReticle) 	{ScatterDraw::SetReticleFont(fontReticle); 	return *this;};
+	
 	ScatterCtrl& SetLabelX(const String& _xLabel)				{ScatterDraw::SetLabelX(_xLabel); 			return *this;};
 	ScatterCtrl& SetLabelY(const String& _yLabel)				{ScatterDraw::SetLabelY(_yLabel); 			return *this;};
 	ScatterCtrl& SetLabelY2(const String& _yLabel)				{ScatterDraw::SetLabelY2(_yLabel); 			return *this;};
+	
 	ScatterCtrl& SetPlotAreaMargin(int hLeft, int hRight, int vTop, int vBottom)
 																{ScatterDraw::SetPlotAreaMargin(hLeft, hRight, vTop, vBottom); return *this;};
 	ScatterCtrl& SetPlotAreaLeftMargin(int margin)				{ScatterDraw::SetPlotAreaLeftMargin(margin);return *this;};
@@ -337,6 +341,7 @@ private:
 			("jpgQuality", jpgQuality)
 			("rotate", rotate)
 		;
+		OnAddSeries();
 	}
 
 public:

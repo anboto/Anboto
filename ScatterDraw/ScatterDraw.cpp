@@ -75,6 +75,11 @@ ScatterDraw& ScatterDraw::SetLabelsColor(const Color& colorLabels) {
 	return *this;
 }
 
+ScatterDraw& ScatterDraw::SetGridFont(const Font& fontGrid) {
+	reticleFont = fontGrid;
+	return *this;
+}
+
 ScatterDraw& ScatterDraw::SetPlotAreaMargin(int hLeft, int hRight, int vTop, int vBottom) {
 	hPlotLeft   = hLeft;	
 	hPlotRight  = hRight;
@@ -565,13 +570,13 @@ void ScatterDraw::ScatterBasicSeries::Init(int index) {
 }
 
 ScatterDraw &ScatterDraw::AddSeries(DataSource &data) {
-	return _AddSeries(&data);
+	return _AddSeries(&data, false);
 }
 
-ScatterDraw &ScatterDraw::_AddSeries(DataSource *data) {
+ScatterDraw &ScatterDraw::_AddSeries(DataSource *data, bool owns) {
 	ScatterSeries &s = series.Add();
 	s.Init(series.GetCount()-1);
-	s.SetDataSource(data);
+	s.SetDataSource(data, owns);
 	if (sequentialXAll)
 		s.sequential = true;
 	OnAddSeries();	

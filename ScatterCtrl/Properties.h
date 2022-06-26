@@ -112,6 +112,8 @@ private:
 	void OnChangeFontTitle(Font font);
 	void OnFontLabel();
 	void OnChangeFontLabel(Font font);
+	void OnFontGrid();
+	void OnChangeFontGrid(Font font);
 };
 
 class LegendTab : public WithLegend<StaticRect> {
@@ -123,6 +125,8 @@ private:
 	
 	void Change();
 	void ChangeAnchor(Option *op);
+	void OnFontLegend();
+	void OnChangeFontLegend(Font font);
 };
 
 class SeriesTab : public Splitter {
@@ -232,6 +236,7 @@ public:
 	void OnUpdateSensitivity();
 	void OnFit();
 	void OnHist();
+	void OnPercentile();
 		
 private:
 	ScatterCtrl* pscatter;

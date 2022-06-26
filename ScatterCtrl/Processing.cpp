@@ -223,6 +223,8 @@ ProcessingTab::ProcessingTab()
 	tabHistRight.numVals <<= 30;
 	tabHistRight.valNormalize <<= 100;
 	tabHistRight.opStaggered <<= true;
+	tabHistRight.percentile <<= 0.99;
+	tabHistRight.butPercentile.WhenAction = [=] {OnPercentile();};
 	
 	tabHistRight.opNormalize.WhenAction   = [&] {
 		tabHistRight.valNormalize.Enable(~tabHistRight.opNormalize);
@@ -895,6 +897,25 @@ void ProcessingTab::OnHist() {
 	double ymax = tabHistLeft.scatter.GetYMax();
 	tabHistLeft.scatter.SetXYMin(Null, 0);
 	tabHistLeft.scatter.SetRange(Null, ymax);
+}
+
+void ProcessingTab::OnPercentile() {
+	if (tabFitLeft.scatter.IsDeletedDataSource(0))
+		return;
+	DataSource &data = tabFitLeft.scatter.GetDataSource(0);
+	
+	double minVal = ~tabHistRight.minVal;
+	double maxVal = ~tabHistRight.maxVal;
+	if (minVal >= maxVal) {
+		Exclamation(Format(t_("Min val %d has to be lower than Max val %f"), minVal, maxVal));
+		return;
+	}
+	bool isY = ~tabHistRight.axis == t_("Y");
+	
+	if (isY)
+		tabHistRight.resPercentile <<= data.PercentileValY(~tabHistRight.percentile, minVal, maxVal);
+	else
+		tabHistRight.resPercentile <<= data.PercentileValY(~tabHistRight.percentile, minVal, maxVal);
 }
 
 }

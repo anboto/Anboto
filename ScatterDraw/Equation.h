@@ -212,7 +212,12 @@ public:
 	DampedSinEquation() 					{coeff.Clear();	coeff << 0. << 0.1 << 0.1 << 0.1 << 0.; numcoeff = 5;}
 	DampedSinEquation(double offset, double A, double lambda, double w, double phi) {Init(offset, A, lambda, w, phi);}
 	void Init(double offset, double A, double lambda, double w, double phi) 	{coeff.Clear();	coeff << offset << A << lambda << w << phi; numcoeff = 5;}
-	double f(double x)				{return coeff[0] + coeff[1]*exp(-coeff[2]*x)*cos(coeff[3]*x + coeff[4]);}
+	double f(double x)				{
+		double ex = -coeff[2]*x;
+		if (ex < 0)
+			return 0;
+		return coeff[0] + coeff[1]*exp(ex)*cos(coeff[3]*x + coeff[4]);
+	}
 	virtual String GetName() 		{return t_("DampedSinusoidal");}
 	virtual String GetEquation(int _numDigits = 3) {
 		double zeta  = coeff[2]/coeff[3];
@@ -245,7 +250,12 @@ public:
 		double w2, double phi2) {coeff.Clear();	
 								coeff << offset << A1 << w1 << phi1 << A2 << lambda << w2 << phi2;
 								numcoeff = 8;}
-	double f(double x)				{return coeff[0] + coeff[1]*cos(coeff[2]*x + coeff[3]) + coeff[4]*exp(-coeff[5]*x)*cos(coeff[6]*x + coeff[7]);}
+	double f(double x) {
+		double ex = -coeff[5]*x;
+		if (ex < 0)
+			return 0;
+		return coeff[0] + coeff[1]*cos(coeff[2]*x + coeff[3]) + coeff[4]*exp(ex)*cos(coeff[6]*x + coeff[7]);
+	}
 	virtual String GetName() 		{return t_("Sin_DampedSinusoidal");}
 	virtual String GetEquation(int _numDigits = 3) {
 		String ret = Format("%s + %s*cos(%s*t + %s) + %s*e^(-%s*t)*cos(%s*t + %s)", 
@@ -361,42 +371,65 @@ public:
 	void SetDegree(int )				{NEVER();}
 };
 
-class WeibullCumulativeEquation : public ExplicitEquation {
+class WeibullCumulativeEquation3 : public ExplicitEquation {
 public:
-	WeibullCumulativeEquation() 						{SetCoeff(1, 1);}
-	WeibullCumulativeEquation(double k, double lambda)	{ASSERT(k > 0);	ASSERT(lambda > 0);	SetCoeff(k, lambda);}
+	WeibullCumulativeEquation3() 						{SetCoeff(1, 1, 1);}
+	WeibullCumulativeEquation3(double k, double lambda, double factor)	{ASSERT(k > 0);	ASSERT(lambda > 0);	SetCoeff(k, lambda, factor);}
 	double f(double x) {
 		if (x < 0)
 			return 0;
 		double k =  coeff[0];
 		double lambda = coeff[1];
-		return 1 - ::exp(double(-::pow(x/lambda, k)));
+		if (lambda == 0)
+			return 0; 
+		if (x/lambda < 0)
+			return 0;
+		double factor = coeff[2];
+		return factor*(1 - ::exp(double(-::pow(x/lambda, k))));
 	}
-	virtual String GetName() 					{return t_("Weibull cumulative");}
+	virtual String GetName() 					{return t_("Weibull cumulative 3");}
 	virtual String GetEquation(int nDig = 3) {
 		String k =  FormatCoeff(0, nDig);
 		String lambda = FormatCoeff(1, nDig);
-		String ret = Format("1 - e^(-((x/%s)^%s))", lambda, k);
+		String factor = FormatCoeff(2, nDig);
+		String ret = Format("%s*(1 - e^(-((x/%s)^%s)))", factor, lambda, k);
 		ret.Replace("+ -", "- ");
 		return ret;
 	}	
-	virtual void GuessCoeff(DataSource &) {}
+	virtual void GuessCoeff(DataSource &series) {
+		const double lam = 1 - exp(-1);
+		double err = lam;
+		int64 ind = -1;
+		for (int64 i = 0; i < series.size(); ++i) {
+			if (abs(series.y(i) - lam) < err) {
+				err = abs(series.y(i) - lam);
+				ind = i;
+			}
+		}
+		if (ind >= 0)
+			coeff[1] = series.x(ind);
+		coeff[2] = series.y(series.size()-1);
+	}
 	void SetDegree(int )				{NEVER();}
 };
 
-class WeibullEquation : public ExplicitEquation {
+class WeibullEquation3 : public ExplicitEquation {
 public:
-	WeibullEquation() 							{SetCoeff(1, 1, 1);}
-	WeibullEquation(double k, double lambda, double factor)	{ASSERT(k > 0);	ASSERT(lambda > 0);	SetCoeff(k, lambda, factor);}
+	WeibullEquation3() 							{SetCoeff(1, 1, 1);}
+	WeibullEquation3(double k, double lambda, double factor)	{ASSERT(k > 0);	ASSERT(lambda > 0);	SetCoeff(k, lambda, factor);}
 	double f(double x) {
+		if (x < 0)
+			return 0;
 		double k =  coeff[0];
 		double lambda = coeff[1];
-		double factor = coeff[2];
+		if (lambda == 0)
+			return 0; 
 		if (x/lambda < 0)
 			return 0;
+		double factor = coeff[2];
 		return factor*(k/lambda)*(::pow(x/lambda, k-1))*::exp(double(-::pow(x/lambda, k)));
 	}
-	virtual String GetName() 					{return t_("Weibull");}
+	virtual String GetName() 					{return t_("Weibull 3");}
 	virtual String GetEquation(int nDig = 3) {
 		String k =  FormatCoeff(0, nDig);
 		String lambda = FormatCoeff(1, nDig);
@@ -407,16 +440,104 @@ public:
 	}	
 	virtual void GuessCoeff(DataSource &series) {
 		Vector<Pointf> cumulative = series.CumulativeY();
-		double fac = cumulative.Top().y;
-		for (int i = 0; i < cumulative.GetCount(); ++i)
-			cumulative[i].y /= fac;
+		VectorPointf data(cumulative);
+		WeibullCumulativeEquation3 weibullCumulative;
+		ExplicitEquation::FitError error = weibullCumulative.Fit(data);
+		if (error == ExplicitEquation::NoError) {
+			double k = weibullCumulative.GetCoeff()[0];
+			double lambda = weibullCumulative.GetCoeff()[1];
+			double factor = weibullCumulative.GetCoeff()[2];
+			SetCoeff(k, lambda, factor);
+		}
+	}
+	void SetDegree(int )					{NEVER();}
+};
+
+class WeibullCumulativeEquation : public ExplicitEquation {
+public:
+	WeibullCumulativeEquation()	{SetCoeff(1, 1, 1, 1);}
+	WeibullCumulativeEquation(double k, double lambda, double factor, double x0) {
+		ASSERT(k > 0);	ASSERT(lambda > 0);	SetCoeff(k, lambda, factor, x0);}
+	double f(double x) {
+		double k =  coeff[0];
+		double lambda = coeff[1]; 
+		double factor = coeff[2];
+		if (lambda == 0)
+			return 0;
+		double x0 = coeff[3];
+		if ((x-x0) < 0)
+			return 0;
+		if ((x-x0)/lambda < 0)
+			return 0;
+		return factor*(1 - ::exp(double(-::pow((x-x0)/lambda, k))));
+	}
+	virtual String GetName() 					{return t_("Weibull cumulative");}
+	virtual String GetEquation(int nDig = 3) {
+		String k =  FormatCoeff(0, nDig);
+		String lambda = FormatCoeff(1, nDig);
+		String factor = FormatCoeff(2, nDig);
+		String x0 = FormatCoeff(3, nDig);
+		String ret = Format("%s*(1 - e^(-(((x-%s)/%s)^%s)))", factor, x0, lambda, k);
+		ret.Replace("+ -", "- ");
+		return ret;
+	}	
+	virtual void GuessCoeff(DataSource &series) {
+		const double lam = 1 - exp(-1);
+		double err = lam;
+		int64 ind = -1;
+		for (int64 i = 0; i < series.size(); ++i) {
+			if (abs(series.y(i) - lam) < err) {
+				err = abs(series.y(i) - lam);
+				ind = i;
+			}
+		}
+		if (ind >= 0)
+			coeff[1] = series.x(ind);
+		coeff[2] = series.y(series.size()-1);
+		coeff[3] = series.x(int64(0));
+	}
+	void SetDegree(int )				{NEVER();}
+};
+
+class WeibullEquation : public ExplicitEquation {
+public:
+	WeibullEquation() 							{SetCoeff(1, 1, 1, 1);}
+	WeibullEquation(double k, double lambda, double factor, double x0) {
+		ASSERT(k > 0);	ASSERT(lambda > 0);	SetCoeff(k, lambda, factor, x0);}
+	double f(double x) {
+		double k =  coeff[0];
+		double lambda = coeff[1]; 
+		double factor = coeff[2];
+		if (lambda == 0)
+			return 0;
+		double x0 = coeff[3];
+		if ((x-x0) < 0)
+			return 0;
+		if ((x-x0)/lambda < 0)
+			return 0;
+		return factor*(k/lambda)*(::pow((x-x0)/lambda, k-1))*::exp(double(-::pow((x-x0)/lambda, k)));
+	}
+	virtual String GetName() 					{return t_("Weibull");}
+	virtual String GetEquation(int nDig = 3) {
+		String k =  FormatCoeff(0, nDig);
+		String lambda = FormatCoeff(1, nDig);
+		String sfactor = FormatCoeff(2, nDig);
+		String x0 = FormatCoeff(3, nDig);
+		String ret = Format("%s*(%s/%s)*((x-%s)/%s)^(%s-1)*e^(-(((x-%s)/%s)^%s))", sfactor, k, lambda, x0, lambda, x0, k, lambda, k);
+		ret.Replace("+ -", "- ");
+		return ret;
+	}	
+	virtual void GuessCoeff(DataSource &series) {
+		Vector<Pointf> cumulative = series.CumulativeY();
 		VectorPointf data(cumulative);
 		WeibullCumulativeEquation weibullCumulative;
 		ExplicitEquation::FitError error = weibullCumulative.Fit(data);
 		if (error == ExplicitEquation::NoError) {
 			double k = weibullCumulative.GetCoeff()[0];
 			double lambda = weibullCumulative.GetCoeff()[1];
-			SetCoeff(k, lambda, 1);
+			double factor = weibullCumulative.GetCoeff()[2];
+			double x0 = weibullCumulative.GetCoeff()[3];
+			SetCoeff(k, lambda, factor, x0);
 		}
 	}
 	void SetDegree(int )					{NEVER();}
