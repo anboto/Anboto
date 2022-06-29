@@ -43,7 +43,7 @@ Point3D Intersection(const Direction3D &lineVector, const Point3D &linePoint, co
 	Direction3D diff = planePoint - linePoint;
 	double prod1 = diff.dot(planeNormal);
 	double prod2 = lineVector.dot(planeNormal);
-	if (abs(prod2) < EPS_XYZ)
+	if (abs(prod2) < EPS_LEN)
 		return Null;
 	double factor = prod1/prod2;
 	return linePoint + lineVector*factor;	
@@ -166,7 +166,7 @@ Point3D Segment3D::Intersection(const Point3D &planePoint, const Direction3D &pl
 	Direction3D diff = planePoint - from;
 	double prod1 = diff.dot(planeNormal);
 	double prod2 = vector.dot(planeNormal);
-	if (abs(prod2) < EPS_XYZ)
+	if (abs(prod2) < EPS_LEN)
 		return Null;
 	double factor = prod1/prod2;
 	if (factor >= 1)
@@ -194,7 +194,7 @@ bool PointInSegment(const Point3D &p, const Segment3D &seg) {
 	double dpb = Distance(p, seg.to);
 	double dab = seg.Length();
 	
-	return abs(dpa + dpb - dab) < EPS_XYZ;
+	return abs(dpa + dpb - dab) < EPS_LEN;
 }
 
 bool SegmentInSegment(const Segment3D &in, double in_len, const Segment3D &seg) {
@@ -202,12 +202,12 @@ bool SegmentInSegment(const Segment3D &in, double in_len, const Segment3D &seg) 
 	
 	double seg_from_in_from = Distance(seg.from, in.from);
 	double in_to_seg_to 	= Distance(in.to, seg.to);
-	if (abs(seg_from_in_from + in_len + in_to_seg_to - seg_len) < EPS_XYZ)
+	if (abs(seg_from_in_from + in_len + in_to_seg_to - seg_len) < EPS_LEN)
 		return true;
 
 	double seg_from_in_to = Distance(seg.from, in.to);
 	double in_from_seg_to = Distance(in.from, seg.to);
-	if (abs(seg_from_in_to + in_len + in_from_seg_to - seg_len) < EPS_XYZ)
+	if (abs(seg_from_in_to + in_len + in_from_seg_to - seg_len) < EPS_LEN)
 		return true;
 	
 	return false;
@@ -398,7 +398,7 @@ int Surface::RemoveDuplicatedPointsAndRenumber(Vector<Panel> &_panels, Vector<Po
 	int num = 0;
 	
 	// Detect duplicated points in nodes
-	double similThres = EPS_XYZ;
+	double similThres = EPS_LEN;
 	Upp::Index<int> duplic, goods;
 	for (int i = 0; i < _nodes.GetCount()-1; ++i) {
 		if (duplic.Find(i) >= 0)
@@ -1368,7 +1368,7 @@ Force6D Surface::GetHydrostaticForceCBNormalized(const Point3D &c0, const Point3
 	
 	f.Reset();
 	
-	if (volume < EPS_XYZ)
+	if (volume < EPS_LEN)
 		return f;
 	
 	f.AddLinear(Direction3D(0, 0, volume), cb, c0);		
@@ -1404,7 +1404,7 @@ double Surface::GetWaterPlaneArea() const {
 
 void Surface::GetHydrostaticStiffness(MatrixXd &c, const Point3D &c0, const Point3D &cg, 
 				const Point3D &cb, double rho, double g, double mass) {
-	if (volume < EPS_XYZ) {
+	if (volume < EPS_VOL) {
 		c.resize(0, 0);
 		return;	
 	}	
@@ -1447,13 +1447,13 @@ void Surface::GetHydrostaticStiffness(MatrixXd &c, const Point3D &c0, const Poin
 
 inline static void CheckAddSegZero(Vector<Segment3D> &seg, const Point3D &p0, const Point3D &p1, 
 			const Point3D &p2, const Point3D &p3) {
-	if (p0 != p1 && Between(p0.z, EPS_XYZ) && Between(p1.z, EPS_XYZ))
+	if (p0 != p1 && Between(p0.z, EPS_LEN) && Between(p1.z, EPS_LEN))
 		seg << Segment3D(p0, p1);
-	if (p1 != p2 && Between(p1.z, EPS_XYZ) && Between(p2.z, EPS_XYZ))
+	if (p1 != p2 && Between(p1.z, EPS_LEN) && Between(p2.z, EPS_LEN))
 		seg << Segment3D(p1, p2);
-	if (p2 != p3 && Between(p2.z, EPS_XYZ) && Between(p3.z, EPS_XYZ))
+	if (p2 != p3 && Between(p2.z, EPS_LEN) && Between(p3.z, EPS_LEN))
 		seg << Segment3D(p2, p3);
-	if (p3 != p0 && Between(p3.z, EPS_XYZ) && Between(p0.z, EPS_XYZ))
+	if (p3 != p0 && Between(p3.z, EPS_LEN) && Between(p0.z, EPS_LEN))
 		seg << Segment3D(p3, p0);
 }
 
@@ -1476,13 +1476,13 @@ void Surface::CutZ(const Surface &orig, int factor) {
 		
 		CheckAddSegZero(segWaterlevel, p0, p1, p2, p3);
 
-		if ((p0.z)*factor <= EPS_XYZ && (p1.z)*factor <= EPS_XYZ && 
-				 (p2.z)*factor <= EPS_XYZ && (p3.z)*factor <= EPS_XYZ) {
-			if (!((p0.z)*factor >= -EPS_XYZ && (p1.z)*factor >= -EPS_XYZ && // Rejects waterplane
-				(p2.z)*factor >= -EPS_XYZ && (p3.z)*factor >= -EPS_XYZ))		     
+		if ((p0.z)*factor <= EPS_LEN && (p1.z)*factor <= EPS_LEN && 
+				 (p2.z)*factor <= EPS_LEN && (p3.z)*factor <= EPS_LEN) {
+			if (!((p0.z)*factor >= -EPS_LEN && (p1.z)*factor >= -EPS_LEN && // Rejects waterplane
+				(p2.z)*factor >= -EPS_LEN && (p3.z)*factor >= -EPS_LEN))		     
 				panels << Panel(orig.panels[ip]);			// Gets the panels that comply
-		} else if ((p0.z)*factor >= -EPS_XYZ && (p1.z)*factor >= -EPS_XYZ && 
-			(p2.z)*factor >= -EPS_XYZ && (p3.z)*factor >= -EPS_XYZ) 
+		} else if ((p0.z)*factor >= -EPS_LEN && (p1.z)*factor >= -EPS_LEN && 
+			(p2.z)*factor >= -EPS_LEN && (p3.z)*factor >= -EPS_LEN) 
 			;											// Refuses the panels that don't
 		else {											// Process the intermediate
 			const int *origPanelid = orig.panels[ip].id;
@@ -1496,7 +1496,7 @@ void Surface::CutZ(const Surface &orig, int factor) {
 				else {
 					const Point3D &from = nodes[origPanelid[ids[i]]];
 					const Point3D &to   = nodes[origPanelid[ids[i+1]]];
-					if (abs(from.z) <= EPS_XYZ && abs(to.z) <= EPS_XYZ) {
+					if (abs(from.z) <= EPS_LEN && abs(to.z) <= EPS_LEN) {
 						segWL.from = from;
 						segWL.to = to;	
 					} else if ((from.z)*factor <= 0 && (to.z)*factor <= 0) {
@@ -1614,7 +1614,7 @@ void Surface::CutX(const Surface &orig, int factor) {
 					const Point3D &from = nodes[origPanelid[ids[i]]];
 					const Point3D &to   = nodes[origPanelid[ids[i+1]]];
 					Segment3D seg(from, to);
-					if (abs(from.x) <= EPS_XYZ && abs(to.x) <= EPS_XYZ) {
+					if (abs(from.x) <= EPS_LEN && abs(to.x) <= EPS_LEN) {
 						nodeFrom << origPanelid[ids[i]];
 						nodeTo << origPanelid[ids[i+1]];
 					} else if ((from.x)*factor <= 0 && (to.x)*factor <= 0) {
@@ -2062,7 +2062,7 @@ void VolumeEnvelope::MixEnvelope(VolumeEnvelope &env) {
 }
 
 void Surface::AddNode(Point3D &p) {
-	double similThres = EPS_XYZ;
+	double similThres = EPS_LEN;
 	for (int i = 0; i < nodes.GetCount(); ++i) {
 		if (nodes[i].IsSimilar(p, similThres))
 			return;
@@ -2548,8 +2548,8 @@ bool Surface::GetDryPanels(const Surface &orig, bool onlywaterplane) {
 		const Point3D &p2 = nodes[id2];
 		const Point3D &p3 = nodes[id3];	
 		
-		if (p0.z >= -EPS_XYZ && p1.z >= -EPS_XYZ && p2.z >= -EPS_XYZ && p3.z >= -EPS_XYZ) { 
-			if (!onlywaterplane || (p0.z <= EPS_XYZ && p1.z <= EPS_XYZ && p2.z <= EPS_XYZ && p3.z <= EPS_XYZ))
+		if (p0.z >= -EPS_LEN && p1.z >= -EPS_LEN && p2.z >= -EPS_LEN && p3.z >= -EPS_LEN) { 
+			if (!onlywaterplane || (p0.z <= EPS_LEN && p1.z <= EPS_LEN && p2.z <= EPS_LEN && p3.z <= EPS_LEN))
 				panels << clone(pan);
 		}
 	}
@@ -2571,13 +2571,13 @@ Vector<Segment3D> Surface::GetWaterLineSegments(const Surface &orig) {
 		const Point3D &p2 = orig.nodes[id2];
 		const Point3D &p3 = orig.nodes[id3];	
 		
-		if (p0 != p1 && p0.z >= -EPS_XYZ && p1.z >= -EPS_XYZ && Find(ret, p0, p1) < 0)
+		if (p0 != p1 && p0.z >= -EPS_LEN && p1.z >= -EPS_LEN && Find(ret, p0, p1) < 0)
 			ret << Segment3D(p0, p1);
-		if (p1 != p2 && p1.z >= -EPS_XYZ && p2.z >= -EPS_XYZ && Find(ret, p1, p2) < 0)
+		if (p1 != p2 && p1.z >= -EPS_LEN && p2.z >= -EPS_LEN && Find(ret, p1, p2) < 0)
 			ret << Segment3D(p1, p2);
-		if (p2 != p3 && p2.z >= -EPS_XYZ && p3.z >= -EPS_XYZ && Find(ret, p2, p3) < 0)
+		if (p2 != p3 && p2.z >= -EPS_LEN && p3.z >= -EPS_LEN && Find(ret, p2, p3) < 0)
 			ret << Segment3D(p2, p3);
-		if (p3 != p0 && p3.z >= -EPS_XYZ && p0.z >= -EPS_XYZ && Find(ret, p3, p0) < 0)
+		if (p3 != p0 && p3.z >= -EPS_LEN && p0.z >= -EPS_LEN && Find(ret, p3, p0) < 0)
 			ret << Segment3D(p3, p0);
 	}
 	return ret;
@@ -2633,22 +2633,22 @@ char Surface::IsWaterPlaneMesh() const {
 		int numwaterplane = 0, num = 0;
 		if (p0 != p1) {
 			num++;
-			if (p0.z >= -EPS_XYZ && p1.z >= -EPS_XYZ && p0.z <= EPS_XYZ && p1.z <= EPS_XYZ)
+			if (p0.z >= -EPS_LEN && p1.z >= -EPS_LEN && p0.z <= EPS_LEN && p1.z <= EPS_LEN)
 				numwaterplane++;
 		}
 		if (p1 != p2) {
 			num++;
-			if (p1.z >= -EPS_XYZ && p2.z >= -EPS_XYZ && p1.z <= EPS_XYZ && p2.z <= EPS_XYZ)
+			if (p1.z >= -EPS_LEN && p2.z >= -EPS_LEN && p1.z <= EPS_LEN && p2.z <= EPS_LEN)
 				numwaterplane++;
 		}
 		if (p2 != p3) {
 			num++;
-			if (p2.z >= -EPS_XYZ && p3.z >= -EPS_XYZ && p2.z <= EPS_XYZ && p3.z <= EPS_XYZ)
+			if (p2.z >= -EPS_LEN && p3.z >= -EPS_LEN && p2.z <= EPS_LEN && p3.z <= EPS_LEN)
 				numwaterplane++;
 		}
 		if (p3 != p0) {
 			num++;
-			if (p3.z >= -EPS_XYZ && p0.z >= -EPS_XYZ && p3.z <= EPS_XYZ && p0.z <= EPS_XYZ)
+			if (p3.z >= -EPS_LEN && p0.z >= -EPS_LEN && p3.z <= EPS_LEN && p0.z <= EPS_LEN)
 				numwaterplane++;
 		}
 		if (num == numwaterplane)

@@ -9,7 +9,8 @@
 namespace Upp {
 using namespace Eigen;
 
-const double EPS_XYZ = 0.001;
+const double EPS_LEN = 0.001,
+			 EPS_VOL = EPS_LEN*EPS_LEN*EPS_LEN;
 
 template<class T>
 inline T avg(T a, T b) 			{return T(a+b)/2;}
@@ -77,8 +78,8 @@ public:
 		return false;
 	}
 	#pragma GCC diagnostic ignored "-Wattributes"
-	friend bool operator==(const Value3D& a, const Value3D& b) {return a.IsSimilar(b, EPS_XYZ);}
-	friend bool operator!=(const Value3D& a, const Value3D& b) {return !a.IsSimilar(b, EPS_XYZ);}
+	friend bool operator==(const Value3D& a, const Value3D& b) {return a.IsSimilar(b, EPS_LEN);}
+	friend bool operator!=(const Value3D& a, const Value3D& b) {return !a.IsSimilar(b, EPS_LEN);}
 	#pragma GCC diagnostic warning "-Wattributes"
 	
 	void Translate(double dx, double dy, double dz);

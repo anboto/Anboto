@@ -58,6 +58,12 @@ public:
 		ResizeConservative(out, n);
 	}
 	template <class Range>
+	Range Copy(Getdatafun getdata) {
+		Range ret;
+		Copy(getdata, ret);
+		return ret;
+	}
+	template <class Range>
 	void CopyY(Range &d, double from, double to, int num) {
 		ASSERT(to >= from);
 		ASSERT(num > 0);
@@ -96,6 +102,10 @@ public:
 			dy[i] = f(from + i*delta);
 		}
 	}
+	template <class Range>
+	Range CopyX() 			  	  		  {return Copy<Range>(&DataSource::x);}
+	template <class Range>
+	Range CopyY() 			  	  		  {return Copy<Range>(&DataSource::y);}
 	template <class Range>
 	void CopyX(Range &out) 			  	  {Copy(&DataSource::x, out);}
 	template <class Range>

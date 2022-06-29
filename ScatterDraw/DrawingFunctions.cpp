@@ -345,7 +345,7 @@ void DrawPolylineOpa(Painter& w, const Vector<Pointf> &p, double scale, double o
 				double thick, const Color &color, String dash, const Color &) {	
 	ASSERT(!p.IsEmpty());
 	bool broken = true;
-	for (int i = 0; i < p.GetCount(); ++i) {
+	for (int i = 0; i < p.size(); ++i) {
 		if (IsNull(p[i]))
 			broken = true;		
 		else {
@@ -367,8 +367,8 @@ void FillPolylineOpa(Draw& w, const Vector<Pointf> &p, double , double opacity,
 	Color opacolor = GetOpaqueColor(fillColor, background, opacity) ;
 
 	Vector<Point> pi;
-	pi.SetCount(p.GetCount());
-	for (int i = 0; i < pi.GetCount(); ++i) {
+	pi.SetCount(p.size());
+	for (int i = 0; i < pi.size(); ++i) {
 		pi[i].x = static_cast<int>(p[i].x);
 		pi[i].y = static_cast<int>(p[i].y);
 	}
@@ -379,7 +379,7 @@ void FillPolylineOpa(Painter& w, const Vector<Pointf> &p, double , double opacit
 				const Color &, const Color &fillColor) {	
 	ASSERT(!p.IsEmpty());
 	w.Move(p[0]);
-	for (int i = 1; i < p.GetCount(); ++i) 
+	for (int i = 1; i < p.size(); ++i) 
 		w.Line(p[i]);
 	w.Opacity(opacity);
 	w.Fill(fillColor);		// Before Stroke()
