@@ -124,7 +124,7 @@ void Xmlize(XmlIO &xml, Eigen::Matrix<T, Eigen::Dynamic, 1> &vec) {
 
 template <class T>
 void Jsonize(JsonIO &io, Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &mat) {
-	Vector<T> vector;
+	Array<T> vector;
 	Size_<int64> sz(mat.cols(), mat.rows());
 	io("size", sz);
 	if(io.IsStoring()) {
@@ -153,7 +153,7 @@ void Jsonize(JsonIO &io, Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &mat) 
 
 template <class T>
 void Jsonize(JsonIO &io, Eigen::Matrix<T, Eigen::Dynamic, 1> &vec) {
-	Vector<T> vector;
+	Array<T> vector;
 	int64 sz = vec.size();
 	io("size", sz);
 	if(io.IsStoring()) {
@@ -328,7 +328,6 @@ void Copy(const Range1& in, Range2 &out) {
 	Resize(out, in.size());
 	std::copy(Begin(in), End(in), Begin(out));
 }
-
 
 }
 

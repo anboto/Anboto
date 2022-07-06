@@ -11,9 +11,17 @@ namespace Upp {
 #define Membercall(fun)	(this->*fun)
 
 
+template <typename T>
+inline bool IsNum(const std::complex<T> &n) {return IsFin(n.real()) && IsFin(n.imag());}
 inline bool IsNum(double n) {return IsFin(n) && !IsNull(n);}
 inline bool IsNum(float n) 	{return IsFin(n);}
 inline bool IsNum(int n) 	{return !IsNull(n);}
+
+template <typename T>
+bool IsNull(const std::complex<T> &d)	{return !IsNum(d);};
+
+#define NaNComplex		std::numeric_limits<std::complex<double>>::quiet_NaN()
+#define NaNDouble		std::numeric_limits<double>::quiet_NaN()
 
 
 enum FFT_WINDOW {NO_WINDOW = 0, HAMMING, COS};
@@ -996,25 +1004,25 @@ typename Range::value_type LinearInterpolate(const typename Range::value_type x,
 }
 
 template <class T>
-void GetInterpolatePos(const T x, const T *vecx, int len, int &x0, int &x1) {
+void GetInterpolatePos(const T x, const T *vecx, int len, int &ix0, int &ix1) {
 	if (x < vecx[0]) {
-		x0 = x1 = 0;
+		ix0 = ix1 = 0;
 		return;
 	}
 	for (int i = 0; i < len-1; ++i) {
 		if (vecx[i+1] >= x && vecx[i] <= x) {
-			x0 = i;
-			x1 = i+1;
+			ix0 = i;
+			ix1 = i+1;
 			return;
 		}
 	}
-	x0 = x1 = len-1;
+	ix0 = ix1 = len-1;
 }
 
 template <class Range>
-void GetInterpolatePos(const typename Range::value_type x, const Range &vecx, int &x0, int &x1) {
+void GetInterpolatePos(const typename Range::value_type x, const Range &vecx, int &ix0, int &ix1) {
 	ASSERT(vecx.size() > 1);
-	GetInterpolatePos(x, (const typename Range::value_type *)vecx, vecx.size(), x0, x1);
+	GetInterpolatePos(x, vecx.data(), vecx.size(), ix0, ix1);
 }
 
 template <class T>
@@ -1022,11 +1030,51 @@ T LinearInterpolate(const T x, const T *vecx, const T *vecy, size_t len) {
 	ASSERT(len > 1);
 	if (x < vecx[0])
 		return vecy[0];
-	for (int i = 0; i < len-1; ++i) {
+	for (int i = 0; i < len-1; ++i) 
 		if (vecx[i+1] >= x && vecx[i] <= x) 
 			return LinearInterpolate(x, vecx[i], vecx[i+1], vecy[i], vecy[i+1]);
-	}
+	
 	return vecy[len-1];
+}
+
+template <typename T>
+void GetInterpolatePos(const T x, const T y, const Eigen::Matrix<T, Eigen::Dynamic, 1> &vecx, const Eigen::Matrix<T, Eigen::Dynamic, 1> &vecy, int &ix0, int &ix1, int &iy0, int &iy1) {
+	ASSERT(vecx.size() > 1 && vecy.size() > 1);
+	if (x < vecx[0] || y < vecy[0]) {
+		ix0 = ix1 = iy0 = iy1 = 0;
+		return;
+	}
+	for (int ix = 0; ix < vecx.size()-1; ++ix) 
+		for (int iy = 0; iy < vecy.size()-1; ++iy) 
+			if (vecx[ix+1] >= x && vecx[ix] <= x && vecy[iy+1] >= y && vecy[iy] <= y) {
+				ix0 = ix;
+				ix1 = ix+1;
+				iy0 = iy;
+				iy1 = iy+1;
+				return;
+			}
+	ix0 = ix1 = vecx.size()-1;
+	iy0 = iy1 = vecy.size()-1;
+}
+
+template <typename T>
+T BilinearInterpolate(const T x, const T y, const Eigen::Matrix<T, Eigen::Dynamic, 1> &vecx, const Eigen::Matrix<T, Eigen::Dynamic, 1> &vecy, 
+											const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &matz) {
+	ASSERT(vecx.size() > 1 && vecy.size() > 1);
+	ASSERT(vecx.size() == matz.cols() && vecy.size() == matz.rows());
+	
+	int ix0, ix1, iy0, iy1;
+	GetInterpolatePos(x, y, vecx, vecy, ix0, ix1, iy0, iy1);
+	
+	double x1 = vecx[ix0];
+	double x2 = vecx[ix1];
+	double y1 = vecy[iy0];
+	double y2 = vecy[iy1];
+	double z11 = matz(ix0, iy0);
+	double z12 = matz(ix0, iy1);
+	double z21 = matz(ix1, iy0);
+	double z22 = matz(ix1, iy1);
+	return BilinearInterpolate(x, y, x1, x2, y1, y2, z11, z12, z21, z22);
 }
 
 template <class Range>
@@ -1038,6 +1086,13 @@ typename Range::value_type LinearInterpolate(typename Range::value_type x, const
 }
 
 double LinearInterpolate(double x, const Eigen::VectorXd &vecx, const Eigen::VectorXd &vecy);
+
+template <typename T>
+std::complex<T> LinearInterpolateC(T x, const Eigen::Matrix<T, Eigen::Dynamic, 1> &vecx, const Eigen::Matrix<std::complex<T>, Eigen::Dynamic, 1> &vecy) {
+	int x0, x1;
+	GetInterpolatePos(x, vecx, x0, x1);
+	return std::complex<T>(LinearInterpolate(x, vecx(x0), vecx(x1), vecy(x0).real(), vecy(x1).real()), LinearInterpolate(x, vecx(x0), vecx(x1), vecy(x0).imag(), vecy(x1).imag()));
+}
 
 class TableInterpolate {
 public:
@@ -1420,7 +1475,21 @@ typename Range::value_type CosWindow(Range &data, int numOver) {
 	return numDataFact;			    
 }
 
-bool IsNum(const Eigen::MatrixXd& r);
+template <typename T>
+bool IsNum(const T* r, int sz) {
+	if (sz == 0)
+		return true;
+	for (int i = 0; i < sz; i++) {
+		if (!IsNum(r[i]))  
+			return false;
+	}
+	return true;
+}
+
+template <typename T>
+bool IsNum(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &r) {
+	return IsNum(r.data(), r.size());
+}
 
 template <class Range>
 bool IsNum(const Range& r) {
@@ -1581,6 +1650,8 @@ void Resample(const Eigen::VectorXd &sx, const Eigen::VectorXd &sy,
 void Resample(const Eigen::VectorXd &x, const Eigen::VectorXd &y, const Eigen::VectorXd &xmaster, Eigen::VectorXd &rry);			
 void Resample(const Eigen::VectorXd &sx, const Eigen::VectorXd &sy, const Eigen::VectorXd &sz, 
 			  Eigen::VectorXd &rx, Eigen::VectorXd &ry, Eigen::VectorXd &rz, double srate = Null);
+void Resample(const Eigen::VectorXd &x, const Eigen::VectorXd &y, const Eigen::MatrixXd &z, 
+			  Eigen::VectorXd &rrx, Eigen::VectorXd &rry, Eigen::MatrixXd &rrz, double sratex = Null, double sratey = Null);
 Vector<Pointf> FFT(const Eigen::VectorXd &data, double tSample, bool frequency, int type = FFT_TYPE::T_FFT, 
 						 int window = FFT_WINDOW::NO_WINDOW, int numOver = 0);
 void FilterFFT(Eigen::VectorXd &data, double T, double fromT, double toT);

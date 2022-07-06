@@ -5,16 +5,6 @@
 namespace Upp {
 using namespace Eigen;
 
-bool IsNum(const MatrixXd& r) {
-	if (r.size() == 0)
-		return true;
-	const double *d = r.data();
-	for (int i = 0; i < r.size(); i++) {
-		if (!IsNum(d[i]))  
-			return false;
-	}
-	return true;
-}
 
 Vector<double> DataSource::Data(Getdatafun getdata) {
 	Vector<double> ret;
@@ -888,6 +878,47 @@ void Resample(const VectorXd &x, const VectorXd &y, const VectorXd &z,
 	rry = pick(ry);
 	rrz = pick(rz);
 }
+
+void Resample(const VectorXd &x, const VectorXd &y, const MatrixXd &z, VectorXd &rrx, VectorXd &rry, MatrixXd &rrz, double sratex, double sratey) {
+	VectorXd rx, ry;
+	MatrixXd rz;
+		
+	if (x.size() == 0 || y.size() == 0 || z.size() == 0)
+		return;
+	if (x.size() == 1 || y.size() == 1 || z.size() == 0) {
+		rrx = clone(x);
+		rry = clone(y);
+		rrz = clone(z);
+		return;
+	}
+	double rangex = x(last) - x(0);
+	if (!IsNum(sratex)) 
+		sratex = rangex/(x.size()-1);
+	int numx = int(rangex/sratex) + 1;
+	rx.resize(numx);
+	
+	double rangey = y(last) - y(0);
+	if (!IsNum(sratey)) 
+		sratey = rangey/(y.size()-1);
+	int numy = int(rangey/sratey) + 1;
+	ry.resize(numy);
+	
+	rz.resize(numx, numy);
+	
+	for (int ix = 0; ix < numx; ++ix)
+		rx[ix] = x[0] + ix*sratex;
+	for (int iy = 0; iy < numy; ++iy)
+		ry[iy] = y[0] + iy*sratey;
+	
+	for (int ix = 0; ix < numx; ++ix) 
+		for (int iy = 0; iy < numy; ++iy) 
+			rz(ix, iy) = BilinearInterpolate(rx[ix], ry[iy], x, y, z);
+	
+	rrx = pick(rx);
+	rry = pick(ry);
+	rrz = pick(rz);
+}
+
 		
 void FilterFFT(VectorXd &data, double T, double fromT, double toT) {
 	double samplingFrecuency = 1/T;

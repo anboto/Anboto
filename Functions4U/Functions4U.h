@@ -286,15 +286,15 @@ inline int Sign(T a) 				{return (a > 0) - (a < 0);}
 template<class T>
 inline T Neg(T a) 					{return a > 0 ? -a : a;}
 template<class T>
-inline T Average(T a, T b) 			{return T(a+b)/2;}
+inline T Average(T a, T b) 			{return T(a+b)/T(2);}
 template<class T>
 inline T Avg(T a, T b) 				{return Average(a, b);}
 template<class T>
-inline T Average(T a, T b, T c)		{return T(a+b+c)/3;}
+inline T Average(T a, T b, T c)		{return T(a+b+c)/T(3);}
 template<class T>
 inline T Avg(T a, T b, T c) 		{return Average(a, b, c);}
 template<class T>
-inline T Average(T a, T b, T c, T d){return T(a+b+c+d)/4;}
+inline T Average(T a, T b, T c, T d){return T(a+b+c+d)/T(4);}
 template<class T>
 inline T Avg(T a, T b, T c, T d)	{return Average(a, b, c, d);}
 template<class T>
@@ -1339,8 +1339,11 @@ public:
 private:
 	String buffer;
 	static bool noprint;
-	
-	void Flush() {
+
+	virtual void Flush() {
+#ifdef PLATFORM_POSIX
+		fflush(stdout);
+#else
 		ONCELOCK {
 			SetConsoleOutputCP(65001); // set console to UTF8 mode
 		}
@@ -1348,6 +1351,7 @@ private:
 		dword dummy;
 		WriteFile(h, ~buffer, buffer.GetCount(), &dummy, NULL);
 		buffer.Clear();
+#endif	
 	}
 
 	void Put0(int w) {
@@ -1374,9 +1378,6 @@ private:
 			Put0(w);
 	}
 	virtual   bool  IsOpen() const { return true; }
-#ifdef PLATFORM_POSIX
-	virtual   void   Flush()       { fflush(stdout); }
-#endif
 };
 
 Stream& CoutX();
