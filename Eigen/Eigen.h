@@ -289,6 +289,16 @@ auto End(const Vector<T> &v)			{return v.End();}
 template <typename T>
 auto End(Vector<T> &v)					{return v.End();}
 
+
+template <typename T>
+auto Begin(const Array<T> &v)			{return v.Begin();}
+template <typename T>
+auto Begin(Array<T> &v)					{return v.Begin();}
+template <typename T>
+auto End(const Array<T> &v)				{return v.End();}
+template <typename T>
+auto End(Array<T> &v)					{return v.End();}
+
 template <typename T>
 auto Begin(const std::vector<T> &v)		{return v.begin();}
 template <typename T>

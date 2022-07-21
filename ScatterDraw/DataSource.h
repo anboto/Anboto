@@ -890,8 +890,8 @@ private:
 	int key;
 };
 
-template <class T>
-inline T LinearInterpolate(T x, T x0, T x1, T y0, T y1) {
+template <class T, class T2>
+inline T2 LinearInterpolate(T x, T x0, T x1, T2 y0, T2 y1) {
 	T x1_0 = x1 - x0;
 	if (abs(x1_0) < T(FLT_EPSILON))
 		return (y0 + y1)/T(2);
@@ -899,8 +899,8 @@ inline T LinearInterpolate(T x, T x0, T x1, T y0, T y1) {
   	return y0 + (x - x0)*(y1 - y0)/x1_0;
 }
 
-template <class T>
-inline void LinearInterpolate(T x, T x0, T x1, T y0, T y1, T &y, T &dy) {
+template <class T, class T2>
+inline void LinearInterpolate(T x, T x0, T x1, T2 y0, T2 y1, T2 &y, T2 &dy) {
 	T x1_0 = x1 - x0;
 	if (abs(x1_0) < T(FLT_EPSILON)) {
 		y = (y0 + y1)/T(2);
@@ -966,10 +966,10 @@ inline void QuadraticInterpolate(T x, T x0, T x1, T x2, T y0, T y1, T y2, T &y, 
 }
 
 
-template <class T>
-inline T BilinearInterpolate(T x, T y, T x0, T x1, T y0, T y1, T v00, T v01, T v10, T v11) {
-	T r0 = LinearInterpolate(x, x0, x1, v00, v10);
-	T r1 = LinearInterpolate(x, x0, x1, v01, v11);
+template <class T, class T2>
+inline T2 BilinearInterpolate(T x, T y, T x0, T x1, T y0, T y1, T2 v00, T2 v01, T2 v10, T2 v11) {
+	T2 r0 = LinearInterpolate(x, x0, x1, v00, v10);
+	T2 r1 = LinearInterpolate(x, x0, x1, v01, v11);
 	
 	return LinearInterpolate(y, y0, y1, r0, r1);
 }
@@ -1057,23 +1057,23 @@ void GetInterpolatePos(const T x, const T y, const Eigen::Matrix<T, Eigen::Dynam
 	iy0 = iy1 = vecy.size()-1;
 }
 
-template <typename T>
-T BilinearInterpolate(const T x, const T y, const Eigen::Matrix<T, Eigen::Dynamic, 1> &vecx, const Eigen::Matrix<T, Eigen::Dynamic, 1> &vecy, 
-											const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &matz) {
+template <typename T, typename T2>
+T2 BilinearInterpolate(const T x, const T y, const Eigen::Matrix<T, Eigen::Dynamic, 1> &vecx, const Eigen::Matrix<T, Eigen::Dynamic, 1> &vecy, 
+											const Eigen::Matrix<T2, Eigen::Dynamic, Eigen::Dynamic> &matz) {
 	ASSERT(vecx.size() > 1 && vecy.size() > 1);
 	ASSERT(vecx.size() == matz.cols() && vecy.size() == matz.rows());
 	
 	int ix0, ix1, iy0, iy1;
 	GetInterpolatePos(x, y, vecx, vecy, ix0, ix1, iy0, iy1);
 	
-	double x1 = vecx[ix0];
-	double x2 = vecx[ix1];
-	double y1 = vecy[iy0];
-	double y2 = vecy[iy1];
-	double z11 = matz(ix0, iy0);
-	double z12 = matz(ix0, iy1);
-	double z21 = matz(ix1, iy0);
-	double z22 = matz(ix1, iy1);
+	T x1 = vecx[ix0];
+	T x2 = vecx[ix1];
+	T y1 = vecy[iy0];
+	T y2 = vecy[iy1];
+	T2 z11 = matz(ix0, iy0);
+	T2 z12 = matz(ix0, iy1);
+	T2 z21 = matz(ix1, iy0);
+	T2 z22 = matz(ix1, iy1);
 	return BilinearInterpolate(x, y, x1, x2, y1, y2, z11, z12, z21, z22);
 }
 
@@ -1648,10 +1648,84 @@ void CleanNANDupXSort(const Range1 &x, const Range1 &y, const Range1 &z, Range2 
 void Resample(const Eigen::VectorXd &sx, const Eigen::VectorXd &sy, 
 			  Eigen::VectorXd &rx, Eigen::VectorXd &ry, double srate = Null);
 void Resample(const Eigen::VectorXd &x, const Eigen::VectorXd &y, const Eigen::VectorXd &xmaster, Eigen::VectorXd &rry);			
-void Resample(const Eigen::VectorXd &sx, const Eigen::VectorXd &sy, const Eigen::VectorXd &sz, 
-			  Eigen::VectorXd &rx, Eigen::VectorXd &ry, Eigen::VectorXd &rz, double srate = Null);
-void Resample(const Eigen::VectorXd &x, const Eigen::VectorXd &y, const Eigen::MatrixXd &z, 
-			  Eigen::VectorXd &rrx, Eigen::VectorXd &rry, Eigen::MatrixXd &rrz, double sratex = Null, double sratey = Null);
+
+template <typename T, typename T2>
+void Resample(const Eigen::Matrix<T, Eigen::Dynamic, 1> &x, const Eigen::Matrix<T, Eigen::Dynamic, 1> &y, 
+	const Eigen::Matrix<T2, Eigen::Dynamic, 1> &z, 
+	Eigen::Matrix<T, Eigen::Dynamic, 1> &rrx, Eigen::Matrix<T, Eigen::Dynamic, 1> &rry, 
+	Eigen::Matrix<T2, Eigen::Dynamic, 1> &rrz, double srate = Null) {
+	Eigen::Matrix<T, Eigen::Dynamic, 1> rx, ry;
+	Eigen::Matrix<T2, Eigen::Dynamic, 1> rz;
+	
+	if (x.size() == 0 || y.size() == 0 || z.size() == 0)
+		return;
+	if (x.size() == 1 || y.size() == 1 || z.size() == 1) {
+		rrx = clone(x);
+		rry = clone(y);
+		rrz = clone(z);
+		return;
+	}	
+	T range = x(Eigen::last) - x(0);
+	if (!IsNum(srate)) 
+		srate = range/(x.size()-1);
+	int num = int(range/srate) + 1;
+	rx.resize(num);
+	ry.resize(num);
+	rz.resize(num);
+	for (int i = 0; i < num; ++i) { 
+		rx[i] = x[0] + i*srate;
+		ry[i] = LinearInterpolate(rx[i], x, y);
+		rz[i] = LinearInterpolate(rx[i], x, z);
+	}
+	rrx = pick(rx);
+	rry = pick(ry);
+	rrz = pick(rz);
+}			  
+
+template <typename T, typename T2>			  
+void Resample(const Eigen::Matrix<T, Eigen::Dynamic, 1> &x, const Eigen::Matrix<T, Eigen::Dynamic, 1> &y, 
+	const Eigen::Matrix<T2, Eigen::Dynamic, Eigen::Dynamic> &z, 
+	Eigen::Matrix<T, Eigen::Dynamic, 1> &rrx, Eigen::Matrix<T, Eigen::Dynamic, 1> &rry, 
+	Eigen::Matrix<T2, Eigen::Dynamic, Eigen::Dynamic> &rrz, double sratex = Null, double sratey = Null) {
+	Eigen::Matrix<T, Eigen::Dynamic, 1> rx, ry;
+	Eigen::Matrix<T2, Eigen::Dynamic, Eigen::Dynamic> rz;
+		
+	if (x.size() == 0 || y.size() == 0 || z.size() == 0)
+		return;
+	if (x.size() == 1 || y.size() == 1 || z.size() == 0) {
+		rrx = clone(x);
+		rry = clone(y);
+		rrz = clone(z);
+		return;
+	}
+	T rangex = x(Eigen::last) - x(0);
+	if (!IsNum(sratex)) 
+		sratex = rangex/(x.size()-1);
+	int numx = int(rangex/sratex) + 1;
+	rx.resize(numx);
+	
+	T rangey = y(Eigen::last) - y(0);
+	if (!IsNum(sratey)) 
+		sratey = rangey/(y.size()-1);
+	int numy = int(rangey/sratey) + 1;
+	ry.resize(numy);
+	
+	rz.resize(numx, numy);
+	
+	for (int ix = 0; ix < numx; ++ix)
+		rx[ix] = x[0] + ix*sratex;
+	for (int iy = 0; iy < numy; ++iy)
+		ry[iy] = y[0] + iy*sratey;
+	
+	for (int ix = 0; ix < numx; ++ix) 
+		for (int iy = 0; iy < numy; ++iy) 
+			rz(ix, iy) = BilinearInterpolate(rx[ix], ry[iy], x, y, z);
+	
+	rrx = pick(rx);
+	rry = pick(ry);
+	rrz = pick(rz);
+}		
+			  
 Vector<Pointf> FFT(const Eigen::VectorXd &data, double tSample, bool frequency, int type = FFT_TYPE::T_FFT, 
 						 int window = FFT_WINDOW::NO_WINDOW, int numOver = 0);
 void FilterFFT(Eigen::VectorXd &data, double T, double fromT, double toT);
