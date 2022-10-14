@@ -30,8 +30,26 @@ umk Anboto examples/ScatterDraw_demo_cl %1 -r   .\.test\ScatterDraw_Demo.exe
 umk Anboto examples/OfficeAutomation_demo_cl %1 -r   .\.test\OfficeAutomation_demo_console.exe
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
-umk Anboto examples/ScatterCtrl_demo %1 -r   .\.test\ScatterCtrl_Demo.exe
+umk Anboto examples/ScatterCtrl_demo %1 -r +GUI  .\.test\ScatterCtrl_Demo.exe
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
+umk Anboto examples/Surface_demo_test_cl %1 -r   .\.test\Surface_demo_test_cl.exe
+@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
+umk Anboto examples/SysInfo_demo_cl %1 -r   .\.test\SysInfo_demo_cl.exe
+@IF %ERRORLEVEL% NEQ 0  EXIT /B 1
 
+umk Anboto examples/SysInfo_demo_gui %1 -r +GUI  .\.test\SysInfo_demo_gui.exe
+@IF %ERRORLEVEL% NEQ 0  EXIT /B 1
+
+umk Anboto examples/Controls4U_demo %1 -r +GUI  .\.test\Controls4U_demo.exe
+@IF %ERRORLEVEL% NEQ 0  EXIT /B 1
+
+umk Anboto examples/GLCanvas_demo %1 -r +GUI  .\.test\GLCanvas_demo.exe
+@IF %ERRORLEVEL% NEQ 0  EXIT /B 1
+
+umk Anboto examples/MatIO_demo_cl %1 -r   .\.test\MatIO_demo_cl.exe
+@IF %ERRORLEVEL% NEQ 0  EXIT /B 1
+
+umk Anboto examples/PolyXMLtest %1 -r   .\.test\PolyXMLtest.exe
+@IF %ERRORLEVEL% NEQ 0  EXIT /B 1
