@@ -50,6 +50,3 @@ umk Anboto examples/GLCanvas_demo %1 -r +GUI  .\.test\GLCanvas_demo.exe
 
 umk Anboto examples/MatIO_demo_cl %1 -r   .\.test\MatIO_demo_cl.exe
 @IF %ERRORLEVEL% NEQ 0  EXIT /B 1
-
-umk Anboto examples/PolyXMLtest %1 -r   .\.test\PolyXMLtest.exe
-@IF %ERRORLEVEL% NEQ 0  EXIT /B 1
