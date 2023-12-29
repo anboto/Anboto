@@ -54,3 +54,10 @@ cd .\.test
 MatIO_demo_cl.exe -test	
 cd ..
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
+
+umk Anboto examples/Hdf5_demo_cl %1 -r   .\.test\Hdf5_demo_cl.exe
+@IF %ERRORLEVEL% NEQ 0  EXIT /B 1
+cd .\.test
+Hdf5_demo_cl.exe -test	
+cd ..
+@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
