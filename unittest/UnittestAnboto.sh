@@ -29,6 +29,12 @@ $cwd/.test/ScatterDraw_DemoCLANGx64
 umk Anboto examples/ScatterDraw_demo_cl GCC -r +SHARED  $cwd/.test/ScatterDraw_DemoMSBT19x64
 $cwd/.test/ScatterDraw_DemoMSBT19x64	
 
+umk Anboto examples/Hdf5_demo_cl CLANG -r +SHARED  $cwd/.test/Hdf5_DemoCLANG
+$cwd/.test/Hdf5_DemoCLANG
+
+umk Anboto examples/NetCDF_demo_cl CLANG -r +SHARED  $cwd/.test/NetCDF_DemoCLANG
+$cwd/.test/NetCDF_DemoCLANG
+
 umk Anboto examples/OfficeAutomation_demo_cl CLANG  -r  +SHARED $cwd/.test/OfficeAutomation_demo_consoleCLANGx64
 umk Anboto examples/OfficeAutomation_demo_cl GCC -r +SHARED $cwd/.test/OfficeAutomation_demo_consoleMSBT19x64
 
