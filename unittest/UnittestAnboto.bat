@@ -65,6 +65,6 @@ cd ..
 umk Anboto examples/NetCDF_demo_cl %1 -r   .\.test\NetCDF_demo_cl.exe
 @IF %ERRORLEVEL% NEQ 0  EXIT /B 1
 cd .\.test
-Hdf5_demo_cl.exe -test	
+NetCDF_demo_cl.exe -test	
 cd ..
 @IF %ERRORLEVEL% NEQ 0 EXIT /B 1
