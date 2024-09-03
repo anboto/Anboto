@@ -70,3 +70,12 @@ NetCDF_demo_cl.exe -test
 @IF %ERRORLEVEL% NEQ 0  PAUSE "Problem testing NetCDF_demo_cl"
 cd ..
 @IF %ERRORLEVEL% NEQ 0 PAUSE "Problem "
+
+umk Anboto examples/Npy_demo_cl %1 -r   .\.test\Npy_demo_cl.exe
+@IF %ERRORLEVEL% NEQ 0  PAUSE "Problem compiling Npy_demo_cl"
+copy ..\..\Npy\examples\Npy_demo_cl\matrices.npz .\.test
+cd .\.test
+Npy_demo_cl.exe -test	
+@IF %ERRORLEVEL% NEQ 0  PAUSE "Problem testing Npy_demo_cl"
+cd ..
+@IF %ERRORLEVEL% NEQ 0 PAUSE "Problem "

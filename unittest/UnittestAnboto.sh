@@ -68,6 +68,16 @@ umk Anboto examples/NetCDF_demo_cl CLANG_17 -r +SHARED  $cwd/.test/NetCDF_DemoCL
 $cwd/.test/NetCDF_DemoCLANG_17
 [ $? -ne 0 ] && { echo "Problem found"; read -p "Press Enter to continue..."; }
 
+umk Anboto examples/Npy_demo_cl CLANG -r +SHARED  $cwd/.test/Npy_DemoCLANG
+[ $? -ne 0 ] && { echo "Problem found"; read -p "Press Enter to continue..."; }
+cp $cwd/../../Npy/examples/Npy_demo_cl/matrices.npz $cwd/.test/matrices.npz
+$cwd/.test/Npy_DemoCLANG
+[ $? -ne 0 ] && { echo "Problem found"; read -p "Press Enter to continue..."; }
+umk Anboto examples/Npy_demo_cl CLANG_17 -r +SHARED  $cwd/.test/Npy_DemoCLANG_17
+[ $? -ne 0 ] && { echo "Problem found"; read -p "Press Enter to continue..."; }
+$cwd/.test/Npy_DemoCLANG_17
+[ $? -ne 0 ] && { echo "Problem found"; read -p "Press Enter to continue..."; }
+
 umk Anboto examples/ScatterCtrl_demo CLANG  -r  +GUI,SHARED $cwd/.test/ScatterCtrl_DemoCLANG
 [ $? -ne 0 ] && { echo "Problem found"; read -p "Press Enter to continue..."; }
 umk Anboto examples/ScatterCtrl_demo CLANG_17 -r  +GUI,SHARED $cwd/.test/ScatterCtrl_DemoCLANG_17
