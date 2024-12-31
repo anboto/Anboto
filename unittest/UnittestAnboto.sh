@@ -5,6 +5,13 @@ export PATH=$PATH:/home/aupa/upp
 
 cwd=$(pwd)
 
+
+umk Anboto examples/Xlnt_demo_cl CLANG_17 -r +SHARED  $cwd/.test/Xlnt_demo_clCLANG_17	
+[ $? -ne 0 ] && { echo "Problem found"; read -p "Press Enter to continue..."; }
+$cwd/.test/Xlnt_demo_clCLANG_17	
+[ $? -ne 0 ] && { echo "Problem found"; read -p "Press Enter to continue..."; }
+
+
 # umk Anboto examples/Functions4U_demo_cl CLANG    -r +SHARED  $cwd/.test/Functions4U_DemoCLANG
 # [ $? -ne 0 ] && { echo "Problem found"; read -p "Press Enter to continue..."; }
 # $cwd/.test/Functions4U_DemoCLANG	

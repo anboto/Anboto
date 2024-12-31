@@ -2,6 +2,11 @@
 md .test
 del .test\*.* /q
 
+umk Anboto examples/Xlnt_demo_cl %1 -r   .\.test\Xlnt_demo_cl.exe
+@IF %ERRORLEVEL% NEQ 0 PAUSE "Problem compiling Xlnt_demo_cl"
+.\.test\Xlnt_demo_cl.exe	
+@IF %ERRORLEVEL% NEQ 0 PAUSE "Problem testing Xlnt_demo_cl"
+
 umk Anboto examples/Functions4U_demo_cl %1 -r   .\.test\Functions4U_Demo.exe
 @IF %ERRORLEVEL% NEQ 0 PAUSE "Problem compiling Functions4U_demo_cl"
 .\.test\Functions4U_Demo.exe	
