@@ -1,10 +1,10 @@
 @echo "Testing Anboto for CLANGX64"
 
-@title "Testing BEMRosetta for Linux
+@title "Testing Anboto for Linux
 @start call bash UnittestAnboto.sh
 @IF %ERRORLEVEL% NEQ 0 PAUSE "Error testing and deploying Anboto Linux"
 
-@title "Testing BEMRosetta for CLANGX64
+@title "Testing Anboto for CLANGX64
 call UnittestAnboto.bat CLANGX64
 @IF %ERRORLEVEL% NEQ 0 PAUSE "Error testing Anboto CLANG"
 @echo "Testing Anboto for MSVS22x64"

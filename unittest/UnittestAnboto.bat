@@ -2,6 +2,15 @@
 md .test
 del .test\*.* /q
 
+umk Anboto MathTools %1 %2   .\.test\MathTools.exe
+@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
+
+umk Anboto BatchManager %1 %2  .\.test\BatchManager.exe
+@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
+
+umk Anboto BINAnboto %1 %2  .\.test\BINAnboto.exe
+@IF %ERRORLEVEL% NEQ 0 EXIT /B 1
+
 umk Anboto examples/Xlnt_demo_cl %1 -r   .\.test\Xlnt_demo_cl.exe
 @IF %ERRORLEVEL% NEQ 0 PAUSE "Problem compiling Xlnt_demo_cl"
 .\.test\Xlnt_demo_cl.exe	
