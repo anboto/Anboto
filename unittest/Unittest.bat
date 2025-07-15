@@ -8,12 +8,10 @@
 call UnittestAnboto.bat CLANGX64
 @IF %ERRORLEVEL% NEQ 0 PAUSE "Error testing Anboto CLANG"
 
-set "prefix=CPU-C"
-set "name=%COMPUTERNAME%"
-set "first5=%name:~0,5%"
-if /I not "%first5%"=="%prefix%" (
+call IsMSVCInstalled
+if "%MSVC_INSTALLED%"=="1" (
 	echo "Testing Anboto for MSVS22x64"
 	call UnittestAnboto.bat MSVS22x64
-	IF %ERRORLEVEL% NEQ 0 PAUSE "Error testing Anboto MSVS17x64"
+	IF %ERRORLEVEL% NEQ 0 PAUSE "Error testing Anboto MSVS22x64"
 )
 
